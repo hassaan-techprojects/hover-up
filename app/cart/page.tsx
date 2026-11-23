@@ -40,6 +40,7 @@ export default function CartPage() {
 
   useEffect(() => {
     try {
+      localStorage.removeItem("hover-up-buy-now");
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       setItems(stored ? JSON.parse(stored) as CartEntry[] : []);
     } catch {
