@@ -29,6 +29,7 @@ import {
   Star,
   Package,
   Upload,
+  Ruler,
 } from "lucide-react";
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
@@ -259,6 +260,7 @@ function ProductDetailContent({
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedPack, setSelectedPack] = useState(2);
@@ -1249,11 +1251,16 @@ function ProductDetailContent({
             {/* SIZE-WISE QUANTITY */}
 
             <div className="mt-8">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-[11px] tracking-[0.16em]">SELECT SIZE QUANTITIES</p>
-                <span className="text-[11px] text-[#777]">
-                  {selectedSizeTotal} / {selectedPack} selected
-                </span>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-[#8b7054] underline underline-offset-4 hover:text-[#171717]">
+                    <Ruler size={13} /> SIZE GUIDE
+                  </button>
+                  <span className="text-[11px] text-[#777]">
+                    {selectedSizeTotal} / {selectedPack} selected
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -1665,6 +1672,31 @@ function ProductDetailContent({
           </div>
         </section>
       </main>
+
+      {/* SIZE GUIDE */}
+
+      {sizeGuideOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4" onClick={() => setSizeGuideOpen(false)}>
+          <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[#a18c75]">SIZE REFERENCE</p>
+                <h2 className="mt-2 text-xl font-semibold">Available sizes</h2>
+                <p className="mt-1 text-xs text-[#888]">Choose the size values configured for this product.</p>
+              </div>
+              <button type="button" onClick={() => setSizeGuideOpen(false)} aria-label="Close size guide" className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f2ed] text-[#65594d]"><X size={17} /></button>
+            </div>
+            <div className="mt-5 divide-y divide-[#eee9e2] rounded-xl border border-[#eee9e2]">
+              {sizeOptions.map((size) => (
+                <div key={size.id} className="flex items-center justify-between px-4 py-3 text-sm">
+                  <span className="font-semibold">{size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol || size.value}</span>
+                  <span className="text-[#777]">{size.value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* FULL SCREEN IMAGE VIEWER */}
 
