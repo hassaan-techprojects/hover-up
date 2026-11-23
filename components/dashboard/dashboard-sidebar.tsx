@@ -91,7 +91,7 @@ function DashboardSidebarContent({
       .catch(() => setRole("CUSTOMER"));
   }, []);
 
-  const visibleNavigation = role === "ANALYST"
+  const visibleNavigation = role === null ? [] : role === "ANALYST"
     ? navigation.filter(section => section.label === "CATALOGUE").map(section => ({
         ...section,
         items: section.items.filter(item => ["Products", "Categories", "Attributes", "Banners & Media"].includes(item.name)),
