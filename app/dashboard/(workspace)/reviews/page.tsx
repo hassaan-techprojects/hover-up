@@ -20,6 +20,7 @@ export default function DashboardReviewsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [canManage, setCanManage] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -28,6 +29,7 @@ export default function DashboardReviewsPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to load reviews.");
       setReviews(data.reviews || []);
+      setCanManage(Boolean(data.canManage));
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load reviews.");
@@ -74,10 +76,12 @@ export default function DashboardReviewsPage() {
             {review.title && <h2 className="mt-3 text-sm font-semibold">{review.title}</h2>}
             {review.comment && <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-[#666]">{review.comment}</p>}
             {review.images.length>0 && <div className="mt-4 flex flex-wrap gap-3">{review.images.map(image=><a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="h-20 w-20 overflow-hidden rounded-lg border border-[#e8e3dc]"><img src={image.url} alt="Customer review" className="h-full w-full object-cover" /></a>)}</div>}
-            <div className="mt-5 flex flex-wrap gap-2">
-              {!review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,true)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#171717] px-4 text-[10px] font-semibold text-white hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Check size={13}/> Approve review</button>}
-              {review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,false)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e3dc] px-4 text-[10px] font-semibold text-[#776b5e] hover:border-[#b99a76] disabled:opacity-50"><X size={13}/> Hide review</button>}
-            </div>
+            {canManage && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {!review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,true)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#171717] px-4 text-[10px] font-semibold text-white hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Check size={13}/> Approve review</button>}
+                {review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,false)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e3dc] px-4 text-[10px] font-semibold text-[#776b5e] hover:border-[#b99a76] disabled:opacity-50"><X size={13}/> Hide review</button>}
+              </div>
+            )}
           </article>)}
         </section>
       )}
