@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useState } from "react";
 import { Plus, RefreshCw, ShieldCheck, UserRound, Power } from "lucide-react";
 type Member={id:string;name:string|null;email:string;role:string;isActive:boolean;createdAt:string;lastLoginAt?:string|null;lastActiveAt?:string|null};
