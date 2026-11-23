@@ -901,6 +901,8 @@ export default function ProductDetailClient({
               )}
             </div>
 
+            {isPackProduct && <div className="mt-8"><p className="mb-4 text-[11px] font-semibold tracking-[0.16em]">SELECT PACK</p><div className="grid grid-cols-3 gap-2 sm:grid-cols-4">{configuredPacks.map(({ pack, price }) => <button key={pack} type="button" onClick={() => { setSelectedPack(pack); setSizeQuantities({}); setCartMessage(""); }} className={`rounded-lg border px-3 py-3 text-left transition ${selectedPack === pack ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] hover:border-[#171717]"}`}><span className="block text-xs font-semibold">Pack {pack}</span><span className={`mt-1 block text-[11px] ${selectedPack === pack ? "text-white/80" : "text-[#777]"}`}>{formatPrice(price)}</span></button>)}</div></div>}
+
             <p className="mt-2 text-[11px] text-[#999]">
               Inclusive of all applicable taxes
             </p>
@@ -915,7 +917,7 @@ export default function ProductDetailClient({
               </p>
             )}
 
-            {isPackProduct && <div className="mt-8"><p className="mb-4 text-[11px] font-semibold tracking-[0.16em]">SELECT PACK</p><div className="grid grid-cols-3 gap-2 sm:grid-cols-4">{configuredPacks.map(({ pack, price }) => <button key={pack} type="button" onClick={() => { setSelectedPack(pack); setSizeQuantities({}); setCartMessage(""); }} className={`rounded-lg border px-3 py-3 text-left transition ${selectedPack === pack ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] hover:border-[#171717]"}`}><span className="block text-xs font-semibold">Pack {pack}</span><span className={`mt-1 block text-[11px] ${selectedPack === pack ? "text-white/80" : "text-[#777]"}`}>{formatPrice(price)}</span></button>)}</div></div>}
+            
 
             {/* COLORS */}
 
