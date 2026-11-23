@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -104,12 +104,7 @@ export default function AddProductPage() {
         attribute.id
       );
 
-      const isColorAttribute = attribute.name.trim().toLowerCase() === "color" || attribute.slug === "color";
-      return (
-        isColorAttribute &&
-        !alreadySelected &&
-        attribute.name.toLowerCase().includes(query)
-      );
+      return !alreadySelected && attribute.name.toLowerCase().includes(query);
     });
   }, [attributes, attributeSearch, selectedAttributes]);
 
@@ -134,7 +129,7 @@ export default function AddProductPage() {
     return counts.reduce((total, count) => total * count, 1);
   }, [selectedAttributeList, selectedAttributes]);
 
-  async function loadOptions() {
+  const loadOptions = useCallback(async () => {
     try {
       setLoadingOptions(true);
       setError("");
@@ -168,7 +163,11 @@ export default function AddProductPage() {
     } finally {
       setLoadingOptions(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    void loadOptions();
+  }, [loadOptions]);
 
   function handleNameChange(value: string) {
     setName(value);
