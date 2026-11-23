@@ -314,9 +314,11 @@ export default function ProductDetailClient({
 
   const discount = !isPackProduct && currentComparePrice > currentPrice && currentComparePrice > 0 ? Math.round(((currentComparePrice - currentPrice) / currentComparePrice) * 100) : 0;
 
-  const availableStock = selectedVariant
-    ? getAvailableStock(selectedVariant)
-    : product?.totalStock ?? 0;
+  const availableStock = isPackProduct
+    ? product?.totalStock ?? 0
+    : selectedVariant
+      ? getAvailableStock(selectedVariant)
+      : product?.totalStock ?? 0;
 
   const selectedImageUrl =
     productImages[selectedImage]?.url ?? "";
