@@ -71,7 +71,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as "ADMIN" | "ANALYST";
+        session.user.role = token.role as string;
       }
 
       return session;
@@ -79,7 +79,7 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: "/dashboard/login",
+    signIn: "/account/login",
   },
 
   secret: process.env.NEXTAUTH_SECRET,
