@@ -14,16 +14,26 @@ type CartItem = {
   frontImageUrl?: string; backImageUrl?: string; customizationNotes?: string;
 };
 const KEY = "hover-up-cart";
+const BUY_NOW_KEY = "hover-up-buy-now";
 const money = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [checkoutSource, setCheckoutSource] = useState<"cart" | "buy-now">("cart");
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", whatsapp: "", addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", notes: "" });
-  useEffect(() => { try { const raw = localStorage.getItem(KEY); setItems(raw ? JSON.parse(raw) : []); } catch { setItems([]); } finally { setReady(true); } }, []);
+  useEffect(() => {
+    try {
+      const buyNow = new URLSearchParams(window.location.search).get("mode") === "buy-now";
+      setCheckoutSource(buyNow ? "buy-now" : "cart");
+      const raw = localStorage.getItem(buyNow ? BUY_NOW_KEY : KEY);
+      setItems(raw ? JSON.parse(raw) : []);
+    } catch { setItems([]); }
+    finally { setReady(true); }
+  }, []);
   const total = useMemo(() => items.reduce((sum, item) => sum + Number(item.price) * (item.packSize ? 1 : item.quantity), 0), [items]);
   const update = (key: keyof typeof form, value: string) => setForm(old => ({ ...old, [key]: value }));
 
@@ -35,7 +45,7 @@ export default function CheckoutPage() {
       const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, paymentMethod: "COD", items }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to place your order.");
-      localStorage.removeItem(KEY);
+      localStorage.removeItem(checkoutSource === "buy-now" ? BUY_NOW_KEY : KEY);
       router.push("/order-confirmation?order=" + encodeURIComponent(data.order.orderNumber));
     } catch (e) { setError(e instanceof Error ? e.message : "Unable to place your order."); }
     finally { setBusy(false); }
