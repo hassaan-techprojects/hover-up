@@ -156,6 +156,47 @@ function formatPrice(value: number | string | null | undefined) {
   }).format(amount);
 }
 
+function renderInlineDescription(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} className="font-semibold text-[#171717]">{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function renderProductDescription(description: string) {
+  const blocks = description
+    .replace(/\r\n/g, "\n")
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => {
+    const heading = block.match(/^(#{1,6})\s+(.+)$/);
+
+    if (heading) {
+      const level = heading[1].length;
+      const className =
+        level <= 2
+          ? "mb-3 mt-8 text-lg font-semibold tracking-tight text-[#171717]"
+          : "mb-2 mt-6 text-base font-semibold text-[#171717]";
+
+      return (
+        <h3 key={index} className={className}>
+          {renderInlineDescription(heading[2])}
+        </h3>
+      );
+    }
+
+    return (
+      <p key={index} className="mb-4 text-[14px] leading-8 text-[#626262]">
+        {renderInlineDescription(block.replace(/\n/g, " "))}
+      </p>
+    );
+  });
+}
+
 function getAvailableStock(variant: Variant) {
   if (variant.inventory) {
     return Math.max(
@@ -1489,10 +1530,14 @@ function ProductDetailContent({
                   Product Description
                 </h2>
 
-                <div className="mt-5 whitespace-pre-line text-[13px] leading-8 text-[#666]">
-                  {product.description ||
-                    product.shortDescription ||
-                    "Product details will be updated soon."}
+                <div className="mt-5">
+                  {product.description
+                    ? renderProductDescription(product.description)
+                    : (
+                      <p className="text-[14px] leading-8 text-[#626262]">
+                        {product.shortDescription || "Product details will be updated soon."}
+                      </p>
+                    )}
                 </div>
 
                 {product.sku && (
