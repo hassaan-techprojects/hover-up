@@ -19,6 +19,16 @@ type CheckoutItem = {
   variantName?: string | null;
 };
 
+type CheckoutProduct = {
+  id: string;
+  name: string;
+  sku: string | null;
+  price: number | string | { toString(): string };
+  packPricing: unknown;
+  variants: Array<{ id: string; stock: number; price: number | string | { toString(): string } | null; inventory: { quantity: number; reserved: number } | null }>;
+  inventories: Array<{ quantity: number; reserved: number }>;
+};
+
 function clean(value: unknown, max = 300) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -51,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Online payment will be available soon. Please choose Cash on Delivery." }, { status: 400 });
     }
 
-    const prepared = [];
+    const prepared: Array<{ item: CheckoutItem; product: CheckoutProduct; linePrice: number }> = [];
     let subtotal = 0;
 
     for (const item of items) {
