@@ -409,6 +409,7 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           attributeId: true,
+          termType: true,
         },
       });
 
@@ -419,6 +420,10 @@ export async function POST(request: NextRequest) {
           },
           { status: 400 }
         );
+      }
+
+      if (existingTerms.some((term) => term.termType !== "COLOR")) {
+        return NextResponse.json({ error: "Only color terms can be assigned as product attributes. Select sizes during pack customization." }, { status: 400 });
       }
 
       for (const selection of attributeSelections) {
