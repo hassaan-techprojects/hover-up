@@ -25,9 +25,6 @@ export async function POST(
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
       return NextResponse.json({ error: "Choose a rating from 1 to 5 stars." }, { status: 400 });
     }
-    if (!comment && !title) {
-      return NextResponse.json({ error: "Write a short review before submitting." }, { status: 400 });
-    }
     if (comment.length > 3000 || title.length > 120 || images.length > 4) {
       return NextResponse.json({ error: "Your review is too long or has too many photos." }, { status: 400 });
     }
