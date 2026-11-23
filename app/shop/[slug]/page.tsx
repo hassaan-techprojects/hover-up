@@ -1474,7 +1474,7 @@ function ProductDetailContent({
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ShoppingBag size={17} strokeWidth={1.5} />
-                {addingToCart ? "ADDING..." : "ADD TO BAG"}
+                {addingToCart ? "ADDING..." : "ADD TO CART"}
               </button>
 
               <button
