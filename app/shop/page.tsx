@@ -77,6 +77,22 @@ function ProductCard({ product }: { product: Product }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
 
+  useEffect(() => {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem("hover-up-wishlist") || "[]");
+      setWishlisted(saved.includes(product.id));
+    } catch { setWishlisted(false); }
+  }, [product.id]);
+
+  function toggleWishlist() {
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem("hover-up-wishlist") || "[]");
+      const updated = wishlisted ? saved.filter((id) => id !== product.id) : [...saved.filter((id) => id !== product.id), product.id];
+      localStorage.setItem("hover-up-wishlist", JSON.stringify(updated));
+      setWishlisted(!wishlisted);
+    } catch (error) { console.error("Unable to update wishlist:", error); }
+  }
+
   const images = product.images ?? [];
   const currentImage = images[imageIndex];
 
@@ -120,7 +136,7 @@ function ProductCard({ product }: { product: Product }) {
         )}
 
         <button
-          onClick={() => setWishlisted(!wishlisted)}
+          onClick={toggleWishlist}
           aria-label="Add to wishlist"
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 transition hover:bg-white"
         >

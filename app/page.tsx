@@ -337,7 +337,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="category-list overflow-hidden px-6 pb-4 md:px-10">
-            <div className="category-marquee-track flex w-max">
+            <div className={categories.length > 1 ? "category-marquee-track flex w-max" : "flex w-full justify-center"}>
               <div className="flex gap-7 pr-7 md:gap-10 md:pr-10">
                 {categories.map((category) => (              <Link
                 key={category.id}
@@ -350,16 +350,18 @@ export default function HomePage() {
                 <h3 className="mt-4 w-full text-xs font-bold tracking-wide text-[#111111] transition-colors duration-300 group-hover:text-[#b99a76] md:text-sm">{category.name}</h3>
               </Link>))}
               </div>
-              <div className="flex gap-7 pr-7 md:gap-10 md:pr-10" aria-hidden="true">
-                {categories.map((category) => (
-                  <Link key={`duplicate-${category.id}`} href={`/shop?category=${encodeURIComponent(category.slug)}`} tabIndex={-1} className="group flex w-44 shrink-0 flex-col items-center text-center md:w-52">
-                    <div className="category-image-frame flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#111111] bg-[#f2f2f2] p-4 transition-all duration-300 group-hover:border-[#b99a76] md:h-48 md:w-48 md:p-5">
-                      {category.image ? <img src={category.image} alt="" className="h-full w-full object-contain object-center" loading="lazy" decoding="async" /> : <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-[#b99a76]">{category.name.charAt(0).toUpperCase()}</div>}
-                    </div>
-                    <h3 className="mt-4 w-full text-xs font-bold tracking-wide text-[#111111] md:text-sm">{category.name}</h3>
-                  </Link>
-                ))}
-              </div>
+              {categories.length > 1 && (
+                <div className="flex gap-7 pr-7 md:gap-10 md:pr-10" aria-hidden="true">
+                  {categories.map((category) => (
+                    <Link key={`duplicate-${category.id}`} href={`/shop?category=${encodeURIComponent(category.slug)}`} tabIndex={-1} className="group flex w-44 shrink-0 flex-col items-center text-center md:w-52">
+                      <div className="category-image-frame flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#111111] bg-[#f2f2f2] p-4 transition-all duration-300 group-hover:border-[#b99a76] md:h-48 md:w-48 md:p-5">
+                        {category.image ? <img src={category.image} alt="" className="h-full w-full object-contain object-center" loading="lazy" decoding="async" /> : <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-[#b99a76]">{category.name.charAt(0).toUpperCase()}</div>}
+                      </div>
+                      <h3 className="mt-4 w-full text-xs font-bold tracking-wide text-[#111111] md:text-sm">{category.name}</h3>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -12,6 +12,7 @@ import {
   Pencil,
   Trash2,
   Power,
+  Eye,
   RefreshCw,
   X,
   Image as ImageIcon,
@@ -500,6 +501,9 @@ export default function AllProductsPage() {
 
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-1">
+                            <Link href={`/shop/${product.slug}`} target="_blank" title="View product page (admin preview for drafts)" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#f5f1eb] hover:text-[#8b7054]">
+                              <Eye size={16} />
+                            </Link>
                             <Link
                               href={`/dashboard/products/${product.id}/pricing`}
                               title="Configure pack pricing"

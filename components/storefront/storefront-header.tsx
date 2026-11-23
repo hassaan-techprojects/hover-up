@@ -167,10 +167,7 @@ export default function StorefrontHeader() {
         {/* Search Panel */}
         {searchOpen && (
           <div className="animate-search border-t border-[#e8e3dc] bg-white px-5 py-5">
-            <form
-              action="/search"
-              className="mx-auto flex max-w-3xl items-center gap-3 border-b border-neutral-300 pb-3"
-            >
+            <form action="/search" method="get" className="mx-auto flex max-w-3xl items-center gap-3 border-b border-neutral-300 pb-3">
               <Search size={20} className="shrink-0 text-black" />
 
               <input
