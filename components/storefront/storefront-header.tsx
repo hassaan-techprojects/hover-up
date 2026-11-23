@@ -154,12 +154,20 @@ export default function StorefrontHeader() {
               <Search size={22} strokeWidth={2} />
             </button>
 
+            <Link href="/wishlist" aria-label="Wishlist" className="hover-icon">
+              <Heart size={21} strokeWidth={2} />
+            </Link>
+
             <Link
               href="/cart"
               aria-label="Shopping cart"
               className="hover-icon"
             >
               <ShoppingCart size={22} strokeWidth={2} />
+            </Link>
+
+            <Link href="/account" aria-label="Account" className="hover-icon">
+              <UserRound size={21} strokeWidth={2} />
             </Link>
           </div>
         </div>
