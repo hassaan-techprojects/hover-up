@@ -171,8 +171,15 @@ export async function POST(request: Request) {
           return responseError(`Choose a valid color for ${product.name}.`);
         }
 
-        if (!isValidArtworkUrl(item.frontImageUrl) || !isValidArtworkUrl(item.backImageUrl)) {
-          return responseError("Upload valid front and back logo files before checkout.");
+        if (item.textOnlyDesign) {
+          if (!(item.customizationNotes || "").trim()) {
+            return responseError("Add the text or design instructions for your text-only order.");
+          }
+          if ((item.frontImageUrl && !isValidArtworkUrl(item.frontImageUrl)) || (item.backImageUrl && !isValidArtworkUrl(item.backImageUrl))) {
+            return responseError("One of the uploaded logo files is invalid.");
+          }
+        } else if (!isValidArtworkUrl(item.frontImageUrl) || !isValidArtworkUrl(item.backImageUrl)) {
+          return responseError("Upload valid front and back logo files, or choose the text-only design option.");
         }
 
         const activeAllocations = item.sizeBreakdown.filter((size) => size.quantity > 0);
@@ -215,8 +222,9 @@ export async function POST(request: Request) {
             packSize: item.packSize,
             color: item.color || null,
             sizeBreakdown: activeAllocations,
-            frontImageUrl: item.frontImageUrl,
-            backImageUrl: item.backImageUrl,
+            frontImageUrl: item.frontImageUrl || null,
+            backImageUrl: item.backImageUrl || null,
+            textOnlyDesign: Boolean(item.textOnlyDesign),
             customizationNotes: (item.customizationNotes || "").trim().slice(0, 1000),
           },
         });
