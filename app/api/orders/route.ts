@@ -30,6 +30,7 @@ type CheckoutItem = {
   sizeBreakdown?: SizeAllocation[];
   frontImageUrl?: string;
   backImageUrl?: string;
+  textOnlyDesign?: boolean;
   customizationNotes?: string;
 };
 
