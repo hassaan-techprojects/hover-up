@@ -68,6 +68,34 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    fetch("/api/account/profile", { cache: "no-store" })
+      .then(async response => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then(data => {
+        if (!active || !data?.customer) return;
+        const customer = data.customer;
+        const address = customer.addresses?.[0];
+        setFirstName(current => current || customer.firstName || "");
+        setLastName(current => current || customer.lastName || "");
+        setEmail(current => current || customer.email || "");
+        setPhone(current => current || customer.phone || "");
+        setWhatsappPhone(current => current || customer.phone || "");
+        if (address) {
+          setAddressLine1(current => current || address.addressLine1 || "");
+          setAddressLine2(current => current || address.addressLine2 || "");
+          setCity(current => current || address.city || "");
+          setState(current => current || address.state || "");
+          setPostalCode(current => current || address.postalCode || "");
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
