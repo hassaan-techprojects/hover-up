@@ -120,7 +120,7 @@ function ProductCard({ product }: { product: Product }) {
             <img
               src={currentImage.url}
               alt={currentImage.altText || product.name}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="h-full w-full object-contain p-3 transition-transform duration-700 group-hover:scale-[1.02]"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-xs tracking-widest text-[#999]">
