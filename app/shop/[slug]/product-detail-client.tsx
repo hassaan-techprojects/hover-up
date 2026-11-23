@@ -574,7 +574,7 @@ export default function ProductDetailClient({
       );
 
       if (goToCart) {
-        router.push("/cart");
+        router.push("/checkout");
       } else {
         setCartMessage("Added to your bag successfully.");
       }
