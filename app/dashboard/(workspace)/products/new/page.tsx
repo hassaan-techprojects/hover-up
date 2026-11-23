@@ -224,6 +224,28 @@ export default function AddProductPage() {
     });
   }
 
+  function moveImage(id: string, direction: -1 | 1) {
+    setImages((current) => {
+      const index = current.findIndex((image) => image.id === id);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+      const updated = [...current];
+      [updated[index], updated[nextIndex]] = [updated[nextIndex], updated[index]];
+      return updated;
+    });
+  }
+
+  function setMainImage(id: string) {
+    setImages((current) => {
+      const index = current.findIndex((image) => image.id === id);
+      if (index <= 0) return current;
+      const updated = [...current];
+      const [mainImage] = updated.splice(index, 1);
+      updated.unshift(mainImage);
+      return updated;
+    });
+  }
+
   function addAttribute(attribute: Attribute) {
     setSelectedAttributes((current) => ({
       ...current,
@@ -700,17 +722,15 @@ export default function AddProductPage() {
                           </span>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => removeImage(image.id)}
-                          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm hover:text-red-600"
-                          aria-label="Remove image"
-                        >
-                          <X size={15} />
-                        </button>
+                        <div className="absolute right-3 top-3 flex items-center gap-1">
+                          <button type="button" onClick={() => moveImage(image.id, -1)} disabled={index === 0} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-gray-600 shadow-sm hover:text-[#8b7054] disabled:opacity-30" aria-label="Move image earlier">←</button>
+                          <button type="button" onClick={() => moveImage(image.id, 1)} disabled={index === images.length - 1} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-gray-600 shadow-sm hover:text-[#8b7054] disabled:opacity-30" aria-label="Move image later">→</button>
+                          <button type="button" onClick={() => removeImage(image.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm hover:text-red-600" aria-label="Remove image"><X size={15} /></button>
+                        </div>
                       </div>
 
                       <div className="p-3">
+                        {index > 0 && <button type="button" onClick={() => setMainImage(image.id)} className="mb-3 rounded-md border border-[#e8e6e1] px-3 py-1.5 text-[10px] font-medium text-[#786b5c] hover:border-[#b99a76]">Make main image</button>}
                         <label className="mb-1 block text-xs font-medium text-gray-500">
                           Image name / ALT text
                         </label>
