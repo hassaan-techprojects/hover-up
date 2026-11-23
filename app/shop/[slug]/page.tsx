@@ -1271,7 +1271,7 @@ function ProductDetailContent({
 
             <div className="mt-8">
               <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="text-[11px] tracking-[0.16em]">SELECT SIZE QUANTITIES</p>
+                <p className="text-[11px] tracking-[0.16em]">PACK OF {selectedPack}</p>
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-[#765238] underline underline-offset-4 hover:text-[#171717]">
                     <Ruler size={13} /> SIZE GUIDE
@@ -1671,9 +1671,9 @@ function ProductDetailContent({
             ) : (
               <div className="max-w-3xl space-y-7 py-9 text-[13px] leading-7 text-[#626262]">
                 <section><h2 className="text-base font-semibold text-[#171717]">Order Processing Time</h2><p className="mt-2">All orders go through a production process before shipping.</p></section>
-                <section><h3 className="font-semibold text-[#171717]">Production Time</h3><p className="mt-2">1–3 business days (may vary depending on the order volume and customization requirements).</p></section>
-                <section><h3 className="font-semibold text-[#171717]">Shipping Time</h3><p className="mt-2">Shipping usually takes 5–7 business days, depending on your location.</p><p className="mt-2">We currently ship across India.</p></section>
-                <section><h3 className="font-semibold text-[#171717]">Order Tracking</h3><p className="mt-2">Once your order has been dispatched, you will receive a tracking link via WhatsApp or Email so you can track your shipment.</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Production Time</h3><p className="mt-2"><strong>1–3 business days</strong> (may vary depending on the order volume and customization requirements).</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Shipping Time</h3><p className="mt-2">Shipping usually takes <strong>5–7 business days</strong>, depending on your location.</p><p className="mt-2">We currently <strong>ship across India</strong>.</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Order Tracking</h3><p className="mt-2">Once your order has been dispatched, you will receive a <strong>tracking link via WhatsApp or Email</strong> so you can track your shipment.</p></section>
                 <section><h3 className="font-semibold text-[#171717]">Possible Delays</h3><p className="mt-2">Shipping delays may occasionally occur due to:</p><ul className="mt-2 list-disc space-y-1 pl-5"><li>Festivals or public holidays</li><li>High order volumes or bulk orders</li><li>Courier service disruptions</li></ul><p className="mt-3">We appreciate your patience and understanding in such situations.</p></section>
               </div>
             )}
