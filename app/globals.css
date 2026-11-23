@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 
 /* HOVER UP DESIGN SYSTEM */
@@ -206,7 +205,7 @@ button {
   }
 }
 
-
+/* ANNOUNCEMENT MARQUEE */
 .announcement-marquee {
   animation: announcement-scroll 30s linear infinite;
   will-change: transform;
@@ -231,7 +230,6 @@ button {
     animation: none;
   }
 }
-
 
 /* HOMEPAGE CATEGORY LIST */
 .category-list {
@@ -289,90 +287,6 @@ button {
 
 /* HOMEPAGE BRAND CAROUSEL */
 .brand-marquee-track {
-  animation-duration: 35s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-.brand-marquee-forward {
-  animation-name: brand-scroll-forward;
-}
-
-.brand-marquee-reverse {
-  animation-name: brand-scroll-reverse;
-}
-
-.brand-marquee:hover .brand-marquee-track {
-  animation-play-state: paused;
-}
-
-@keyframes brand-scroll-forward {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes brand-scroll-reverse {
-  from {
-    transform: translateX(-50%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* WATCH & BUY */
-.watch-video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 20px;
-}
-
-.watch-video-card {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 9 / 16;
-  max-height: 520px;
-  background: #111111;
-}
-
-.watch-video-card video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-@media (max-width: 640px) {
-  .category-marquee-track {
-    animation-duration: 28s;
-  }
-
-  .brand-marquee-track {
-    animation-duration: 28s;
-  }
-
-  .watch-video-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .category-marquee-track,
-  .brand-marquee-track {
-    animation: none;
-  }
-}
-
-
-.brand-marquee-track {
   animation-duration: 25s;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
@@ -411,4 +325,320 @@ button {
   }
 }
 
+/* WATCH & BUY VIDEO GRID */
+.watch-video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 20px;
+}
 
+.watch-video-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  max-height: 520px;
+  background: #111111;
+  border-radius: 12px;
+  border: 1px solid rgba(185, 154, 118, 0.35);
+  transition:
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.watch-video-card:hover {
+  border-color: #b99a76;
+  box-shadow: 0 12px 30px rgba(17, 17, 17, 0.15);
+}
+
+.watch-video-card-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(185, 154, 118, 0.24),
+      transparent 38%
+    ),
+    linear-gradient(
+      145deg,
+      #29231e 0%,
+      #111111 55%,
+      #30251b 100%
+    );
+  transition: background 350ms ease;
+}
+
+.watch-video-card-content::before,
+.watch-video-card-content::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border: 1px solid rgba(185, 154, 118, 0.2);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform 500ms ease;
+}
+
+.watch-video-card-content::before {
+  top: -105px;
+  right: -90px;
+}
+
+.watch-video-card-content::after {
+  bottom: -125px;
+  left: -95px;
+}
+
+.watch-video-card:hover .watch-video-card-content::before {
+  transform: scale(1.2);
+}
+
+.watch-video-card:hover .watch-video-card-content::after {
+  transform: scale(1.15);
+}
+
+.watch-video-number {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.watch-video-play {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 68px;
+  height: 68px;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  background: #b99a76;
+  color: #111111;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 350ms ease,
+    box-shadow 350ms ease;
+}
+
+.watch-video-card:hover .watch-video-play {
+  transform: scale(1.15);
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.watch-video-label {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+
+/* WATCH & BUY FEATURE CONTAINER */
+.watch-feature-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 28px;
+  padding: 28px;
+  border-radius: 18px;
+  background: #111111;
+  color: #ffffff;
+  overflow: visible;
+}
+
+/* INDIVIDUAL FEATURE */
+.watch-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* CIRCULAR FEATURE ICON */
+.watch-feature-icon {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  min-width: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: #b99a76;
+  color: #111111;
+  transition:
+    transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 350ms ease,
+    background 350ms ease;
+  transform-origin: center;
+  z-index: 1;
+}
+
+/* ICON GRAPHICS */
+.watch-feature-icon svg {
+  position: relative;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  color: #111111;
+  stroke-width: 1.9;
+  transition: transform 350ms ease;
+}
+
+/* PREMIUM DIAMOND ICON */
+.watch-feature-icon-diamond {
+  background: #b99a76;
+  color: #111111;
+}
+
+.watch-feature-icon-diamond svg {
+  width: 30px;
+  height: 30px;
+  color: #111111;
+  stroke-width: 2;
+}
+
+/* ZOOM ONLY - NO ROTATION */
+.watch-feature-item:hover .watch-feature-icon {
+  transform: scale(1.2);
+  background: #d1b18c;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.35),
+    0 0 0 5px rgba(185, 154, 118, 0.15);
+}
+
+.watch-feature-item:hover .watch-feature-icon svg {
+  transform: scale(1.08);
+}
+
+/* FEATURE TEXT */
+.watch-feature-content {
+  min-width: 0;
+}
+
+.watch-feature-content h3 {
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0.07em;
+}
+
+.watch-feature-content p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+/* WATCH & BUY MOBILE */
+@media (max-width: 640px) {
+  .watch-video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .watch-video-card {
+    max-height: 420px;
+  }
+
+  .watch-video-play {
+    width: 56px;
+    height: 56px;
+  }
+
+  .watch-feature-strip {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 22px;
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .watch-feature-item {
+    gap: 15px;
+  }
+
+  .watch-feature-icon {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+  }
+
+  .watch-feature-content h3 {
+    font-size: 11px;
+  }
+
+  .watch-feature-content p {
+    font-size: 11px;
+  }
+}
+
+/* TABLET FEATURE LAYOUT */
+@media (min-width: 641px) and (max-width: 900px) {
+  .watch-feature-strip {
+    gap: 16px;
+    padding: 22px 18px;
+  }
+
+  .watch-feature-item {
+    gap: 12px;
+  }
+
+  .watch-feature-icon {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+  }
+
+  .watch-feature-content h3 {
+    font-size: 10px;
+  }
+
+  .watch-feature-content p {
+    font-size: 10px;
+  }
+}
+
+/* REDUCED MOTION */
+@media (prefers-reduced-motion: reduce) {
+  .category-marquee-track,
+  .brand-marquee-track {
+    animation: none;
+  }
+
+  .watch-feature-icon,
+  .watch-feature-icon svg,
+  .watch-video-play,
+  .watch-video-card-content::before,
+  .watch-video-card-content::after {
+    transition: none;
+  }
+
+  .watch-feature-item:hover .watch-feature-icon {
+    transform: none;
+  }
+
+  .watch-video-card:hover .watch-video-play {
+    transform: none;
+  }
+}

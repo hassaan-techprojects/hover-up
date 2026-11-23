@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -6,10 +5,13 @@ import Link from "next/link";
 import {
   ChevronRight,
   ChevronLeft,
-  Video,
+  Play,
   Volume2,
   VolumeX,
   X,
+  Diamond,
+  Shirt,
+  PackageCheck,
 } from "lucide-react";
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
@@ -52,22 +54,22 @@ const watchVideos: {
 }[] = [
   {
     id: "1",
-    title: "",
+    title: "Video 1",
     video: "/videos/video-1.webm",
   },
   {
     id: "2",
-    title: "",
+    title: "Video 2",
     video: "/videos/video-2.webm",
   },
   {
     id: "3",
-    title: "",
+    title: "Video 3",
     video: "/videos/video-3.webm",
   },
   {
     id: "4",
-    title: "",
+    title: "Video 4",
     video: "/videos/video-4.webm",
   },
 ];
@@ -156,15 +158,15 @@ export default function HomePage() {
     if (banners.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentBannerIndex((previousIndex) =>
-        (previousIndex + 1) % banners.length
+      setCurrentBannerIndex(
+        (previousIndex) => (previousIndex + 1) % banners.length
       );
     }, 10000);
 
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // Play the selected video when the viewer opens or video changes
+  // Play selected video when viewer opens or video changes
   useEffect(() => {
     if (!videoViewerOpen) return;
 
@@ -177,7 +179,7 @@ export default function HomePage() {
     }
   }, [videoViewerOpen, currentVideoIndex]);
 
-  // Lock page scrolling and support keyboard controls in video viewer
+  // Lock page scrolling and support keyboard controls
   useEffect(() => {
     if (!videoViewerOpen) return;
 
@@ -195,8 +197,8 @@ export default function HomePage() {
       }
 
       if (event.key === "ArrowRight") {
-        setCurrentVideoIndex((index) =>
-          (index + 1) % watchVideos.length
+        setCurrentVideoIndex(
+          (index) => (index + 1) % watchVideos.length
         );
       }
     };
@@ -227,8 +229,8 @@ export default function HomePage() {
   };
 
   const showNextVideo = () => {
-    setCurrentVideoIndex((index) =>
-      (index + 1) % watchVideos.length
+    setCurrentVideoIndex(
+      (index) => (index + 1) % watchVideos.length
     );
   };
 
@@ -486,32 +488,73 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Static Video Cards - Videos play only after clicking */}
           <div className="watch-video-grid">
             {watchVideos.map((item, index) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => openVideoViewer(index)}
-                aria-label={`Watch product video ${index + 1}`}
+                aria-label={`Play ${item.title}`}
                 className="watch-video-card group relative block cursor-pointer overflow-hidden rounded-xl border-0 bg-black p-0 text-left"
               >
-                <video
-                  src={item.video}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                <div className="watch-video-card-content">
+                  <span className="watch-video-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
 
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+                  <span className="watch-video-play">
+                    <Play size={25} fill="currentColor" />
+                  </span>
 
-                <div className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm">
-                  <Video size={17} />
+                  <span className="watch-video-label">
+                    WATCH VIDEO
+                  </span>
                 </div>
               </button>
             ))}
+          </div>
+
+          {/* Watch & Buy Features */}
+          <div className="watch-feature-strip">
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon watch-feature-icon-diamond">
+                <Diamond size={30} strokeWidth={2} />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>PREMIUM PRINTED EDITION</h3>
+                <p>
+                  High-grade fabrics with consistent finishing.
+                </p>
+              </div>
+            </div>
+
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon">
+                <Shirt />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>COMFORTABLE FITS</h3>
+                <p>
+                  Designed for everyday comfort and movement.
+                </p>
+              </div>
+            </div>
+
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon">
+                <PackageCheck />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>BULK & CUSTOM ORDER</h3>
+                <p>
+                  Scalable production with customization support.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
