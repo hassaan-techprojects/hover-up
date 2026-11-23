@@ -27,14 +27,36 @@ export async function POST(request: Request) {
       if (existingCustomer?.userId) throw new Error("An account already exists with this email address.");
 
       const user = await tx.user.create({
-        data: { name: [firstName, lastName].filter(Boolean).join(" "), email, passwordHash, role: "CUSTOMER" },
+        data: {
+          name: [firstName, lastName].filter(Boolean).join(" "),
+          email,
+          passwordHash,
+          role: "CUSTOMER",
+          isActive: true,
+        },
       });
 
-      const customer = await tx.customer.upsert({
-        where: { email },
-        update: { userId: user.id, firstName, lastName: lastName || null, phone },
-        create: { userId: user.id, firstName, lastName: lastName || null, email, phone },
-      });
+      // Guest checkout may already have created a Customer row for this email.
+      // Attach that row to the new login instead of attempting a duplicate.
+      const customer = existingCustomer
+        ? await tx.customer.update({
+            where: { id: existingCustomer.id },
+            data: {
+              userId: user.id,
+              firstName,
+              lastName: lastName || null,
+              phone,
+            },
+          })
+        : await tx.customer.create({
+            data: {
+              userId: user.id,
+              firstName,
+              lastName: lastName || null,
+              email,
+              phone,
+            },
+          });
 
       return { userId: user.id, customerId: customer.id };
     });
