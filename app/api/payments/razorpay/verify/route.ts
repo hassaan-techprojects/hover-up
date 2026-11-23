@@ -43,6 +43,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Payment signature could not be verified." }, { status: 400 });
     }
 
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    if (!keyId) {
+      return NextResponse.json({ error: "Online payment verification is not configured." }, { status: 503 });
+    }
+
+    const gatewayResponse = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(body.razorpay_payment_id)}`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${keyId}:${secret}`).toString("base64")}`,
+      },
+      cache: "no-store",
+    });
+    const gatewayPayment = await gatewayResponse.json();
+    if (
+      !gatewayResponse.ok ||
+      gatewayPayment.order_id !== body.razorpay_order_id ||
+      gatewayPayment.currency !== "INR" ||
+      gatewayPayment.amount !== Math.round(Number(payment.amount) * 100) ||
+      gatewayPayment.status !== "captured"
+    ) {
+      return NextResponse.json({ error: "The payment is not captured for the expected order amount." }, { status: 409 });
+    }
+
     await prisma.$transaction([
       prisma.payment.update({
         where: { orderId: body.orderId },
