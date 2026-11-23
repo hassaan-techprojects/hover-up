@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         if (!Number.isInteger(packSize) || packSize !== quantity) {
           return NextResponse.json({ error: "Pack quantity does not match the selected pack." }, { status: 400 });
         }
-        const pricing = product.packPricing as Record<string, unknown> | null;
+        const pricing = product.packPricing && typeof product.packPricing === "object" && !Array.isArray(product.packPricing) ? product.packPricing as unknown as Record<string, unknown> : null;
         const configuredPrice = pricing?.[String(packSize)];
         linePrice = Number(configuredPrice);
         if (!Number.isFinite(linePrice) || linePrice <= 0) {
