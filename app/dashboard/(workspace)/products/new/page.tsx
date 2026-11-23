@@ -22,8 +22,7 @@ import {
 type AttributeTerm = {
   id: string;
   value: string;
-  termType: "COLOR" | "SIZE";
-  sizeSymbol?: string | null;
+  termType: "COLOR";
   image?: string | null;
 };
 
@@ -56,7 +55,6 @@ type ProductImageFile = {
   altText: string;
 };
 
-const SIZE_SYMBOLS = ["S", "M", "L", "XL", "XXL"];
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -161,7 +159,7 @@ export default function AddProductPage() {
         );
       }
 
-      setAttributes(attributeData.attributes ?? []);
+      setAttributes((attributeData.attributes ?? []).map((attribute: Attribute) => ({ ...attribute, values: attribute.values.filter((term) => term.termType === "COLOR") })).filter((attribute: Attribute) => attribute.values.length > 0));
       setCategories(categoryData.categories ?? []);
     } catch (err) {
       setError(
@@ -482,7 +480,6 @@ export default function AddProductPage() {
                     {
                       id: term.id,
                       value: term.value,
-                      sizeSymbol: term.sizeSymbol,
                     },
                   ];
                 }
@@ -1012,12 +1009,6 @@ export default function AddProductPage() {
                                       alt=""
                                       className="h-5 w-5 rounded-full border border-white/20 object-cover"
                                     />
-                                  )}
-
-                                  {term.termType === "SIZE" && (
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-current text-[10px]">
-                                      {term.sizeSymbol || term.value}
-                                    </span>
                                   )}
 
                                   {term.value}
