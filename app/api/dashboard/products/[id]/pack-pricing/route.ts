@@ -8,11 +8,11 @@ const PACK_OPTIONS = [2, 5, 10, 15, 20, 50, 75, 100];
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  return session?.user?.id && session.user.role === "ADMIN";
+  return session?.user?.id && ["ADMIN", "ANALYST"].includes(session.user.role);
 }
 
 export async function GET(_request: Request, { params }: Context) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Only administrators can configure pack pricing." }, { status: 403 });
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Only catalogue staff can configure pack pricing." }, { status: 403 });
   const { id } = await params;
   const product = await prisma.product.findUnique({ where: { id }, select: { id: true, name: true, packPricing: true } });
   if (!product) return NextResponse.json({ error: "Product not found." }, { status: 404 });
@@ -20,7 +20,7 @@ export async function GET(_request: Request, { params }: Context) {
 }
 
 export async function PATCH(request: Request, { params }: Context) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Only administrators can configure pack pricing." }, { status: 403 });
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Only catalogue staff can configure pack pricing." }, { status: 403 });
   try {
     const { id } = await params;
     const body = await request.json();
