@@ -13,10 +13,7 @@ export async function POST(request: Request) {
     }
 
     const order = await prisma.order.findFirst({
-      where: {
-        orderNumber,
-        customer: { email },
-      },
+      where: { orderNumber },
       include: {
         customer: { select: { firstName: true, lastName: true, email: true, phone: true } },
         items: true,
@@ -26,9 +23,11 @@ export async function POST(request: Request) {
     });
 
     const address = order?.shippingAddress as Record<string, unknown> | null;
+    const savedEmail = (address?.email as string | undefined)?.toLowerCase() || order?.customer.email || "";
     const savedPhone = (address?.phone as string | undefined) || order?.customer.phone || "";
-    const normalizedSavedPhone = savedPhone.replace(/\s+/g, "");
-    if (!order || normalizedSavedPhone !== phone) {
+    const normalizedSavedPhone = savedPhone.replace(/\D/g, "");
+    const normalizedInputPhone = phone.replace(/\D/g, "");
+    if (!order || savedEmail.toLowerCase() !== email || normalizedSavedPhone !== normalizedInputPhone) {
       return NextResponse.json({ error: "We couldn't find an order matching those details." }, { status: 404 });
     }
 
