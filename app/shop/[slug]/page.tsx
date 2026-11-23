@@ -126,6 +126,7 @@ type CartEntry = {
   }[];
   frontImageUrl: string;
   backImageUrl: string;
+  customizationNotes: string;
 };
 
 const CART_STORAGE_KEY = "hover-up-cart";
@@ -261,6 +262,7 @@ function ProductDetailContent({
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
+  const [customizationNotes, setCustomizationNotes] = useState("");
   const [wishlist, setWishlist] = useState(false);
 
   const [cartMessage, setCartMessage] = useState("");
@@ -758,6 +760,7 @@ function ProductDetailContent({
         })),
         frontImageUrl,
         backImageUrl,
+        customizationNotes: customizationNotes.trim(),
       };
 
       // Keep separately configured packs/customizations as separate cart lines.
@@ -1053,7 +1056,7 @@ function ProductDetailContent({
               </p>
             )}
 
-            <h1 className="mt-3 text-[27px] font-light leading-[1.25] tracking-[0.015em] md:text-[35px]">
+            <h1 className="mt-3 text-[27px] font-bold leading-[1.25] tracking-[0.015em] md:text-[35px]">
               {product.name}
             </h1>
 
@@ -1090,7 +1093,7 @@ function ProductDetailContent({
             {/* PRICE */}
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <span className="text-[25px] font-medium tracking-wide">
+              <span className="text-[25px] font-bold tracking-wide">
                 {formatPrice(currentPrice)}
               </span>
               <span className="text-[10px] tracking-[0.12em] text-[#777]">
@@ -1371,6 +1374,23 @@ function ProductDetailContent({
               <p className="mt-2 text-[10px] text-[#999]">
                 Upload the artwork you want printed on the front and back of the selected items.
               </p>
+            </div>
+
+            {/* OPTIONAL CUSTOMIZATION NOTES */}
+            <div className="mt-6">
+              <label htmlFor="customization-notes" className="mb-3 block text-[11px] font-semibold tracking-[0.14em]">
+                ANY TEXT OR CUSTOMIZATION NEEDED <span className="font-normal normal-case tracking-normal text-[#999]">(Optional)</span>
+              </label>
+              <textarea
+                id="customization-notes"
+                value={customizationNotes}
+                onChange={(event) => setCustomizationNotes(event.target.value)}
+                maxLength={1000}
+                rows={4}
+                placeholder="Tell us about text, placement, print colors, or any special instructions..."
+                className="w-full resize-y border border-[#dedbd6] bg-white px-4 py-3 text-sm text-[#171717] outline-none transition placeholder:text-[#aaa] focus:border-[#b99a76] focus:ring-2 focus:ring-[#b99a76]/15"
+              />
+              <p className="mt-1 text-right text-[10px] text-[#999]">{customizationNotes.length}/1000</p>
             </div>
 
             {/* VARIANT DETAILS */}
