@@ -291,12 +291,14 @@ export default function ProductDetailClient({
 
   const sizeOptions = useMemo(() => {
     if (!product) return [];
-    const order: Record<string, number> = { S: 1, M: 2, L: 3, XL: 4, XXL: 5, "2XL": 5, "3XL": 6, "4XL": 7 };
-    return product.attributes.map((item) => item.attributeValue).filter((value) => value.termType === "SIZE").sort((a, b) => {
-      const aSize = (a.sizeSymbol || a.value).toUpperCase();
-      const bSize = (b.sizeSymbol || b.value).toUpperCase();
-      return (order[aSize] ?? 99) - (order[bSize] ?? 99) || a.value.localeCompare(b.value, undefined, { numeric: true });
-    });
+    return ["S", "M", "L", "XL", "2XL"].map((size) => ({
+      id: `standard-size-${size}`,
+      value: size,
+      image: null,
+      sizeSymbol: size,
+      termType: "SIZE" as const,
+      attribute: { id: "standard-size", name: "Size", slug: "size" },
+    }));
   }, [product]);
 
   const productImages = useMemo(() => {
@@ -358,12 +360,11 @@ export default function ProductDetailClient({
               value.toLowerCase() === color.toLowerCase()
           );
 
+        const productHasSizeAttributes = product.attributes.some((item) => item.attributeValue.termType === "SIZE");
         const sizeMatches =
           !size ||
-          values.some(
-            (value) =>
-              value.toLowerCase() === size.toLowerCase()
-          );
+          !productHasSizeAttributes ||
+          values.some((value) => value.toLowerCase() === size.toLowerCase());
 
         return colorMatches && sizeMatches;
       });
