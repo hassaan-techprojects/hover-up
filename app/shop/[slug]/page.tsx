@@ -337,8 +337,13 @@ function ProductDetailContent({
   }, [slug]);
 
   useEffect(() => {
-    if (configuredPackSizes.length > 0 && !configuredPackSizes.some((item) => item.size === selectedPack)) {
-      setSelectedPack(configuredPackSizes[0].size);
+    const availablePackSizes = Object.entries(product?.packPricing ?? {})
+      .map(([size, price]) => ({ size: Number(size), price: Number(price) }))
+      .filter((item) => Number.isInteger(item.size) && item.size > 0 && Number.isFinite(item.price) && item.price >= 0)
+      .sort((a, b) => a.size - b.size);
+
+    if (availablePackSizes.length > 0 && !availablePackSizes.some((item) => item.size === selectedPack)) {
+      setSelectedPack(availablePackSizes[0].size);
       setSizeQuantities({});
     }
   }, [product, selectedPack]);
