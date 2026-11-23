@@ -1,9 +1,10 @@
-name: Storefront Pack Pricing Checks
+name: Hover Up Storefront and Dashboard Checks
 
 on:
   push:
     branches:
       - feat/storefront-pack-pricing
+      - feat/admin-dashboard-live-analytics
   pull_request:
     branches:
       - main
@@ -38,3 +39,28 @@ jobs:
           "app/dashboard/(workspace)/products/[id]/pricing/page.tsx"
           "app/api/orders/route.ts"
           "app/api/dashboard/products/[id]/pack-pricing/route.ts"
+          "app/dashboard/(workspace)/page.tsx"
+          "app/dashboard/(workspace)/analytics/page.tsx"
+          "app/dashboard/(workspace)/customers/page.tsx"
+          "app/dashboard/(workspace)/shipping/page.tsx"
+          "app/dashboard/(workspace)/activity-logs/page.tsx"
+          "app/dashboard/(workspace)/team/page.tsx"
+          "app/dashboard/(workspace)/settings/page.tsx"
+          "app/dashboard/(workspace)/inventory/page.tsx"
+          "app/dashboard/(workspace)/products/new/page.tsx"
+          "app/dashboard/(workspace)/products/[id]/edit/page.tsx"
+          "app/dashboard/(workspace)/orders/page.tsx"
+          "app/dashboard/(workspace)/categories/page.tsx"
+          "app/dashboard/(workspace)/reviews/page.tsx"
+          "app/api/dashboard/overview/route.ts"
+          "app/api/dashboard/customers/route.ts"
+          "app/api/dashboard/activity-logs/route.ts"
+          "app/api/dashboard/team/route.ts"
+          "app/api/dashboard/settings/route.ts"
+          "app/api/dashboard/inventory/route.ts"
+          "app/api/dashboard/orders/route.ts"
+          "app/api/dashboard/orders/[id]/route.ts"
+          "app/api/dashboard/reviews/route.ts"
+          "app/api/orders/route.ts"
+          "app/shop/[slug]/product-detail-client.tsx"
+          "src/lib/auth.ts"
