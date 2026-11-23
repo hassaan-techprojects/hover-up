@@ -1,9 +1,11 @@
+
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
-  try {
-    const banners = await prisma.banner.findMany({
+const getActiveBanners = unstable_cache(
+  async () => {
+    return prisma.banner.findMany({
       where: {
         status: "ACTIVE",
       },
@@ -17,13 +19,25 @@ export async function GET() {
         { createdAt: "desc" },
       ],
     });
+  },
+  ["homepage-active-banners"],
+  {
+    revalidate: 15,
+    tags: ["homepage-banners"],
+  }
+);
+
+export async function GET() {
+  try {
+    const banners = await getActiveBanners();
 
     return NextResponse.json(
       { banners },
       {
         status: 200,
         headers: {
-          "Cache-Control": "no-store",
+          "Cache-Control":
+            "public, max-age=0, s-maxage=15, stale-while-revalidate=60",
         },
       }
     );

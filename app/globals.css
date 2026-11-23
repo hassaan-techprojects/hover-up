@@ -231,3 +231,184 @@ button {
     animation: none;
   }
 }
+
+
+/* HOMEPAGE CATEGORY LIST */
+.category-list {
+  scrollbar-width: thin;
+  scrollbar-color: #b99a76 #f8f6f2;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-list::-webkit-scrollbar {
+  height: 5px;
+}
+
+.category-list::-webkit-scrollbar-track {
+  background: #f8f6f2;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+  background: #b99a76;
+  border-radius: 20px;
+}
+
+/* EQUAL CATEGORY IMAGE CONTAINERS */
+.category-image-frame {
+  width: 180px;
+  height: 180px;
+  min-width: 180px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 2px solid #111111;
+  background: #f2f2f2;
+  padding: 18px;
+}
+
+.category-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .category-image-frame {
+    width: 145px;
+    height: 145px;
+    min-width: 145px;
+    min-height: 145px;
+    padding: 14px;
+  }
+}
+
+/* HOMEPAGE BRAND CAROUSEL */
+.brand-marquee-track {
+  animation-duration: 35s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.brand-marquee-forward {
+  animation-name: brand-scroll-forward;
+}
+
+.brand-marquee-reverse {
+  animation-name: brand-scroll-reverse;
+}
+
+.brand-marquee:hover .brand-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes brand-scroll-forward {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes brand-scroll-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* WATCH & BUY */
+.watch-video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 20px;
+}
+
+.watch-video-card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  max-height: 520px;
+  background: #111111;
+}
+
+.watch-video-card video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  .category-marquee-track {
+    animation-duration: 28s;
+  }
+
+  .brand-marquee-track {
+    animation-duration: 28s;
+  }
+
+  .watch-video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-marquee-track,
+  .brand-marquee-track {
+    animation: none;
+  }
+}
+
+
+.brand-marquee-track {
+  animation-duration: 25s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+.brand-marquee-forward {
+  animation-name: brand-scroll-forward;
+}
+
+.brand-marquee-reverse {
+  animation-name: brand-scroll-reverse;
+}
+
+.brand-marquee:hover .brand-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes brand-scroll-forward {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes brand-scroll-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+
