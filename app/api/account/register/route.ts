@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const result = await prisma.$transaction(async (tx) => {
-      const existingUser = await tx.user.findUnique({ where: { email } });
+      const existingUser = await tx.user.findUnique({ where: { email }, select: { id: true } });
       if (existingUser) throw new Error("An account already exists with this email address.");
 
       const existingCustomer = await tx.customer.findUnique({ where: { email } });
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
           role: "CUSTOMER",
           isActive: true,
         },
+        select: { id: true },
       });
 
       // Guest checkout may already have created a Customer row for this email.
