@@ -13,6 +13,7 @@ import {
   RefreshCw,
   X,
   Image as ImageIcon,
+  Tags,
 } from "lucide-react";
 
 type ProductCategory = {
@@ -501,6 +502,14 @@ export default function AllProductsPage() {
 
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-1">
+                            <Link
+                              href={`/dashboard/products/${product.id}/pricing`}
+                              title="Configure pack pricing"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#f5f1eb] hover:text-[#8b7054]"
+                            >
+                              <Tags size={16} />
+                            </Link>
+
                             <Link
                               href={`/dashboard/products/${product.id}/edit`}
                               title="Edit product"
