@@ -122,6 +122,7 @@ export async function POST(request: Request) {
             where: { isActive: true },
             include: { inventory: true },
           },
+          inventories: { where: { variantId: null } },
         },
       });
 
@@ -218,7 +219,7 @@ export async function POST(request: Request) {
             ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
             : Math.max(0, variant.stock)
           : product.inventories?.[0]?.quantity ?? 0;
-        if (stock > 0 && stock < item.quantity) {
+        if (product.inventories.length > 0 && stock < item.quantity) {
           return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
         }
 
@@ -249,6 +250,12 @@ export async function POST(request: Request) {
       postalCode: address.postalCode.trim(),
       country: address.country?.trim() || "India",
     };
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (body.paymentMethod === "ONLINE" && (!keyId || !keySecret)) {
+      return responseError("Online payment is not configured yet. Please choose Cash on Delivery or contact the store.", 503);
+    }
 
     const orderNumber = `HU-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 
@@ -308,12 +315,6 @@ export async function POST(request: Request) {
     });
 
     if (body.paymentMethod === "ONLINE") {
-      const keyId = process.env.RAZORPAY_KEY_ID;
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
-      if (!keyId || !keySecret) {
-        return responseError("Online payment is not configured yet. Please choose Cash on Delivery or contact the store.", 503);
-      }
-
       const razorpayResponse = await fetch("https://api.razorpay.com/v1/orders", {
         method: "POST",
         headers: {
