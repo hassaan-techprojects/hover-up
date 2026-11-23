@@ -107,7 +107,7 @@ export async function GET(
           orderBy: { createdAt: "desc" },
         },
       },
-    });;
+    });
 
     if (!product) {
       return NextResponse.json(
@@ -151,7 +151,7 @@ export async function GET(
       if (savedPricing && typeof savedPricing === "object" && !Array.isArray(savedPricing)) {
         packPricing = Object.fromEntries(
           Object.entries(savedPricing as Record<string, unknown>)
-            .map(([size, price]) => [size, Number(price)])
+            .map(([size, price]): [string, number] => [size, Number(price)])
             .filter(([size, price]) => Number.isInteger(Number(size)) && Number(size) > 0 && Number.isFinite(Number(price)) && Number(price) >= 0)
         );
       }
