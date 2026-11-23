@@ -1,26 +1,233 @@
+
 @import "tailwindcss";
 
+/* HOVER UP DESIGN SYSTEM */
 :root {
+  --hover-black: #111111;
+  --hover-ivory: #f8f6f2;
+  --hover-sand: #b99a76;
+  --hover-stone: #e8e3dc;
+  --hover-white: #ffffff;
+
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111111;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), sans-serif;
+  color: var(--hover-black);
+  background: var(--hover-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* FONT STYLES */
+.font-editorial {
+  font-family: var(--font-playfair), serif;
+}
+
+/* ICONS */
+.hover-icon {
+  color: #111111;
+  transition: color 220ms ease, transform 220ms ease;
+}
+
+.hover-icon:hover {
+  color: #b99a76;
+  transform: translateY(-2px) scale(1.08);
+}
+
+/* DESKTOP NAVIGATION */
+.hover-nav-link {
+  position: relative;
+  color: #111111;
+  transition: color 220ms ease;
+}
+
+.hover-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -7px;
+  width: 0;
+  height: 2px;
+  background: #b99a76;
+  transition: width 250ms ease;
+}
+
+.hover-nav-link:hover {
+  color: #b99a76;
+}
+
+.hover-nav-link:hover::after {
+  width: 100%;
+}
+
+/* DROPDOWN */
+.dropdown-menu {
+  transform: translateY(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    visibility 220ms ease;
+}
+
+.group:hover .dropdown-menu,
+.group:focus-within .dropdown-menu {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* DRAWER ANIMATION */
+@keyframes drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-drawer {
+  animation: drawer-enter 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* OVERLAY ANIMATION */
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-overlay {
+  animation: overlay-enter 250ms ease-out both;
+}
+
+/* MENU LINKS */
+@keyframes menu-link-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.menu-link {
+  animation: menu-link-enter 420ms ease both;
+}
+
+.menu-link:nth-child(1) {
+  animation-delay: 70ms;
+}
+
+.menu-link:nth-child(2) {
+  animation-delay: 110ms;
+}
+
+.menu-link:nth-child(3) {
+  animation-delay: 150ms;
+}
+
+.menu-link:nth-child(4) {
+  animation-delay: 190ms;
+}
+
+.menu-link:nth-child(5) {
+  animation-delay: 230ms;
+}
+
+/* SEARCH ANIMATION */
+@keyframes search-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-search {
+  animation: search-enter 220ms ease-out both;
+}
+
+/* MOBILE NAVIGATION */
+.mobile-nav-item {
+  color: #111111;
+  transition: color 200ms ease, transform 200ms ease;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item:active {
+  color: #b99a76;
+  transform: translateY(-2px);
+}
+
+/* ACCESSIBILITY */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+.announcement-marquee {
+  animation: announcement-scroll 30s linear infinite;
+  will-change: transform;
+}
+
+.announcement-bar:hover .announcement-marquee {
+  animation-play-state: paused;
+}
+
+@keyframes announcement-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announcement-marquee {
+    animation: none;
+  }
 }
