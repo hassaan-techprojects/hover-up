@@ -1,0 +1,1 @@
+ALTER TABLE "Shipment" ADD COLUMN "expectedDeliveryAt" TIMESTAMP(3);
