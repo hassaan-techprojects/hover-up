@@ -45,7 +45,7 @@ export default function CheckoutPage() {
     { key: "fullName", label: "Full name", required: true, wide: true },
     { key: "email", label: "Email address", required: true, type: "email" },
     { key: "phone", label: "Contact number", required: true, type: "tel" },
-    { key: "whatsapp", label: "WhatsApp number", type: "tel" },
+    { key: "whatsapp", label: "WhatsApp number", required: true, type: "tel" },
     { key: "addressLine1", label: "Address line 1", required: true, wide: true },
     { key: "addressLine2", label: "Landmark / apartment (optional)", wide: true },
     { key: "city", label: "City", required: true },
