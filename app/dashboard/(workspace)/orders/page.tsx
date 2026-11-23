@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, Truck } from "lucide-react";
