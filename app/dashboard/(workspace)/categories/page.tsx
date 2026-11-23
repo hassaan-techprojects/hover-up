@@ -112,6 +112,24 @@ export default function CategoriesPage() {
     }
   }
 
+  async function toggleCategory(category: Category) {
+    setError("");
+    setSuccess("");
+    try {
+      const response = await fetch(`/api/dashboard/categories/${category.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !category.isActive }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to update category.");
+      setCategories(current => current.map(item => item.id === category.id ? data.category : item));
+      setSuccess(data.category.isActive ? "Category is now visible on the website." : "Category is hidden from the website.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update category.");
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -427,9 +445,10 @@ export default function CategoriesPage() {
                       {category.isActive ? "Active" : "Inactive"}
                     </span>
 
-                    <p className="mt-1 truncate text-[10px] text-[#aaa39a]">
-                      /{category.slug}
-                    </p>
+                    <p className="mt-1 truncate text-[10px] text-[#aaa39a]">/{category.slug}</p>
+                    <button type="button" onClick={() => void toggleCategory(category)} className={`mt-2 rounded-md border px-3 py-1.5 text-[9px] font-medium transition ${category.isActive ? "border-[#eadbd5] text-[#a34d4d] hover:bg-[#fff5f2]" : "border-[#dce9dc] text-[#47724b] hover:bg-[#f1f7f0]"}`}>
+                      {category.isActive ? "Hide from website" : "Show on website"}
+                    </button>
                   </div>
                 </div>
               ))}
