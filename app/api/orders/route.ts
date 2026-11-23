@@ -150,10 +150,6 @@ export async function POST(request: Request) {
           return responseError(`Size quantities for ${product.name} must add up to exactly ${item.packSize}.`);
         }
 
-        if (productSizes.length === 0 && !standardSizes.includes(String(item.sizeBreakdown[0]?.size || "").toUpperCase()) && !item.sizeBreakdown.every((size) => standardSizes.includes(size.size.toUpperCase()))) {
-          return responseError(`Choose a valid size for ${product.name}.`);
-        }
-
         if (product.variants.length === 0 && product.inventories.length > 0) {
           const availableProductStock = product.inventories.reduce(
             (sum, inventory) => sum + Math.max(0, inventory.quantity - inventory.reserved),
