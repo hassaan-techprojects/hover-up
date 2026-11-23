@@ -120,6 +120,21 @@ export async function POST(request: Request) {
     };
 
     const order = await prisma.$transaction(async (tx) => {
+      const savedAddressCount = await tx.address.count({ where: { customerId: customer.id } });
+      await tx.address.create({
+        data: {
+          customerId: customer.id,
+          fullName,
+          phone,
+          addressLine1,
+          addressLine2: addressLine2 || null,
+          city,
+          state,
+          postalCode,
+          country: "India",
+          isDefault: savedAddressCount === 0,
+        },
+      });
       const created = await tx.order.create({
         data: {
           orderNumber,
