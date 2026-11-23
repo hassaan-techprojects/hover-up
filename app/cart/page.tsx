@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
@@ -64,7 +66,7 @@ export default function CartPage() {
     const item = next[index];
     const current = item.packSize ?? item.quantity;
     const updated = Math.max(1, current + change);
-    next[index] = { ...item, packSize: updated, quantity: updated };
+    next[index] = { ...item, quantity: updated };
     save(next);
   }
 

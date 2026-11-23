@@ -4,17 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const PACK_PRICES: Record<number, number> = {
-  2: 1399,
-  5: 3250,
-  10: 6250,
-  15: 9100,
-  20: 11700,
-  50: 27600,
-  75: 39100,
-  100: 50100,
-};
-
 type SizeAllocation = {
   size: string;
   quantity: number;
@@ -140,9 +129,12 @@ export async function POST(request: Request) {
         .filter((value) => value.termType === "COLOR");
 
       if (item.packSize) {
-        const packPrice = PACK_PRICES[item.packSize];
-        if (!packPrice || item.quantity !== item.packSize) {
-          return responseError(`The selected pack for ${product.name} is invalid.`);
+        const packPricing = product.packPricing && typeof product.packPricing === "object" && !Array.isArray(product.packPricing)
+          ? product.packPricing as unknown as Record<string, unknown>
+          : null;
+        const packPrice = Number(packPricing?.[String(item.packSize)]);
+        if (!Number.isFinite(packPrice) || packPrice <= 0 || item.quantity !== item.packSize) {
+          return responseError(`The selected pack for ${product.name} is not configured or is invalid.`);
         }
         if (!Array.isArray(item.sizeBreakdown) || item.sizeBreakdown.length === 0) {
           return responseError(`Select sizes for ${product.name} before checkout.`);
