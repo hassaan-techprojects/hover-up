@@ -42,6 +42,9 @@ function DashboardHeaderContent({
 
   useEffect(() => {
     let cancelled = false;
+    const heartbeat = () => {
+      fetch("/api/dashboard/heartbeat", { method: "POST" }).catch(() => undefined);
+    };
     fetch("/api/dashboard/me", { cache: "no-store" })
       .then(async (response) => {
         const data = await response.json();
@@ -49,7 +52,12 @@ function DashboardHeaderContent({
         if (!cancelled) setAccount({ name: data.name, role: data.role });
       })
       .catch(() => undefined);
-    return () => { cancelled = true; };
+    heartbeat();
+    const interval = window.setInterval(heartbeat, 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, []);
 
   const initials = account.name
