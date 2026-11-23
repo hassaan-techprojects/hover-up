@@ -16,6 +16,7 @@ type CartItem = {
   image: string;
   quantity: number;
   variantName: string | null;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
