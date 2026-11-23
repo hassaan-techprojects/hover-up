@@ -1243,7 +1243,13 @@ function ProductDetailContent({
                     type="button"
                     onClick={() => {
                       setSelectedPack(packSize);
-                      setSizeQuantities({});
+                      const allocation: Record<string, number> = {};
+                      const values = ["41", "43", "45", "47", "49"];
+                      for (let index = 0; index < packSize; index += 1) {
+                        const size = values[index % values.length];
+                        allocation[size] = (allocation[size] ?? 0) + 1;
+                      }
+                      setSizeQuantities(allocation);
                       setCartMessage("");
                     }}
                     className={`border px-3 py-3 text-left transition ${
