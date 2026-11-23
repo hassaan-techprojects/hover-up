@@ -279,7 +279,7 @@ function ProductDetailContent({
   const [addingToCart, setAddingToCart] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
-    "description" | "reviews"
+    "description" | "reviews" | "shipping"
   >("description");
 
   // FETCH PRODUCT
@@ -1572,6 +1572,12 @@ function ProductDetailContent({
               >
                 REVIEWS ({product.reviewCount})
               </button>
+              <button
+                onClick={() => setActiveTab("shipping")}
+                className={`pb-4 text-[11px] tracking-[0.15em] transition ${activeTab === "shipping" ? "border-b border-[#171717] text-[#171717]" : "text-[#999]"}`}
+              >
+                SHIPPING & RETURNS
+              </button>
             </div>
 
             {activeTab === "description" ? (
@@ -1596,7 +1602,7 @@ function ProductDetailContent({
                   </p>
                 )}
               </div>
-            ) : (
+            ) : activeTab === "reviews" ? (
               <div className="max-w-3xl py-9">
                 <ProductReviewForm slug={product.slug} />
                 {product.reviews.length === 0 ? (
@@ -1661,6 +1667,14 @@ function ProductDetailContent({
                     ))}
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="max-w-3xl space-y-7 py-9 text-[13px] leading-7 text-[#626262]">
+                <section><h2 className="text-base font-semibold text-[#171717]">Order Processing Time</h2><p className="mt-2">All orders go through a production process before shipping.</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Production Time</h3><p className="mt-2">1–3 business days (may vary depending on the order volume and customization requirements).</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Shipping Time</h3><p className="mt-2">Shipping usually takes 5–7 business days, depending on your location.</p><p className="mt-2">We currently ship across India.</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Order Tracking</h3><p className="mt-2">Once your order has been dispatched, you will receive a tracking link via WhatsApp or Email so you can track your shipment.</p></section>
+                <section><h3 className="font-semibold text-[#171717]">Possible Delays</h3><p className="mt-2">Shipping delays may occasionally occur due to:</p><ul className="mt-2 list-disc space-y-1 pl-5"><li>Festivals or public holidays</li><li>High order volumes or bulk orders</li><li>Courier service disruptions</li></ul><p className="mt-3">We appreciate your patience and understanding in such situations.</p></section>
               </div>
             )}
           </div>
