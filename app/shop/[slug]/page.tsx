@@ -1478,8 +1478,8 @@ function ProductDetailContent({
                   addingToCart ||
                   !product.isInStock ||
                   selectedSizeTotal !== selectedPack ||
-                  !frontImageFile ||
-                  !backImageFile
+                  (!textOnlyDesign && (!frontImageFile || !backImageFile)) ||
+                  (textOnlyDesign && !customizationNotes.trim())
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
