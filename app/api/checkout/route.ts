@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -117,6 +119,15 @@ export async function POST(request: Request) {
 
       subtotal += linePrice;
       prepared.push({ item, product, linePrice });
+    }
+
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id && session.user.email?.toLowerCase() !== email) {
+      return NextResponse.json({ error: "Use the email address connected to your signed-in account." }, { status: 403 });
+    }
+    const existingCustomer = await prisma.customer.findUnique({ where: { email }, select: { userId: true } });
+    if (existingCustomer?.userId && existingCustomer.userId !== session?.user?.id) {
+      return NextResponse.json({ error: "An account already uses this email. Please sign in with that account before ordering." }, { status: 409 });
     }
 
     const [firstName, ...lastParts] = fullName.split(/\s+/);
