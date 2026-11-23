@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const allowedRoles = ["ADMIN", "ANALYST"];
+const allowedRoles = ["ADMIN"];
 
 function dayKey(date: Date) {
   return date.toISOString().slice(0, 10);
