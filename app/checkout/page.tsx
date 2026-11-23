@@ -84,7 +84,7 @@ export default function CheckoutPage() {
     [items]
   );
 
-  async function placeOrder(event: React.FormEvent<HTMLFormElement>) {
+  async function placeOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!items.length) {
       setMessage("Your shopping bag is empty.");
