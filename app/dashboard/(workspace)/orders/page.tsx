@@ -263,7 +263,6 @@ export default function DashboardOrdersPage() {
                           <label className="text-[10px] text-[#777]">Tracking URL<input key={order.shipment?.trackingUrl || "tracking-url"} defaultValue={order.shipment?.trackingUrl || ""} onBlur={(e) => void updateOrder(order.id, { status: order.status, trackingUrl: e.target.value || null })} placeholder="https://..." className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
                         </div>}
                       </div>
-                      </div>
                     </div>
                   )}
                 </article>
