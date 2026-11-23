@@ -140,6 +140,10 @@ export async function GET(
           0
         );
 
+    const stockTracked =
+      product.inventories.length > 0 ||
+      product.variants.some((variant) => Boolean(variant.inventory) || variant.stock > 0);
+
     const reviewCount = product.reviews.length;
 
     const averageRating =
@@ -154,7 +158,8 @@ export async function GET(
       product: {
         ...product,
         totalStock,
-        isInStock: totalStock > 0,
+        isInStock: totalStock > 0 || !stockTracked,
+        stockTracked,
         averageRating: Number(averageRating.toFixed(1)),
         reviewCount,
       },
