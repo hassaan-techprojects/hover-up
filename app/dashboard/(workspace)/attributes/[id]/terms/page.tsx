@@ -21,7 +21,7 @@ type AttributeTerm = {
   value: string;
   image: string | null;
   storageKey: string | null;
-  termType: TermType;
+  termType: "COLOR";
 };
 
 type Attribute = {
@@ -155,10 +155,6 @@ function AttributeTermsPageContent() {
       formData.append("value", value.trim());
       formData.append("termType", "COLOR");
       if (imageFile) formData.append("image", imageFile);
-
-      if (imageFile && termType === "COLOR") {
-        formData.append("image", imageFile);
-      }
 
       const response = await fetch(
         editing

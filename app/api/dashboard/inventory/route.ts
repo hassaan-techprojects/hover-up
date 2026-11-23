@@ -22,6 +22,19 @@ export async function GET() {
     return NextResponse.json({ error: "Unable to load stock worksheet." }, { status: 500 });
   }
 }
+export async function DELETE(request: Request) {
+  try {
+    if (!(await adminOnly())) return NextResponse.json({ error: "Only administrators can clear the stock worksheet." }, { status: 403 });
+    const body = await request.json() as { size?: string };
+    if (!body.size || !SIZES.includes(body.size as typeof SIZES[number])) return NextResponse.json({ error: "Select a valid worksheet size." }, { status: 400 });
+    await prisma.stockWorksheet.deleteMany({ where: { size: body.size } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Stock worksheet row delete error:", error);
+    return NextResponse.json({ error: "Unable to clear this worksheet row." }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request) {
   try {
     const session = await adminOnly();

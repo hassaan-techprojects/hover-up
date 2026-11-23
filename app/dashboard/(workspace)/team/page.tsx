@@ -13,6 +13,11 @@ export default function TeamPage(){
  return <div className="mx-auto w-full max-w-[1680px] space-y-6">
   <section className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] tracking-[0.2em] text-[#a18c75]">ACCESS CONTROL</p><h1 className="mt-2 text-3xl font-semibold text-[#171717]">Team & roles</h1><p className="mt-2 text-sm text-[#817b72]">Create shared dashboard accounts with role-based access to the same store data.</p></div><button onClick={()=>void load()} disabled={loading} className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e6dfd5] bg-white px-4 text-xs"><RefreshCw size={14} className={loading?"animate-spin":""}/> Refresh</button></section>
   {error&&<p role="alert" className="rounded-lg bg-[#fff5f2] p-3 text-xs text-[#a14d3d]">{error}</p>}{success&&<p role="status" className="rounded-lg bg-[#f1f7f0] p-3 text-xs text-[#47724b]">{success}</p>}
+  <div className="grid gap-3 sm:grid-cols-3">
+   <div className="rounded-xl border border-[#ebe6de] bg-white p-4"><p className="text-[10px] text-[#999]">Total administrators</p><p className="mt-2 text-2xl font-semibold">{members.filter(member=>member.role==="ADMIN").length}</p></div>
+   <div className="rounded-xl border border-[#ebe6de] bg-white p-4"><p className="text-[10px] text-[#999]">Total analysts</p><p className="mt-2 text-2xl font-semibold">{members.filter(member=>member.role==="ANALYST").length}</p></div>
+   <div className="rounded-xl border border-[#ebe6de] bg-white p-4"><p className="text-[10px] text-[#999]">Total team accounts</p><p className="mt-2 text-2xl font-semibold">{members.length}</p></div>
+  </div>
   <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
    <section className="rounded-2xl border border-[#ebe6de] bg-white p-5 sm:p-6"><div className="flex items-center gap-2"><Plus size={16} className="text-[#a18c75]"/><h2 className="text-sm font-semibold">Create dashboard account</h2></div><form onSubmit={createMember} className="mt-5 space-y-4">
     <label className="block text-xs text-[#6f675e]">Full name<input required value={name} onChange={e=>setName(e.target.value)} className="mt-2 h-11 w-full rounded-lg border border-[#e8e3dc] px-3 text-sm outline-none focus:border-[#b99a76]"/></label>
