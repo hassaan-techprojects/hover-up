@@ -135,15 +135,14 @@ export async function POST(request: Request) {
       const configuredProductSizes = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "SIZE");
-      const productSizes = configuredProductSizes.length > 0
-        ? configuredProductSizes
-        : [
-            { value: "41", sizeSymbol: "S" },
-            { value: "43", sizeSymbol: "M" },
-            { value: "45", sizeSymbol: "L" },
-            { value: "47", sizeSymbol: "XL" },
-            { value: "49", sizeSymbol: "2XL" },
-          ];
+      const canonicalPackSizes = [
+        { value: "41", sizeSymbol: "S" },
+        { value: "43", sizeSymbol: "M" },
+        { value: "45", sizeSymbol: "L" },
+        { value: "47", sizeSymbol: "XL" },
+        { value: "49", sizeSymbol: "2XL" },
+      ];
+      const productSizes = [...canonicalPackSizes, ...configuredProductSizes];
       const productColors = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "COLOR");
@@ -203,7 +202,10 @@ export async function POST(request: Request) {
           const sizeTerm = productSizes.find((size) => size.value === allocation.size || size.sizeSymbol === allocation.size);
           if (!sizeTerm) return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
 
-          if (product.variants.length > 0) {
+          // A pack can be ordered without a matching SKU variant. When a
+          // variant is supplied, validate it; otherwise retain the size in
+          // the order customization instead of rejecting the entire pack.
+          if (allocation.variantId) {
             const variant = product.variants.find((entry) => entry.id === allocation.variantId);
             if (!variant) return responseError(`The selected size ${allocation.size} is unavailable for ${product.name}.`, 409);
 
