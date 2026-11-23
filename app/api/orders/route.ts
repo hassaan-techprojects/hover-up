@@ -155,6 +155,16 @@ export async function POST(request: Request) {
           return responseError(`Size options are not configured for ${product.name}.`);
         }
 
+        if (product.variants.length === 0 && product.inventories.length > 0) {
+          const availableProductStock = product.inventories.reduce(
+            (sum, inventory) => sum + Math.max(0, inventory.quantity - inventory.reserved),
+            0
+          );
+          if (availableProductStock < item.packSize) {
+            return responseError(`Only ${availableProductStock} item(s) are available for ${product.name}.`, 409);
+          }
+        }
+
         if (productColors.length > 0 && !productColors.some((color) => color.value.toLowerCase() === (item.color || "").toLowerCase())) {
           return responseError(`Choose a valid color for ${product.name}.`);
         }
