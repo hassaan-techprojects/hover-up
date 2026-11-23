@@ -232,6 +232,8 @@ export default function ProductDetailClient({
 
         if (!cancelled) {
           setProduct(data.product);
+          const packKeys = Object.keys(data.product.packPricing || {}).map(Number).filter((value) => Number.isInteger(value) && value > 0).sort((a, b) => a - b);
+          if (packKeys.length > 0) setSelectedPack(packKeys.includes(2) ? 2 : packKeys[0]);
         }
       } catch (err) {
         if (!cancelled) {
@@ -492,12 +494,13 @@ export default function ProductDetailClient({
     if (!product) return;
 
     if (isPackProduct) {
+      if (colorOptions.length > 0 && !selectedColor) { setCartMessage("Please select a color."); return; }
       if (!sizeOptions.length) { setCartMessage("Please add size options to this product before ordering packs."); return; }
       if (allocatedQuantity !== selectedPack) { setCartMessage(`Allocate exactly ${selectedPack} item(s) across the sizes. Selected: ${allocatedQuantity}.`); return; }
       if (!frontLogo || !backLogo) { setCartMessage("Please upload both front and back logo images."); return; }
       if (hasVariants && sizeOptions.some(size => (sizeQuantities[size.value] ?? 0) > 0 && !matchingVariants(selectedColor, size.value).length)) { setCartMessage("One or more selected sizes are unavailable for this color."); return; }
       for (const file of [frontLogo, backLogo]) if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024) { setCartMessage("Upload JPG, PNG or WEBP logo files up to 8 MB each."); return; }
-    } else if (hasVariants && !selectedVariant) {
+    } else if (!isPackProduct && hasVariants && !selectedVariant) {
       setCartMessage("Please select an available color and size combination."); return;
     }
 
@@ -1125,7 +1128,7 @@ export default function ProductDetailClient({
                 disabled={
                   addingToCart ||
                   availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  (!isPackProduct && hasVariants && !selectedVariant)
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
