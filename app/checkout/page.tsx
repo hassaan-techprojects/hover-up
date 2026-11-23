@@ -32,6 +32,7 @@ declare global {
 }
 
 const CART_STORAGE_KEY = "hover-up-cart";
+const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
@@ -40,6 +41,7 @@ function formatPrice(value: number) {
 export default function CheckoutPage() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isBuyNow, setIsBuyNow] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -59,8 +61,14 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      setItems(stored ? JSON.parse(stored) as CartItem[] : []);
+      const directOrder = localStorage.getItem(BUY_NOW_STORAGE_KEY);
+      if (directOrder) {
+        setItems(JSON.parse(directOrder) as CartItem[]);
+        setIsBuyNow(true);
+      } else {
+        const stored = localStorage.getItem(CART_STORAGE_KEY);
+        setItems(stored ? JSON.parse(stored) as CartItem[] : []);
+      }
     } catch {
       setItems([]);
     } finally {
@@ -150,7 +158,7 @@ export default function CheckoutPage() {
       if (!response.ok) throw new Error(data.error || "Unable to place your order.");
 
       if (paymentMethod === "COD") {
-        localStorage.removeItem(CART_STORAGE_KEY);
+        localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
         router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
         return;
       }
@@ -186,7 +194,7 @@ export default function CheckoutPage() {
             setSubmitting(false);
             return;
           }
-          localStorage.removeItem(CART_STORAGE_KEY);
+          localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
           router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
         },
         modal: {
