@@ -1287,10 +1287,10 @@ function ProductDetailContent({
                   const sizeQuantity = sizeQuantities[size.value] ?? 0;
                   const matches = matchingVariants(selectedColor, size.value);
                   const variant = matches[0] ?? null;
-                  const stock = variant ? getAvailableStock(variant) : 0;
+                  const stock = variant ? getAvailableStock(variant) : Number.POSITIVE_INFINITY;
                   const unavailable = false;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
-                  const atStockLimit = product?.stockTracked === true && !hasVariants && selectedSizeTotal >= availableStock;
+                  const atStockLimit = product?.stockTracked === true && (variant ? sizeQuantity >= stock : !hasVariants && selectedSizeTotal >= availableStock);
 
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
@@ -1338,7 +1338,7 @@ function ProductDetailContent({
                                 currentTotal >= selectedPack ||
                                 (product?.stockTracked === true && !hasVariants && currentTotal >= availableStock) ||
                                 unavailable ||
-                                (product?.stockTracked === true && hasVariants && currentSizeQuantity >= stock)
+                                (product?.stockTracked === true && Boolean(variant) && currentSizeQuantity >= stock)
                               ) {
                                 return current;
                               }
@@ -1350,7 +1350,7 @@ function ProductDetailContent({
                             });
                             setCartMessage("");
                           }}
-                          disabled={unavailable || atPackLimit || atStockLimit || (product?.stockTracked === true && hasVariants && sizeQuantity >= stock)}
+                          disabled={unavailable || atPackLimit || atStockLimit}
                           className="flex h-full w-9 items-center justify-center disabled:opacity-30"
                           aria-label={`Increase ${size.value} quantity`}
                         >
