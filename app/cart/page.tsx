@@ -20,6 +20,7 @@ type CartEntry = {
   sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
   frontImageUrl?: string;
   backImageUrl?: string;
+  textOnlyDesign?: boolean;
   customizationNotes?: string;
 };
 
