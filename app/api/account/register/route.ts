@@ -42,8 +42,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, ...result }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create your account.";
-    const status = message.includes("already exists") ? 409 : 500;
+    const isUniqueConflict =
+      message.includes("already exists") ||
+      (typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "P2002");
+    const status = isUniqueConflict ? 409 : 500;
     if (status === 500) console.error("Customer registration error:", error);
-    return NextResponse.json({ error: status === 409 ? message : "Unable to create your account. Please try again." }, { status });
+    return NextResponse.json({
+      error: status === 409
+        ? "An account already exists with this email address. Please sign in instead."
+        : "Unable to create your account. Please try again.",
+    }, { status });
   }
 }
