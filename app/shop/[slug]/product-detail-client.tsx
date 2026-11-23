@@ -431,6 +431,7 @@ export default function ProductDetailClient({
     setSelectedColor(color.value);
     setSelectedImage(0);
     setQuantity(1);
+    if (isPackProduct) setSizeQuantities({});
 
     const matches = matchingVariants(
       color.value,
