@@ -33,6 +33,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import ProductReviewForm from "@/components/storefront/product-review-form";
 
 type ProductImage = {
   id: string;
@@ -105,6 +106,7 @@ type Product = {
       firstName: string;
       lastName: string | null;
     };
+    images: { id: string; url: string }[];
   }[];
 };
 
@@ -1568,6 +1570,7 @@ function ProductDetailContent({
               </div>
             ) : (
               <div className="max-w-3xl py-9">
+                <ProductReviewForm slug={product.slug} />
                 {product.reviews.length === 0 ? (
                   <p className="text-[13px] text-[#888]">
                     No reviews available for this product yet.
@@ -1610,6 +1613,16 @@ function ProductDetailContent({
                           <p className="mt-2 text-[13px] leading-7 text-[#666]">
                             {review.comment}
                           </p>
+                        )}
+
+                        {review.images?.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            {review.images.map((image) => (
+                              <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="h-20 w-20 overflow-hidden rounded-lg border border-[#e8e3dc]">
+                                <img src={image.url} alt="Customer review" className="h-full w-full object-cover" />
+                              </a>
+                            ))}
+                          </div>
                         )}
 
                         <p className="mt-3 text-[10px] tracking-wide text-[#999]">
