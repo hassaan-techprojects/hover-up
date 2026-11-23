@@ -981,7 +981,7 @@ export default function ProductDetailClient({
 
             {/* SIZES */}
 
-            {sizeOptions.length > 0 && (
+            {sizeOptions.length > 0 && !isPackProduct && (
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-[11px] tracking-[0.16em]">
@@ -1112,7 +1112,7 @@ export default function ProductDetailClient({
                 disabled={
                   addingToCart ||
                   availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  (!isPackProduct && hasVariants && !selectedVariant)
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
