@@ -28,6 +28,7 @@ export async function GET() {
     ]);
     const counts = Object.fromEntries(loginCounts.map((item) => [item.userId ?? "", item._count._all]));
     return NextResponse.json({
+      serverTime: new Date().toISOString(),
       logs: logs.map((log) => ({ ...log, createdAt: log.createdAt.toISOString() })),
       users: users.map((user) => ({
         ...user,
