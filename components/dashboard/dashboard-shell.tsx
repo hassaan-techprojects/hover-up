@@ -29,7 +29,7 @@ export default function DashboardShell({
       <div className="min-h-screen lg:pl-[270px]">
         <DashboardHeader onMenuClick={() => setMenuOpen(true)} />
 
-        <main className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 lg:p-9">
+        <main className="mx-auto w-full max-w-[1760px] p-4 sm:p-6 lg:p-9">
           {children}
         </main>
       </div>
