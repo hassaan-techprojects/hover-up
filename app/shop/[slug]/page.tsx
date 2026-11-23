@@ -253,6 +253,7 @@ function ProductDetailContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const [selectedVariant, setSelectedVariant] =
     useState<Variant | null>(null);
@@ -338,7 +339,7 @@ function ProductDetailContent({
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, retryCount]);
 
   // COLOR OPTIONS
 
@@ -874,7 +875,7 @@ function ProductDetailContent({
             {errorStatus !== 404 && (
               <button
                 type="button"
-                onClick={() => router.refresh()}
+                onClick={() => setRetryCount((count) => count + 1)}
                 className="inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
               >
                 TRY AGAIN
