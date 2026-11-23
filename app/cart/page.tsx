@@ -119,6 +119,7 @@ export default function CartPage() {
                             <Trash2 size={17} />
                           </button>
                         </div>
+                        {item.textOnlyDesign && <p className="mt-3 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — our team will create your artwork</p>}
                         {item.packSize ? (
                           <div className="mt-3">
                             <p className="text-[10px] font-semibold tracking-[0.13em] text-[#8b7864]">PACK OF {item.packSize}</p>
