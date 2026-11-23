@@ -255,13 +255,13 @@ export default function AllProductsPage() {
     (product) => product.status === "DRAFT"
   ).length;
 
-  const inactiveCount = products.filter(
-    (product) => !product.isActive || product.status === "ARCHIVED"
+  const draftOrInactiveCount = products.filter(
+    (product) => product.status === "DRAFT" || product.status === "ARCHIVED" || !product.isActive
   ).length;
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1680px]">
         {/* Page Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
