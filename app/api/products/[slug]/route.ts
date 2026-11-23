@@ -28,14 +28,31 @@ export async function GET(
     const canPreviewUnpublished = ["ADMIN", "ANALYST"].includes(session?.user?.role || "");
     const product = await prisma.product.findFirst({
       where: { slug, ...(canPreviewUnpublished ? {} : { status: "ACTIVE", isActive: true }) },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        shortDescription: true,
+        sku: true,
+        price: true,
+        comparePrice: true,
+        costPrice: true,
+        status: true,
+        isFeatured: true,
+        isActive: true,
+        metaTitle: true,
+        metaDescription: true,
+        createdById: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true,
         images: {
           orderBy: [
             { isPrimary: "desc" },
             { sortOrder: "asc" },
           ],
         },
-
         categories: {
           include: {
             category: {
@@ -47,11 +64,8 @@ export async function GET(
             },
           },
         },
-
         variants: {
-          where: {
-            isActive: true,
-          },
+          where: { isActive: true },
           include: {
             images: {
               orderBy: [
@@ -61,11 +75,8 @@ export async function GET(
             },
             inventory: true,
           },
-          orderBy: {
-            createdAt: "asc",
-          },
+          orderBy: { createdAt: "asc" },
         },
-
         attributes: {
           include: {
             attributeValue: {
@@ -75,27 +86,17 @@ export async function GET(
             },
           },
         },
-
         inventories: {
-          where: {
-            variantId: null,
-          },
+          where: { variantId: null },
         },
-
         reviews: {
-          where: {
-            isApproved: true,
-          },
+          where: { isApproved: true },
           select: {
             id: true,
             rating: true,
             title: true,
             comment: true,
             createdAt: true,
-            images: {
-              orderBy: { sortOrder: "asc" },
-              select: { id: true, url: true },
-            },
             customer: {
               select: {
                 firstName: true,
@@ -103,12 +104,10 @@ export async function GET(
               },
             },
           },
-          orderBy: {
-            createdAt: "desc",
-          },
+          orderBy: { createdAt: "desc" },
         },
       },
-    });
+    });;
 
     if (!product) {
       return NextResponse.json(
@@ -153,6 +152,8 @@ export async function GET(
     return NextResponse.json({
       product: {
         ...product,
+        packPricing: null,
+        reviews: product.reviews.map((review) => ({ ...review, images: [] })),
         totalStock,
         isInStock: totalStock > 0,
         averageRating: Number(averageRating.toFixed(1)),
