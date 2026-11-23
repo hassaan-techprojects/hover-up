@@ -52,22 +52,22 @@ const watchVideos: {
 }[] = [
   {
     id: "1",
-    title: "Product Video 1",
+    title: "",
     video: "/videos/video-1.webm",
   },
   {
     id: "2",
-    title: "Product Video 2",
+    title: "",
     video: "/videos/video-2.webm",
   },
   {
     id: "3",
-    title: "Product Video 3",
+    title: "",
     video: "/videos/video-3.webm",
   },
   {
     id: "4",
-    title: "Product Video 4",
+    title: "",
     video: "/videos/video-4.webm",
   },
 ];
@@ -492,8 +492,8 @@ export default function HomePage() {
                 key={item.id}
                 type="button"
                 onClick={() => openVideoViewer(index)}
-                aria-label={`Watch ${item.title}`}
-                className="watch-video-card group relative block cursor-pointer overflow-hidden border-0 bg-black p-0 text-left"
+                aria-label={`Watch product video ${index + 1}`}
+                className="watch-video-card group relative block cursor-pointer overflow-hidden rounded-xl border-0 bg-black p-0 text-left"
               >
                 <video
                   src={item.video}
@@ -506,12 +506,6 @@ export default function HomePage() {
                 />
 
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
-
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-sm font-bold text-white">
-                    {item.title}
-                  </p>
-                </div>
 
                 <div className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm">
                   <Video size={17} />
@@ -531,7 +525,6 @@ export default function HomePage() {
           aria-label="Watch product video"
           onClick={closeVideoViewer}
         >
-          {/* Video */}
           <div
             className="relative flex h-full w-full items-center justify-center"
             onClick={(event) => event.stopPropagation()}
