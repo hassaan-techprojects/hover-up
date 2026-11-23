@@ -71,6 +71,7 @@ type Product = {
   sku: string | null;
   price: number | string;
   comparePrice: number | string | null;
+  packPricing: Record<string, number> | null;
   images: ProductImage[];
   variants: Variant[];
   attributes: {
@@ -109,9 +110,16 @@ type CartEntry = {
   image: string;
   quantity: number;
   variantName: string | null;
+  packSize?: number;
+  color?: string;
+  sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
+  frontImageUrl?: string;
+  backImageUrl?: string;
+  customizationNotes?: string;
 };
 
 const CART_STORAGE_KEY = "hover-up-cart";
+const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 const WISHLIST_STORAGE_KEY = "hover-up-wishlist";
 
 function formatPrice(value: number | string | null | undefined) {
@@ -184,6 +192,11 @@ export default function ProductDetailClient({
   const [viewerOpen, setViewerOpen] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
+  const [selectedPack, setSelectedPack] = useState(2);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
+  const [frontLogo, setFrontLogo] = useState<File | null>(null);
+  const [backLogo, setBackLogo] = useState<File | null>(null);
+  const [customizationNotes, setCustomizationNotes] = useState("");
   const [wishlist, setWishlist] = useState(false);
 
   const [cartMessage, setCartMessage] = useState("");
@@ -220,6 +233,8 @@ export default function ProductDetailClient({
 
         if (!cancelled) {
           setProduct(data.product);
+          const packs = Object.keys(data.product.packPricing || {}).map(Number).filter((value) => Number.isInteger(value) && value > 0).sort((a, b) => a - b);
+          if (packs.length > 0) setSelectedPack(packs.includes(2) ? 2 : packs[0]);
         }
       } catch (err) {
         if (!cancelled) {
@@ -253,10 +268,12 @@ export default function ProductDetailClient({
 
   const sizeOptions = useMemo(() => {
     if (!product) return [];
-
-    return product.attributes
-      .map((item) => item.attributeValue)
-      .filter((value) => value.termType === "SIZE");
+    const order: Record<string, number> = { S: 1, M: 2, L: 3, XL: 4, XXL: 5, "2XL": 5, "3XL": 6, "4XL": 7 };
+    return product.attributes.map((item) => item.attributeValue).filter((value) => value.termType === "SIZE").sort((a, b) => {
+      const aSize = (a.sizeSymbol || a.value).toUpperCase();
+      const bSize = (b.sizeSymbol || b.value).toUpperCase();
+      return (order[aSize] ?? 99) - (order[bSize] ?? 99) || a.value.localeCompare(b.value, undefined, { numeric: true });
+    });
   }, [product]);
 
   const productImages = useMemo(() => {
@@ -278,9 +295,13 @@ export default function ProductDetailClient({
     });
   }, [product, selectedVariant]);
 
-  const currentPrice = Number(
-    selectedVariant?.price ?? product?.price ?? 0
-  );
+  const configuredPacks = useMemo(() => {
+    if (!product?.packPricing) return [];
+    return Object.entries(product.packPricing).map(([pack, price]) => ({ pack: Number(pack), price: Number(price) })).filter((item) => Number.isInteger(item.pack) && item.pack > 0 && Number.isFinite(item.price) && item.price > 0).sort((a, b) => a.pack - b.pack);
+  }, [product]);
+  const isPackProduct = configuredPacks.length > 0;
+  const currentPrice = isPackProduct ? Number(product?.packPricing?.[String(selectedPack)] ?? configuredPacks[0]?.price ?? 0) : Number(selectedVariant?.price ?? product?.price ?? 0);
+  const allocatedQuantity = Object.values(sizeQuantities).reduce((sum, value) => sum + value, 0);
 
   const currentComparePrice = Number(
     selectedVariant?.comparePrice ??
@@ -288,18 +309,9 @@ export default function ProductDetailClient({
       0
   );
 
-  const discount =
-    currentComparePrice > currentPrice && currentComparePrice > 0
-      ? Math.round(
-          ((currentComparePrice - currentPrice) /
-            currentComparePrice) *
-            100
-        )
-      : 0;
+  const discount = !isPackProduct && currentComparePrice > currentPrice && currentComparePrice > 0 ? Math.round(((currentComparePrice - currentPrice) / currentComparePrice) * 100) : 0;
 
-  const availableStock = selectedVariant
-    ? getAvailableStock(selectedVariant)
-    : product?.totalStock ?? 0;
+  const availableStock = isPackProduct ? product?.totalStock ?? 0 : selectedVariant ? getAvailableStock(selectedVariant) : product?.totalStock ?? 0;
 
   const selectedImageUrl =
     productImages[selectedImage]?.url ?? "";
@@ -414,6 +426,7 @@ export default function ProductDetailClient({
     setSelectedColor(color.value);
     setSelectedImage(0);
     setQuantity(1);
+    if (isPackProduct) setSizeQuantities({});
 
     const matches = matchingVariants(
       color.value,
@@ -471,13 +484,26 @@ export default function ProductDetailClient({
     }
   }
 
-  function addToCart(goToCart = false) {
+  async function uploadLogo(file: File, side: "front" | "back") {
+    const formData = new FormData(); formData.append("file", file); formData.append("side", side);
+    const response = await fetch("/api/customization-uploads", { method: "POST", body: formData });
+    const data = await response.json();
+    if (!response.ok || !data.url) throw new Error(data.error || `Unable to upload ${side} logo.`);
+    return data.url as string;
+  }
+
+  async function addToCart(goToCart = false) {
     if (!product) return;
 
-    if (hasVariants && !selectedVariant) {
-      setCartMessage(
-        "Please select an available color and size combination."
-      );
+    if (isPackProduct) {
+      if (colorOptions.length > 0 && !selectedColor) { setCartMessage("Please select a color."); return; }
+      if (!sizeOptions.length) { setCartMessage("Size options are not configured for this product."); return; }
+      if (allocatedQuantity !== selectedPack) { setCartMessage(`Allocate exactly ${selectedPack} item(s) across the sizes. Selected: ${allocatedQuantity}.`); return; }
+      if (!frontLogo || !backLogo) { setCartMessage("Please upload both front and back logo images."); return; }
+      if (hasVariants && sizeOptions.some(size => (sizeQuantities[size.value] ?? 0) > 0 && !matchingVariants(selectedColor, size.value).length)) { setCartMessage("One or more selected sizes are unavailable for this color."); return; }
+      for (const file of [frontLogo, backLogo]) if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024) { setCartMessage("Upload JPG, PNG or WEBP logo files up to 8 MB each."); return; }
+    } else if (!isPackProduct && hasVariants && !selectedVariant) {
+      setCartMessage("Please select an available color and size combination.");
       return;
     }
 
@@ -486,10 +512,8 @@ export default function ProductDetailClient({
       return;
     }
 
-    if (quantity > availableStock) {
-      setCartMessage(
-        `Only ${availableStock} item(s) are available.`
-      );
+    if (!isPackProduct && quantity > availableStock) {
+      setCartMessage(`Only ${availableStock} item(s) are available.`);
       return;
     }
 
@@ -497,49 +521,40 @@ export default function ProductDetailClient({
     setCartMessage("");
 
     try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-
-      const cart: CartEntry[] = stored
-        ? JSON.parse(stored)
-        : [];
-
-      const variantId = selectedVariant?.id ?? null;
-
-      const existingIndex = cart.findIndex(
-        (item) =>
-          item.productId === product.id &&
-          item.variantId === variantId
-      );
-
-      const entry: CartEntry = {
-        productId: product.id,
-        variantId,
-        name: product.name,
-        slug: product.slug,
-        price: currentPrice,
-        image: selectedImageUrl,
-        quantity,
-        variantName: selectedVariant?.name ?? null,
-      };
-
-      if (existingIndex >= 0) {
-        cart[existingIndex].quantity += quantity;
-      } else {
-        cart.push(entry);
+      if (isPackProduct) {
+        setCartMessage("Uploading your logo files...");
+        const [frontImageUrl, backImageUrl] = await Promise.all([uploadLogo(frontLogo!, "front"), uploadLogo(backLogo!, "back")]);
+        const allocations = sizeOptions.map(size => ({ size: size.value, quantity: sizeQuantities[size.value] ?? 0, variantId: matchingVariants(selectedColor, size.value)[0]?.id ?? null })).filter(entry => entry.quantity > 0);
+        const entry: CartEntry = { productId: product.id, variantId: null, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity: selectedPack, variantName: selectedColor || null, packSize: selectedPack, color: selectedColor, sizeBreakdown: allocations, frontImageUrl, backImageUrl, customizationNotes };
+        if (goToCart) {
+          localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
+          router.push("/checkout");
+        } else {
+          const stored = localStorage.getItem(CART_STORAGE_KEY);
+          const cart: CartEntry[] = stored ? JSON.parse(stored) : [];
+          cart.push(entry);
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+          setCartMessage("Customized pack added to your bag.");
+        }
+        return;
       }
 
-      localStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(cart)
-      );
-
+      const stored = localStorage.getItem(CART_STORAGE_KEY);
+      const cart: CartEntry[] = stored ? JSON.parse(stored) : [];
+      const variantId = selectedVariant?.id ?? null;
+      const entry: CartEntry = { productId: product.id, variantId, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity, variantName: selectedVariant?.name ?? null };
       if (goToCart) {
-        router.push("/cart");
+        localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
+        router.push("/checkout");
       } else {
+        const existingIndex = cart.findIndex(item => item.productId === product.id && item.variantId === variantId);
+        if (existingIndex >= 0) cart[existingIndex].quantity += quantity;
+        else cart.push(entry);
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
         setCartMessage("Added to your bag successfully.");
       }
-    } catch {
-      setCartMessage("Unable to add this product to your bag.");
+    } catch (error) {
+      setCartMessage(error instanceof Error ? error.message : "Unable to add this product to your bag.");
     } finally {
       setAddingToCart(false);
     }
@@ -804,7 +819,7 @@ export default function ProductDetailClient({
               </p>
             )}
 
-            <h1 className="mt-3 text-[27px] font-light leading-[1.25] tracking-[0.015em] md:text-[35px]">
+            <h1 className="mt-3 text-[27px] font-semibold leading-[1.25] tracking-[0.015em] md:text-[35px]">
               {product.name}
             </h1>
 
@@ -857,6 +872,8 @@ export default function ProductDetailClient({
                 </>
               )}
             </div>
+
+{isPackProduct && <div className="mt-7"><p className="mb-4 text-[11px] font-semibold tracking-[0.16em]">SELECT PACK</p><div className="grid grid-cols-3 gap-2 sm:grid-cols-4">{configuredPacks.map(({ pack, price }) => <button key={pack} type="button" onClick={() => { setSelectedPack(pack); setSizeQuantities({}); setCartMessage(""); }} className={`rounded-lg border px-3 py-3 text-left transition ${selectedPack === pack ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] hover:border-[#171717]"}`}><span className="block text-xs font-semibold">Pack {pack}</span><span className={`mt-1 block text-[11px] ${selectedPack === pack ? "text-white/80" : "text-[#777]"}`}>{formatPrice(price)}</span></button>)}</div></div>}
 
             <p className="mt-2 text-[11px] text-[#999]">
               Inclusive of all applicable taxes
@@ -948,7 +965,7 @@ export default function ProductDetailClient({
 
             {/* SIZES */}
 
-            {sizeOptions.length > 0 && (
+            {sizeOptions.length > 0 && !isPackProduct && (
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
                   <p className="text-[11px] tracking-[0.16em]">
@@ -996,6 +1013,25 @@ export default function ProductDetailClient({
               </div>
             )}
 
+            {sizeOptions.length > 0 && (
+              <details className="mt-4 rounded-lg border border-[#e9e4dc] bg-[#fcfbf9] px-4 py-3">
+                <summary className="cursor-pointer text-[10px] font-semibold tracking-[0.14em]">SIZE GUIDE</summary>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {sizeOptions.map(size => <div key={size.id} className="rounded-md bg-white px-3 py-2 text-xs"><span className="font-semibold">{size.sizeSymbol || size.value}</span>{size.sizeSymbol && size.sizeSymbol !== size.value && <span className="ml-1 text-[#777]">({size.value})</span>}</div>)}
+                </div>
+              </details>
+            )}
+            {isPackProduct && <div className="mt-8 rounded-xl border border-[#e9e4dc] p-4">
+              <div className="mb-4 flex items-center justify-between gap-3"><p className="text-[11px] font-semibold tracking-[0.16em]">SIZE-WISE QUANTITY</p><span className={`text-[11px] font-semibold ${allocatedQuantity === selectedPack ? "text-[#63876b]" : "text-[#9b7650]"}`}>{allocatedQuantity} / {selectedPack} selected</span></div>
+              <div className="space-y-3">{sizeOptions.map(size => { const count = sizeQuantities[size.value] ?? 0; const variant = matchingVariants(selectedColor, size.value)[0]; const stock = variant ? getAvailableStock(variant) : (hasVariants ? 0 : availableStock); return <div key={size.id} className="flex items-center justify-between gap-3 border-b border-[#f0ede8] pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold">{size.sizeSymbol || size.value}{size.sizeSymbol && size.sizeSymbol !== size.value ? " (" + size.value + ")" : ""}</p><p className="text-[10px] text-[#999]">Available size</p></div><div className="inline-flex h-9 items-center rounded-lg border border-[#e4dfd7]"><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.max(0, (old[size.value] ?? 0) - 1) }))} disabled={!count} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Minus size={13}/></button><span className="w-8 text-center text-xs">{count}</span><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.min(stock, selectedPack - allocatedQuantity + count, count + 1) }))} disabled={count >= stock || allocatedQuantity >= selectedPack} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Plus size={13}/></button></div></div>; })}</div>
+              <p className="mt-3 text-[10px] leading-5 text-[#999]">The total size quantities must equal your selected pack size.</p>
+            </div>}
+            {isPackProduct && <div className="mt-8 space-y-4"><p className="text-[11px] font-semibold tracking-[0.16em]">UPLOAD YOUR LOGO</p>
+              <label className="block"><span className="mb-2 block text-xs text-[#666]">Front logo *</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setFrontLogo(e.target.files?.[0] ?? null)} className="block w-full rounded-lg border border-[#e4dfd7] p-3 text-xs"/>{frontLogo && <span className="mt-1 block text-[10px] text-[#63876b]">{frontLogo.name}</span>}</label>
+              <label className="block"><span className="mb-2 block text-xs text-[#666]">Back logo *</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setBackLogo(e.target.files?.[0] ?? null)} className="block w-full rounded-lg border border-[#e4dfd7] p-3 text-xs"/>{backLogo && <span className="mt-1 block text-[10px] text-[#63876b]">{backLogo.name}</span>}</label>
+              <label className="block"><span className="mb-2 block text-xs text-[#666]">Customization instructions (optional)</span><textarea rows={3} value={customizationNotes} onChange={e => setCustomizationNotes(e.target.value)} placeholder="Logo placement, print size, or other instructions..." className="w-full rounded-lg border border-[#e4dfd7] px-3 py-3 text-xs outline-none focus:border-[#b99a76]"/></label>
+            </div>}
+
             {/* VARIANT DETAILS */}
 
             {selectedVariant && (
@@ -1030,7 +1066,7 @@ export default function ProductDetailClient({
 
             {/* QUANTITY */}
 
-            <div className="mt-7">
+            {!isPackProduct && <div className="mt-7">
               <p className="mb-3 text-[10px] tracking-[0.16em]">
                 QUANTITY
               </p>
@@ -1066,7 +1102,7 @@ export default function ProductDetailClient({
                   <Plus size={15} />
                 </button>
               </div>
-            </div>
+            </div>}
 
             {/* ACTION BUTTONS */}
 
@@ -1076,7 +1112,7 @@ export default function ProductDetailClient({
                 disabled={
                   addingToCart ||
                   availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  (!isPackProduct && hasVariants && !selectedVariant)
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -1089,7 +1125,7 @@ export default function ProductDetailClient({
                 disabled={
                   addingToCart ||
                   availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  (!isPackProduct && hasVariants && !selectedVariant)
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
