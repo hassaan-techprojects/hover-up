@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || !["ADMIN", "ANALYST"].includes(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id || session.user.role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, email: true, role: true } });
     return NextResponse.json({ user });
   } catch (error) {
@@ -18,7 +18,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || !["ADMIN", "ANALYST"].includes(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id || session.user.role !== "ADMIN") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const body = await request.json() as { name?: string; currentPassword?: string; newPassword?: string };
     const name = body.name?.trim();
     if (!name || name.length > 100) return NextResponse.json({ error: "Enter a name up to 100 characters." }, { status: 400 });
