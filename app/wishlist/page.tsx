@@ -1,4 +1,6 @@
 "use client";
+
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect,useState } from "react";
 import Link from "next/link";
 import { Heart,ShoppingBag,Trash2 } from "lucide-react";
