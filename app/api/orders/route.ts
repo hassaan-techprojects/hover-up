@@ -14,6 +14,7 @@ type CheckoutItem = {
   productId: string;
   variantId?: string | null;
   quantity: number;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: SizeAllocation[];
@@ -225,10 +226,24 @@ export async function POST(request: Request) {
         });
         subtotal += packPrice;
       } else {
+        const selectedSize = item.size?.trim().toUpperCase() || "";
+        if (!standardSizes.includes(selectedSize)) {
+          return responseError(`Choose a valid size for ${product.name}.`);
+        }
+        if (productSizes.length > 0 && !productSizes.some((size) => size.value.toUpperCase() === selectedSize || size.sizeSymbol?.toUpperCase() === selectedSize)) {
+          return responseError(`Size ${selectedSize} is not configured for ${product.name}.`);
+        }
+
         const variant = item.variantId
           ? product.variants.find((entry) => entry.id === item.variantId)
           : null;
         if (item.variantId && !variant) return responseError(`A selected option for ${product.name} is no longer available.`, 409);
+        if (variant && hasSizeVariants) {
+          const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+          const sizeTerm = productSizes.find((size) => size.value.toUpperCase() === selectedSize || size.sizeSymbol?.toUpperCase() === selectedSize);
+          const matchesSize = Boolean(sizeTerm && (values.includes(sizeTerm.value.toLowerCase()) || Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()))));
+          if (!matchesSize) return responseError(`The selected variant does not match size ${selectedSize}.`);
+        }
 
         const unitPrice = Number(variant?.price ?? product.price);
         const stock = variant
@@ -236,7 +251,7 @@ export async function POST(request: Request) {
             ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
             : Math.max(0, variant.stock)
           : product.inventories?.[0]?.quantity ?? 0;
-        if (product.inventories.length > 0 && stock < item.quantity) {
+        if ((variant || product.inventories.length > 0) && stock < item.quantity) {
           return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
         }
 
@@ -249,6 +264,7 @@ export async function POST(request: Request) {
           quantity: item.quantity,
           unitPrice,
           totalPrice: unitPrice * item.quantity,
+          customization: { size: selectedSize },
         });
         subtotal += unitPrice * item.quantity;
       }
