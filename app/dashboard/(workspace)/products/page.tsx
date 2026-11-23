@@ -311,7 +311,7 @@ export default function AllProductsPage() {
               <span className="h-2 w-2 rounded-full bg-amber-500" />
             </div>
             <p className="mt-3 text-2xl font-semibold text-[#171717]">
-              {loading ? "—" : draftCount + inactiveCount}
+              {loading ? "—" : draftOrInactiveCount}
             </p>
           </div>
         </div>
