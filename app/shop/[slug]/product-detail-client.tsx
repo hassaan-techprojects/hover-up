@@ -862,7 +862,7 @@ export default function ProductDetailClient({
                 {formatPrice(currentPrice)}
               </span>
 
-              {currentComparePrice > currentPrice && (
+              {!isPackProduct && currentComparePrice > currentPrice && (
                 <>
                   <span className="text-[15px] text-[#999] line-through">
                     {formatPrice(currentComparePrice)}
