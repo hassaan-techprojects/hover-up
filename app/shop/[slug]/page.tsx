@@ -1256,6 +1256,7 @@ function ProductDetailContent({
                   const stock = variant ? getAvailableStock(variant) : 0;
                   const unavailable = hasVariants && !variant;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
+                  const atStockLimit = !hasVariants && selectedSizeTotal >= availableStock;
 
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
@@ -1301,6 +1302,7 @@ function ProductDetailContent({
 
                               if (
                                 currentTotal >= selectedPack ||
+                                (!hasVariants && currentTotal >= availableStock) ||
                                 unavailable ||
                                 (hasVariants && currentSizeQuantity >= stock)
                               ) {
@@ -1314,7 +1316,7 @@ function ProductDetailContent({
                             });
                             setCartMessage("");
                           }}
-                          disabled={unavailable || atPackLimit || (hasVariants && sizeQuantity >= stock)}
+                          disabled={unavailable || atPackLimit || atStockLimit || (hasVariants && sizeQuantity >= stock)}
                           className="flex h-full w-9 items-center justify-center disabled:opacity-30"
                           aria-label={`Increase ${size.value} quantity`}
                         >
