@@ -28,6 +28,7 @@ import {
   RotateCcw,
   Star,
   Package,
+  Upload,
 } from "lucide-react";
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
@@ -299,9 +300,26 @@ function ProductDetailContent({
   const sizeOptions = useMemo(() => {
     if (!product) return [];
 
+    const order: Record<string, number> = {
+      S: 1,
+      M: 2,
+      L: 3,
+      XL: 4,
+      XXL: 5,
+      "2XL": 5,
+      "3XL": 6,
+      "4XL": 7,
+    };
+
     return product.attributes
       .map((item) => item.attributeValue)
-      .filter((value) => value.termType === "SIZE");
+      .filter((value) => value.termType === "SIZE")
+      .sort((a, b) => {
+        const aSymbol = (a.sizeSymbol || a.value).toUpperCase();
+        const bSymbol = (b.sizeSymbol || b.value).toUpperCase();
+        return (order[aSymbol] ?? 99) - (order[bSymbol] ?? 99) ||
+          a.value.localeCompare(b.value, undefined, { numeric: true });
+      });
   }, [product]);
 
   // PRODUCT IMAGES
@@ -394,17 +412,30 @@ function ProductDetailContent({
               value.toLowerCase() === color.toLowerCase()
           );
 
+        const sizeTerm = sizeOptions.find(
+          (option) =>
+            option.value.toLowerCase() === size.toLowerCase() ||
+            (option.sizeSymbol || "").toLowerCase() === size.toLowerCase()
+        );
+
+        const sizeCandidates = sizeTerm
+          ? [sizeTerm.value, sizeTerm.sizeSymbol].filter(
+              (value): value is string => Boolean(value)
+            )
+          : [size];
+
         const sizeMatches =
           !size ||
-          values.some(
-            (value) =>
-              value.toLowerCase() === size.toLowerCase()
+          values.some((value) =>
+            sizeCandidates.some(
+              (candidate) => value.toLowerCase() === candidate.toLowerCase()
+            )
           );
 
         return colorMatches && sizeMatches;
       });
     },
-    [product]
+    [product, sizeOptions]
   );
 
   // LOAD WISHLIST
@@ -1183,7 +1214,11 @@ function ProductDetailContent({
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
                       <div>
-                        <p className="text-sm">{size.sizeSymbol || size.value}</p>
+                        <p className="text-sm font-medium">
+                          {size.sizeSymbol
+                            ? `${size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} (${size.value})`
+                            : size.value}
+                        </p>
                         {hasVariants && (
                           <p className="mt-1 text-[10px] text-[#999]">
                             {unavailable ? "Unavailable" : `${stock} available`}
@@ -1211,13 +1246,29 @@ function ProductDetailContent({
                         <button
                           type="button"
                           onClick={() => {
-                            setSizeQuantities((current) => ({
-                              ...current,
-                              [size.value]: (current[size.value] ?? 0) + 1,
-                            }));
+                            setSizeQuantities((current) => {
+                              const currentTotal = Object.values(current).reduce(
+                                (total, value) => total + value,
+                                0
+                              );
+                              const currentSizeQuantity = current[size.value] ?? 0;
+
+                              if (
+                                currentTotal >= selectedPack ||
+                                unavailable ||
+                                (hasVariants && currentSizeQuantity >= stock)
+                              ) {
+                                return current;
+                              }
+
+                              return {
+                                ...current,
+                                [size.value]: currentSizeQuantity + 1,
+                              };
+                            });
                             setCartMessage("");
                           }}
-                          disabled={unavailable || atPackLimit || sizeQuantity >= stock && hasVariants}
+                          disabled={unavailable || atPackLimit || (hasVariants && sizeQuantity >= stock)}
                           className="flex h-full w-9 items-center justify-center disabled:opacity-30"
                           aria-label={`Increase ${size.value} quantity`}
                         >
@@ -1243,27 +1294,35 @@ function ProductDetailContent({
               <p className="mb-4 text-[11px] tracking-[0.16em]">UPLOAD YOUR DESIGN</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] tracking-wide">FRONT DESIGN IMAGE *</span>
-                  <span className="mt-2 block text-[11px] text-[#888]">
-                    {frontImageFile ? frontImageFile.name : "Choose JPG, PNG or WEBP (max 8 MB)"}
+                  <span className="block text-[11px] font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE *</span>
+                  <span className="mt-2 block truncate text-[11px] text-[#777]">
+                    {frontImageFile ? frontImageFile.name : "Add your front artwork"}
                   </span>
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#b99a76] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#9f805d]">
+                    <Upload size={14} /> {frontImageFile ? "CHANGE IMAGE" : "UPLOAD FRONT IMAGE"}
+                  </span>
+                  <span className="mt-2 block text-[10px] text-[#999]">JPG, PNG or WEBP · Max 8 MB</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    className="mt-3 block w-full text-[11px]"
+                    className="sr-only"
                     onChange={(event) => setFrontImageFile(event.target.files?.[0] ?? null)}
                   />
                 </label>
 
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] tracking-wide">BACK DESIGN IMAGE *</span>
-                  <span className="mt-2 block text-[11px] text-[#888]">
-                    {backImageFile ? backImageFile.name : "Choose JPG, PNG or WEBP (max 8 MB)"}
+                  <span className="block text-[11px] font-semibold tracking-[0.12em]">BACK DESIGN IMAGE *</span>
+                  <span className="mt-2 block truncate text-[11px] text-[#777]">
+                    {backImageFile ? backImageFile.name : "Add your back artwork"}
                   </span>
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#b99a76] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#9f805d]">
+                    <Upload size={14} /> {backImageFile ? "CHANGE IMAGE" : "UPLOAD BACK IMAGE"}
+                  </span>
+                  <span className="mt-2 block text-[10px] text-[#999]">JPG, PNG or WEBP · Max 8 MB</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    className="mt-3 block w-full text-[11px]"
+                    className="sr-only"
                     onChange={(event) => setBackImageFile(event.target.files?.[0] ?? null)}
                   />
                 </label>
