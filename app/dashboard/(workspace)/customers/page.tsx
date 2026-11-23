@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw, Search, Users, ShoppingBag, Truck, CheckCircle2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 
 type Item = { id: string; productName: string; variantName: string | null; quantity: number; totalPrice: string | number; customization: Record<string, unknown> | null };
-type Order = { id: string; orderNumber: string; status: string; paymentStatus: string; totalAmount: string | number; createdAt: string; items: Item[]; payment: { method: string; transactionId: string | null; paidAt: string | null } | null; shipment: { status: string; carrier: string | null; trackingNumber: string | null; trackingUrl: string | null; shippedAt: string | null; deliveredAt: string | null } | null };
+type Order = { id: string; orderNumber: string; status: string; paymentStatus: string; totalAmount: string | number; createdAt: string; shippingAddress: Record<string, unknown>; items: Item[]; payment: { method: string; transactionId: string | null; paidAt: string | null } | null; shipment: { status: string; carrier: string | null; trackingNumber: string | null; trackingUrl: string | null; shippedAt: string | null; deliveredAt: string | null } | null };
 type Customer = { id: string; userId: string | null; firstName: string; lastName: string | null; email: string; phone: string | null; createdAt: string; addresses: { id: string; fullName: string; phone: string; addressLine1: string; addressLine2: string | null; city: string; state: string; postalCode: string; country: string; isDefault: boolean }[]; orders: Order[] };
 type Data = { stats: { totalCustomers: number; orderedCustomers: number; shippedCustomers: number; deliveredCustomers: number }; customers: Customer[] };
 
