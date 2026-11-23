@@ -251,10 +251,6 @@ export default function AllProductsPage() {
     (product) => product.status === "ACTIVE" && product.isActive
   ).length;
 
-  const draftCount = products.filter(
-    (product) => product.status === "DRAFT"
-  ).length;
-
   const draftOrInactiveCount = products.filter(
     (product) => product.status === "DRAFT" || product.status === "ARCHIVED" || !product.isActive
   ).length;
