@@ -6,7 +6,7 @@ type Order={id:string;orderNumber:string;status:string;paymentStatus:string;tota
 const STATUSES=["PENDING","CONFIRMED","PROCESSING","SHIPPED","DELIVERED","CANCELLED","REFUNDED"];
 const money=(v:string|number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(v||0));
 const obj=(v:unknown):Record<string,unknown>=>v&&typeof v==="object"&&!Array.isArray(v)?v as Record<string,unknown>:{};
-const pretty=(v:string)=>v.replaceAll("_"," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+const pretty=(v:string)=>v==="PENDING"?"Received":v.replaceAll("_"," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 export default function OrdersPage(){
  const [orders,setOrders]=useState<Order[]>([]),[drafts,setDrafts]=useState<Record<string,{status:string;carrier:string;trackingNumber:string;trackingUrl:string}>>({});
  const [query,setQuery]=useState(""),[loading,setLoading]=useState(true),[saving,setSaving]=useState(""),[error,setError]=useState("");
