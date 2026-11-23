@@ -46,6 +46,9 @@ export async function PATCH(
         { status: 404 }
       );
     }
+    if (existing.termType !== "COLOR") {
+      return NextResponse.json({ error: "Only color terms can be edited here." }, { status: 400 });
+    }
 
     const formData = await request.formData();
     const rawValue = formData.get("value");
