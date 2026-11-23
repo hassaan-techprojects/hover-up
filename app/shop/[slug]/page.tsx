@@ -95,6 +95,7 @@ type Product = {
   }[];
   totalStock: number;
   isInStock: boolean;
+  stockTracked: boolean;
   averageRating: number;
   reviewCount: number;
   reviews: {
@@ -367,9 +368,19 @@ function ProductDetailContent({
       "4XL": 7,
     };
 
-    return product.attributes
+    const configuredSizes = product.attributes
       .map((item) => item.attributeValue)
-      .filter((value) => value.termType === "SIZE")
+      .filter((value) => value.termType === "SIZE");
+
+    const fallbackSizes: AttributeValue[] = [
+      { id: "default-size-s", value: "41", image: null, sizeSymbol: "S", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+      { id: "default-size-m", value: "43", image: null, sizeSymbol: "M", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+      { id: "default-size-l", value: "45", image: null, sizeSymbol: "L", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+      { id: "default-size-xl", value: "47", image: null, sizeSymbol: "XL", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+      { id: "default-size-2xl", value: "49", image: null, sizeSymbol: "2XL", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+    ];
+
+    return (configuredSizes.length > 0 ? configuredSizes : fallbackSizes)
       .sort((a, b) => {
         const aSymbol = (a.sizeSymbol || a.value).toUpperCase();
         const bSymbol = (b.sizeSymbol || b.value).toUpperCase();
@@ -434,9 +445,11 @@ function ProductDetailContent({
 
   // STOCK
 
-  const availableStock = selectedVariant
-    ? getAvailableStock(selectedVariant)
-    : product?.totalStock ?? 0;
+  const availableStock = !product?.stockTracked
+    ? Number.POSITIVE_INFINITY
+    : selectedVariant
+      ? getAvailableStock(selectedVariant)
+      : product?.totalStock ?? 0;
 
   const selectedImageUrl =
     productImages[selectedImage]?.url ?? "";
@@ -697,11 +710,6 @@ function ProductDetailContent({
       return;
     }
 
-    if (!textOnlyDesign && (!frontImageFile || !backImageFile)) {
-      setCartMessage("Upload both front and back logo files, or choose the text-only design option.");
-      return;
-    }
-
     if (textOnlyDesign && !customizationNotes.trim()) {
       setCartMessage("Tell us what text or design you want our team to create.");
       return;
@@ -749,7 +757,7 @@ function ProductDetailContent({
     }
 
     setAddingToCart(true);
-    setCartMessage(textOnlyDesign ? "Preparing your text-only design request..." : "Uploading your design images...");
+    setCartMessage(frontImageFile || backImageFile ? "Uploading your design images..." : "Adding your pack...");
 
     try {
       const [frontImageUrl, backImageUrl] = await Promise.all([
@@ -1272,7 +1280,7 @@ function ProductDetailContent({
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-[11px] tracking-[0.16em]">SELECT SIZE QUANTITIES</p>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-[#8b7054] underline underline-offset-4 hover:text-[#171717]">
+                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-[#765238] underline underline-offset-4 hover:text-[#171717]">
                     <Ruler size={13} /> SIZE GUIDE
                   </button>
                   <span className="text-[11px] text-[#777]">
@@ -1296,12 +1304,12 @@ function ProductDetailContent({
                       <div>
                         <p className="text-sm font-medium">
                           {size.sizeSymbol
-                            ? `${size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} (${size.value})`
+                            ? `${size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} · ${size.value}`
                             : size.value}
                         </p>
                         {hasVariants && (
                           <p className="mt-1 text-[10px] text-[#999]">
-                            {unavailable ? "Unavailable" : `${stock} available`}
+                            {unavailable ? "Unavailable" : !product?.stockTracked ? "Available to order" : `${stock} available`}
                           </p>
                         )}
                       </div>
@@ -1378,8 +1386,8 @@ function ProductDetailContent({
 
             <div className="mt-6">
               <p className="mb-3 text-[11px] font-semibold tracking-[0.16em]">YOUR LOGO / DESIGN</p>
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e7e2da] bg-white p-4 transition hover:border-[#b99a76]">
-                <input type="checkbox" checked={textOnlyDesign} onChange={(event) => { const enabled = event.target.checked; setTextOnlyDesign(enabled); if (enabled) { setFrontImageFile(null); setBackImageFile(null); } }} className="mt-0.5 h-4 w-4 accent-[#b99a76]" />
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e7e2da] bg-white p-4 transition hover:border-[#765238]">
+                <input type="checkbox" checked={textOnlyDesign} onChange={(event) => { const enabled = event.target.checked; setTextOnlyDesign(enabled); if (enabled) { setFrontImageFile(null); setBackImageFile(null); } }} className="mt-0.5 h-4 w-4 accent-[#765238]" />
                 <span>
                   <span className="block text-xs font-semibold text-[#171717]">I don’t have a logo — create a design using my text</span>
                   <span className="mt-1 block text-[11px] leading-5 text-[#888]">No problem. Tell us what you want, and our team will create a design and share it for your approval.</span>
@@ -1394,11 +1402,10 @@ function ProductDetailContent({
                   <span className="mt-2 block truncate text-[11px] text-[#777]">
                     {frontImageFile ? frontImageFile.name : "Add your front artwork"}
                   </span>
-                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#b99a76] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#9f805d]">
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
                     <Upload size={14} /> {frontImageFile ? "CHANGE IMAGE" : "UPLOAD FRONT IMAGE"}
                   </span>
-                  <span className="mt-2 block text-[10px] text-[#999]">JPG, PNG or WEBP · Max 8 MB</span>
-                  <input
+                      <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     className="sr-only"
@@ -1411,10 +1418,9 @@ function ProductDetailContent({
                   <span className="mt-2 block truncate text-[11px] text-[#777]">
                     {backImageFile ? backImageFile.name : "Add your back artwork"}
                   </span>
-                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#b99a76] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#9f805d]">
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
                     <Upload size={14} /> {backImageFile ? "CHANGE IMAGE" : "UPLOAD BACK IMAGE"}
                   </span>
-                  <span className="mt-2 block text-[10px] text-[#999]">JPG, PNG or WEBP · Max 8 MB</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -1442,7 +1448,7 @@ function ProductDetailContent({
                 maxLength={1000}
                 rows={4}
                 placeholder={textOnlyDesign ? "Describe the text, wording, style, colours or design you want us to create..." : "Tell us about text, placement, print colors, or any special instructions..."}
-                className="w-full resize-y border border-[#dedbd6] bg-white px-4 py-3 text-sm text-[#171717] outline-none transition placeholder:text-[#aaa] focus:border-[#b99a76] focus:ring-2 focus:ring-[#b99a76]/15"
+                className="w-full resize-y border border-[#dedbd6] bg-white px-4 py-3 text-sm text-[#171717] outline-none transition placeholder:text-[#aaa] focus:border-[#765238] focus:ring-2 focus:ring-[#765238]/15"
               />
               <p className="mt-1 text-right text-[10px] text-[#999]">{customizationNotes.length}/1000</p>
             </div>
@@ -1475,7 +1481,7 @@ function ProductDetailContent({
                   ? availableStock <= 5
                     ? `Only ${availableStock} left in stock`
                     : "In stock and ready to ship"
-                  : "Currently unavailable"}
+                  : !product.stockTracked ? "Available to order" : "Currently unavailable"}
               </span>
             </div>
 
@@ -1488,7 +1494,6 @@ function ProductDetailContent({
                   addingToCart ||
                   !product.isInStock ||
                   selectedSizeTotal !== selectedPack ||
-                  (!textOnlyDesign && (!frontImageFile || !backImageFile)) ||
                   (textOnlyDesign && !customizationNotes.trim())
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
@@ -1503,7 +1508,6 @@ function ProductDetailContent({
                   addingToCart ||
                   !product.isInStock ||
                   selectedSizeTotal !== selectedPack ||
-                  (!textOnlyDesign && (!frontImageFile || !backImageFile)) ||
                   (textOnlyDesign && !customizationNotes.trim())
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
@@ -1698,7 +1702,7 @@ function ProductDetailContent({
           <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-[#a18c75]">SIZE REFERENCE</p>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[#765238]">SIZE REFERENCE</p>
                 <h2 className="mt-2 text-xl font-semibold">Available sizes</h2>
                 <p className="mt-1 text-xs text-[#888]">Choose the size values configured for this product.</p>
               </div>
