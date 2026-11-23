@@ -18,7 +18,7 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       take: 200,
     });
-    return NextResponse.json({ reviews });
+    return NextResponse.json({ reviews, canManage: session.user.role === "ADMIN" });
   } catch (error) {
     console.error("Dashboard reviews API error:", error);
     return NextResponse.json({ error: "Unable to load reviews." }, { status: 500 });
