@@ -252,6 +252,7 @@ function ProductDetailContent({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
 
   const [selectedVariant, setSelectedVariant] =
     useState<Variant | null>(null);
@@ -290,6 +291,7 @@ function ProductDetailContent({
       try {
         setLoading(true);
         setError("");
+        setErrorStatus(null);
 
         const response = await fetch(
           `/api/products/${encodeURIComponent(slug)}`,
@@ -301,8 +303,11 @@ function ProductDetailContent({
         const data = await response.json();
 
         if (!response.ok) {
+          if (!cancelled) setErrorStatus(response.status);
           throw new Error(
-            data.error || "Unable to load this product."
+            data.error || (response.status === 404
+              ? "This product is unavailable or has been removed."
+              : "A server or database error prevented this product from loading. Please try again.")
           );
         }
 
@@ -857,7 +862,7 @@ function ProductDetailContent({
           />
 
           <h1 className="text-2xl tracking-wide text-[#171717]">
-            Product Not Found
+            {errorStatus === 404 ? "Product Not Found" : "Unable to Load Product"}
           </h1>
 
           <p className="mt-3 max-w-md text-sm text-[#777]">
@@ -865,13 +870,24 @@ function ProductDetailContent({
               "The product you are looking for may have been removed or is unavailable."}
           </p>
 
-          <Link
-            href="/shop"
-            className="mt-8 inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
-          >
-            <ArrowLeft size={15} />
-            BACK TO SHOP
-          </Link>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {errorStatus !== 404 && (
+              <button
+                type="button"
+                onClick={() => router.refresh()}
+                className="inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
+              >
+                TRY AGAIN
+              </button>
+            )}
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-3 border border-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-[#171717] transition hover:bg-[#f5f3ef]"
+            >
+              <ArrowLeft size={15} />
+              BACK TO SHOP
+            </Link>
+          </div>
         </main>
 
         <StorefrontFooter />
