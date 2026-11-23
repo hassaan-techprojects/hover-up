@@ -1354,7 +1354,7 @@ function ProductDetailContent({
             <div className="mt-6">
               <p className="mb-3 text-[11px] font-semibold tracking-[0.16em]">YOUR LOGO / DESIGN</p>
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e7e2da] bg-white p-4 transition hover:border-[#b99a76]">
-                <input type="checkbox" checked={textOnlyDesign} onChange={(event) => setTextOnlyDesign(event.target.checked)} className="mt-0.5 h-4 w-4 accent-[#b99a76]" />
+                <input type="checkbox" checked={textOnlyDesign} onChange={(event) => { const enabled = event.target.checked; setTextOnlyDesign(enabled); if (enabled) { setFrontImageFile(null); setBackImageFile(null); } }} className="mt-0.5 h-4 w-4 accent-[#b99a76]" />
                 <span>
                   <span className="block text-xs font-semibold text-[#171717]">I don’t have a logo — create a design using my text</span>
                   <span className="mt-1 block text-[11px] leading-5 text-[#888]">No problem. Tell us what you want, and our team will create a design and share it for your approval.</span>
