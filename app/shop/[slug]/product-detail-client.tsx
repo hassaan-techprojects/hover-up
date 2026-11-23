@@ -1036,7 +1036,7 @@ export default function ProductDetailClient({
 
             {/* VARIANT DETAILS */}
 
-            {selectedVariant && (
+            {selectedVariant && !isPackProduct && (
               <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] tracking-wide text-[#888]">
                 {selectedVariant.sku && (
                   <span>SKU: {selectedVariant.sku}</span>
