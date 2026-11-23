@@ -204,6 +204,13 @@ export default function ProductDetailClient({
 
   const [cartMessage, setCartMessage] = useState("");
   const [addingToCart, setAddingToCart] = useState(false);
+  const [customerCanReview, setCustomerCanReview] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewFiles, setReviewFiles] = useState<File[]>([]);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
 
   const [activeTab, setActiveTab] = useState<
     "description" | "reviews"
@@ -260,6 +267,17 @@ export default function ProductDetailClient({
       cancelled = true;
     };
   }, [slug]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((session) => {
+        if (!cancelled) setCustomerCanReview(session?.user?.role === "CUSTOMER");
+      })
+      .catch(() => { if (!cancelled) setCustomerCanReview(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const colorOptions = useMemo(() => {
     if (!product) return [];
@@ -560,6 +578,47 @@ export default function ProductDetailClient({
       setCartMessage(error instanceof Error ? error.message : "Unable to add this product to your bag.");
     } finally {
       setAddingToCart(false);
+    }
+  }
+
+  async function submitReview() {
+    if (!product) return;
+    if (!reviewTitle.trim() && !reviewComment.trim()) {
+      setReviewMessage("Write a review or add a title before submitting.");
+      return;
+    }
+    if (reviewFiles.length > 4) {
+      setReviewMessage("You can upload up to four photos.");
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewMessage("");
+    try {
+      const uploadedImages: { url: string; key: string }[] = [];
+      for (const file of reviewFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadResponse = await fetch("/api/review-uploads", { method: "POST", body: formData });
+        const uploadData = await uploadResponse.json();
+        if (!uploadResponse.ok) throw new Error(uploadData.error || "Unable to upload a review photo.");
+        uploadedImages.push({ url: uploadData.url, key: uploadData.key });
+      }
+      const response = await fetch(`/api/products/${encodeURIComponent(product.slug)}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: reviewRating, title: reviewTitle, comment: reviewComment, images: uploadedImages }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Unable to submit your review.");
+      setReviewTitle("");
+      setReviewComment("");
+      setReviewFiles([]);
+      setReviewRating(5);
+      setReviewMessage(result.message || "Your review has been submitted for approval.");
+    } catch (err) {
+      setReviewMessage(err instanceof Error ? err.message : "Unable to submit your review.");
+    } finally {
+      setReviewSubmitting(false);
     }
   }
 
@@ -1237,58 +1296,38 @@ export default function ProductDetailClient({
               </div>
             ) : (
               <div className="max-w-3xl py-9">
-                {product.reviews.length === 0 ? (
-                  <p className="text-[13px] text-[#888]">
-                    No reviews available for this product yet.
-                  </p>
-                ) : (
-                  <div className="space-y-8">
-                    {product.reviews.map((review) => (
-                      <div
-                        key={review.id}
-                        className="border-b border-[#eae8e4] pb-7"
-                      >
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map(
-                            (_, index) => (
-                              <Star
-                                key={index}
-                                size={13}
-                                fill={
-                                  index < review.rating
-                                    ? "#171717"
-                                    : "none"
-                                }
-                                className={
-                                  index < review.rating
-                                    ? "text-[#171717]"
-                                    : "text-[#ccc]"
-                                }
-                              />
-                            )
-                          )}
-                        </div>
+                <div className="space-y-8">
+                  {product.reviews.length === 0 ? (
+                    <p className="text-[13px] text-[#888]">No approved reviews yet. Be the first to share your experience.</p>
+                  ) : product.reviews.map((review) => (
+                    <article key={review.id} className="border-b border-[#eae8e4] pb-7">
+                      <div className="flex items-center gap-1">{Array.from({ length: 5 }).map((_, index) => <Star key={index} size={13} fill={index < review.rating ? "#171717" : "none"} className={index < review.rating ? "text-[#171717]" : "text-[#ccc]"} />)}</div>
+                      {review.title && <h3 className="mt-3 text-sm font-semibold">{review.title}</h3>}
+                      {review.comment && <p className="mt-2 whitespace-pre-wrap text-[13px] leading-7 text-[#666]">{review.comment}</p>}
+                      {review.images?.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{review.images.map(image => <a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="h-20 w-20 overflow-hidden rounded-lg border border-[#e8e3dc]"><img src={image.url} alt="Customer review photo" className="h-full w-full object-cover"/></a>)}</div>}
+                      {review.adminReply && <div className="mt-4 rounded-lg bg-[#faf8f5] p-3"><p className="text-[9px] font-semibold tracking-[0.14em] text-[#8b7054]">HOVER UP REPLY</p><p className="mt-2 whitespace-pre-wrap text-[12px] leading-6 text-[#655c52]">{review.adminReply}</p></div>}
+                      <p className="mt-3 text-[10px] tracking-wide text-[#999]">{review.customer.firstName} {review.customer.lastName || ""}</p>
+                    </article>
+                  ))}
+                </div>
 
-                        {review.title && (
-                          <h3 className="mt-3 text-sm">
-                            {review.title}
-                          </h3>
-                        )}
-
-                        {review.comment && (
-                          <p className="mt-2 text-[13px] leading-7 text-[#666]">
-                            {review.comment}
-                          </p>
-                        )}
-
-                        <p className="mt-3 text-[10px] tracking-wide text-[#999]">
-                          {review.customer.firstName}{" "}
-                          {review.customer.lastName || ""}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <section className="mt-10 rounded-xl border border-[#eae5dd] bg-[#fcfbf9] p-5">
+                  <h3 className="text-sm font-semibold text-[#171717]">Write a product review</h3>
+                  <p className="mt-1 text-[11px] text-[#888]">Share a rating, comments and up to four product photos.</p>
+                  {customerCanReview ? (
+                    <div className="mt-4 space-y-4">
+                      <div><p className="mb-2 text-[10px] font-semibold tracking-[0.12em] text-[#6f675e]">YOUR RATING</p><div className="flex gap-1">{[1,2,3,4,5].map(value => <button key={value} type="button" onClick={() => setReviewRating(value)} aria-label={`${value} stars`}><Star size={23} fill={value <= reviewRating ? "#b99a76" : "none"} className={value <= reviewRating ? "text-[#b99a76]" : "text-[#d5cec5]"}/></button>)}</div></div>
+                      <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} maxLength={120} placeholder="Review title (optional)" className="h-11 w-full rounded-lg border border-[#e5dfd6] bg-white px-3 text-xs outline-none focus:border-[#b99a76]"/>
+                      <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)} maxLength={3000} rows={4} placeholder="Write your review..." className="w-full rounded-lg border border-[#e5dfd6] bg-white px-3 py-3 text-xs leading-6 outline-none focus:border-[#b99a76]"/>
+                      <label className="block text-[10px] text-[#777]">Add photos (optional)<input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => setReviewFiles(Array.from(e.target.files || []).slice(0,4))} className="mt-2 block w-full rounded-lg border border-[#e5dfd6] bg-white p-3 text-xs"/></label>
+                      {reviewFiles.length > 0 && <p className="text-[10px] text-[#777]">{reviewFiles.length} photo(s) selected: {reviewFiles.map(file => file.name).join(", ")}</p>}
+                      <button type="button" disabled={reviewSubmitting} onClick={() => void submitReview()} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#171717] px-5 text-[10px] font-semibold tracking-[0.12em] text-white hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50">{reviewSubmitting ? "SUBMITTING..." : "SUBMIT REVIEW"}</button>
+                      {reviewMessage && <p role="status" className="text-[11px] text-[#8b7054]">{reviewMessage}</p>}
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-lg bg-white p-4"><p className="text-xs text-[#777]">You must sign in to submit a product review.</p><Link href={`/account/login?callbackUrl=${encodeURIComponent(`/shop/${product.slug}`)}`} className="mt-3 inline-flex text-xs font-semibold text-[#8b7054] underline">Sign in to review this product</Link></div>
+                  )}
+                </section>
               </div>
             )}
           </div>
