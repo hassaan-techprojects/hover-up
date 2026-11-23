@@ -1,0 +1,16 @@
+"use client";
+import { useEffect,useState } from "react";
+import Link from "next/link";
+import { Heart,ShoppingBag,Trash2 } from "lucide-react";
+import StorefrontHeader from "@/components/storefront/storefront-header";
+import StorefrontFooter from "@/components/storefront/storefront-footer";
+type Product={id:string;name:string;slug:string;price:string|number;comparePrice:string|number|null;images:{url:string}[]};
+const KEY="hover-up-wishlist";
+const money=(v:string|number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(v||0));
+export default function WishlistPage(){
+ const [products,setProducts]=useState<Product[]>([]),[loading,setLoading]=useState(true);
+ async function load(){setLoading(true);try{const ids:string[]=JSON.parse(localStorage.getItem(KEY)||"[]");if(!ids.length){setProducts([]);return;}const r=await fetch("/api/products/wishlist?ids="+encodeURIComponent(ids.join(",")),{cache:"no-store"});const d=await r.json();setProducts(d.products||[]);const valid=(d.products||[]).map((p:Product)=>p.id);localStorage.setItem(KEY,JSON.stringify(valid));}catch{setProducts([]);}finally{setLoading(false);}}
+ useEffect(()=>{void load();},[]);
+ function remove(id:string){const next=products.filter(p=>p.id!==id);setProducts(next);localStorage.setItem(KEY,JSON.stringify(next.map(p=>p.id)));}
+ return <><StorefrontHeader/><main className="min-h-[65vh] bg-[#faf9f7] px-5 py-12 text-[#171717] md:px-10"><div className="mx-auto max-w-[1300px]"><p className="text-[10px] tracking-[.2em] text-[#a18c75]">SAVED FOR LATER</p><h1 className="mt-2 text-3xl font-semibold">My wishlist</h1><p className="mt-2 text-sm text-[#777]">Products you have saved.</p>{loading?<p className="mt-10 text-sm text-[#999]">Loading wishlist...</p>:products.length===0?<div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white px-6 py-16 text-center"><Heart size={34} className="mx-auto text-[#b99a76]"/><h2 className="mt-4 text-lg font-semibold">Your wishlist is empty</h2><p className="mt-2 text-sm text-[#777]">Tap the heart on a product to save it here.</p><Link href="/shop" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#171717] px-6 py-3 text-xs font-semibold text-white">EXPLORE PRODUCTS <ShoppingBag size={14}/></Link></div>:<div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{products.map(p=><article key={p.id} className="overflow-hidden rounded-xl border border-[#e9e4dc] bg-white"><Link href={"/shop/"+p.slug} className="block aspect-[4/5] bg-[#f2f0ec]">{p.images[0]?.url?<img src={p.images[0].url} alt={p.name} className="h-full w-full object-cover"/>:null}</Link><div className="p-4"><Link href={"/shop/"+p.slug} className="line-clamp-2 text-sm font-semibold">{p.name}</Link><p className="mt-2 text-sm font-semibold">{money(p.price)}</p><div className="mt-4 flex items-center justify-between"><Link href={"/shop/"+p.slug} className="text-[10px] font-semibold tracking-wider text-[#8b7054] underline">VIEW PRODUCT</Link><button onClick={()=>remove(p.id)} aria-label="Remove from wishlist" className="rounded-lg p-2 text-[#999] hover:bg-[#f8f4ef] hover:text-red-600"><Trash2 size={16}/></button></div></div></article>)}</div>}</div></main><StorefrontFooter/></>;
+}
