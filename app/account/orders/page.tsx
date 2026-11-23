@@ -122,8 +122,22 @@ export default function AccountOrdersPage() {
                   </div>
                   {expandedOrder === order.id && (
                     <div className="grid gap-5 border-t border-[#eee9e2] bg-[#fcfbf9] p-5 sm:grid-cols-2">
-                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ITEMS</h2><div className="mt-3 space-y-3">{order.items.map(item=><div key={item.id} className="rounded-xl border border-[#eee8df] bg-white p-3"><div className="flex justify-between gap-3"><p className="text-xs font-semibold">{item.productName}</p><p className="text-xs font-semibold">{money(item.totalPrice)}</p></div><p className="mt-1 text-[10px] text-[#999]">Quantity: {item.quantity}</p>{item.customization?.packSize && <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(item.customization.packSize)}</p>}</div>)}</div></div>
-                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY STATUS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Truck size={14} className="text-[#a18c75]" /> {label(order.shipment?.status || order.status)}</p><p className="mt-2 text-[11px] text-[#888]">Payment: {label(order.paymentStatus)} · {order.payment?.method || "—"}</p>{order.shipment?.carrier && <p className="mt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}{order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}</div></div>
+                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ITEMS</h2><div className="mt-3 space-y-3">{order.items.map(item=>{
+                        const custom = item.customization || {};
+                        const sizes = Array.isArray(custom.sizeBreakdown) ? custom.sizeBreakdown as { size: string; quantity: number }[] : [];
+                        return <div key={item.id} className="rounded-xl border border-[#eee8df] bg-white p-3">
+                          <div className="flex justify-between gap-3"><p className="text-xs font-semibold">{item.productName}</p><p className="text-xs font-semibold">{money(item.totalPrice)}</p></div>
+                          <p className="mt-1 text-[10px] text-[#999]">Quantity: {item.quantity}</p>
+                          {custom.packSize && <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
+                          {sizes.length>0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map(size=><span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
+                          <div className="mt-3 flex flex-wrap gap-3">
+                            {typeof custom.frontImageUrl==="string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Front logo</a>}
+                            {typeof custom.backImageUrl==="string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Back logo</a>}
+                          </div>
+                          {typeof custom.customizationNotes==="string" && custom.customizationNotes && <p className="mt-2 text-[11px] leading-5 text-[#777]">Customization: {custom.customizationNotes}</p>}
+                        </div>;
+                      })}</div></div>
+                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY ADDRESS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]"><p className="font-semibold text-[#171717]">{String(order.shippingAddress.fullName || "")}</p><p>{String(order.shippingAddress.addressLine1 || "")}</p><p>{String(order.shippingAddress.addressLine2 || "")}</p><p>{String(order.shippingAddress.city || "")}, {String(order.shippingAddress.state || "")} {String(order.shippingAddress.postalCode || "")}</p><p>{String(order.shippingAddress.country || "India")}</p></div><h2 className="mt-4 text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY STATUS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Truck size={14} className="text-[#a18c75]" /> {label(order.shipment?.status || order.status)}</p><p className="mt-2 text-[11px] text-[#888]">Payment: {label(order.paymentStatus)} · {order.payment?.method || "—"}</p>{order.shipment?.carrier && <p className="mt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}{order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}</div></div>
                     </div>
                   )}
                 </article>
