@@ -268,9 +268,15 @@ export default function ProductDetailClient({
   const sizeOptions = useMemo(() => {
     if (!product) return [];
 
+    const order: Record<string, number> = { S: 1, M: 2, L: 3, XL: 4, XXL: 5, "2XL": 5, "3XL": 6, "4XL": 7 };
     return product.attributes
       .map((item) => item.attributeValue)
-      .filter((value) => value.termType === "SIZE");
+      .filter((value) => value.termType === "SIZE")
+      .sort((a, b) => {
+        const aSize = (a.sizeSymbol || a.value).toUpperCase();
+        const bSize = (b.sizeSymbol || b.value).toUpperCase();
+        return (order[aSize] ?? 99) - (order[bSize] ?? 99) || a.value.localeCompare(b.value, undefined, { numeric: true });
+      });
   }, [product]);
 
   const productImages = useMemo(() => {
@@ -528,7 +534,7 @@ export default function ProductDetailClient({
         const packCart: CartEntry[] = storedPackCart ? JSON.parse(storedPackCart) : [];
         packCart.push({ productId: product.id, variantId: null, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity: selectedPack, variantName: selectedColor || null, packSize: selectedPack, color: selectedColor, sizeBreakdown: allocations, frontImageUrl, backImageUrl, customizationNotes });
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(packCart));
-        if (goToCart) router.push("/cart"); else setCartMessage("Customized pack added to your bag.");
+        if (goToCart) router.push("/checkout"); else setCartMessage("Customized pack added to your bag.");
         return;
       }
       const stored = localStorage.getItem(CART_STORAGE_KEY);
@@ -1032,7 +1038,7 @@ export default function ProductDetailClient({
               </div>
             )}
 
-            {isPackProduct && <div className="mt-8 rounded-xl border border-[#e9e4dc] p-4"><div className="mb-4 flex items-center justify-between gap-3"><p className="text-[11px] font-semibold tracking-[0.16em]">SIZE-WISE QUANTITY</p><span className={`text-[11px] font-semibold ${allocatedQuantity === selectedPack ? "text-[#63876b]" : "text-[#9b7650]"}`}>{allocatedQuantity} / {selectedPack} selected</span></div><div className="space-y-3">{sizeOptions.map(size => { const count = sizeQuantities[size.value] ?? 0; const variant = matchingVariants(selectedColor, size.value)[0]; const stock = variant ? getAvailableStock(variant) : (hasVariants ? 0 : availableStock); return <div key={size.id} className="flex items-center justify-between gap-3 border-b border-[#f0ede8] pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold">{size.sizeSymbol || size.value}</p><p className="text-[10px] text-[#999]">{size.value}</p></div><div className="inline-flex h-9 items-center rounded-lg border border-[#e4dfd7]"><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.max(0, (old[size.value] ?? 0) - 1) }))} disabled={!count} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Minus size={13}/></button><span className="w-8 text-center text-xs">{count}</span><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.min(stock, selectedPack - allocatedQuantity + count, count + 1) }))} disabled={count >= stock || allocatedQuantity >= selectedPack} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Plus size={13}/></button></div></div>; })}</div><p className="mt-3 text-[10px] leading-5 text-[#999]">The total size quantities must equal your selected pack size.</p></div>}
+            {isPackProduct && <div className="mt-8 rounded-xl border border-[#e9e4dc] p-4"><div className="mb-4 flex items-center justify-between gap-3"><p className="text-[11px] font-semibold tracking-[0.16em]">SIZE-WISE QUANTITY</p><span className={`text-[11px] font-semibold ${allocatedQuantity === selectedPack ? "text-[#63876b]" : "text-[#9b7650]"}`}>{allocatedQuantity} / {selectedPack} selected</span></div><div className="space-y-3">{sizeOptions.map(size => { const count = sizeQuantities[size.value] ?? 0; const variant = matchingVariants(selectedColor, size.value)[0]; const stock = variant ? getAvailableStock(variant) : (hasVariants ? 0 : availableStock); return <div key={size.id} className="flex items-center justify-between gap-3 border-b border-[#f0ede8] pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold">{size.sizeSymbol || size.value}{size.sizeSymbol && size.sizeSymbol !== size.value ? " (" + size.value + ")" : ""}</p><p className="text-[10px] text-[#999]">Available size</p></div><div className="inline-flex h-9 items-center rounded-lg border border-[#e4dfd7]"><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.max(0, (old[size.value] ?? 0) - 1) }))} disabled={!count} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Minus size={13}/></button><span className="w-8 text-center text-xs">{count}</span><button type="button" onClick={() => setSizeQuantities(old => ({ ...old, [size.value]: Math.min(stock, selectedPack - allocatedQuantity + count, count + 1) }))} disabled={count >= stock || allocatedQuantity >= selectedPack} className="flex h-full w-9 items-center justify-center disabled:opacity-30"><Plus size={13}/></button></div></div>; })}</div><p className="mt-3 text-[10px] leading-5 text-[#999]">The total size quantities must equal your selected pack size.</p></div>}
             {isPackProduct && <div className="mt-8 space-y-4"><p className="text-[11px] font-semibold tracking-[0.16em]">UPLOAD YOUR LOGO</p><label className="block"><span className="mb-2 block text-xs text-[#666]">Front logo *</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setFrontLogo(e.target.files?.[0] ?? null)} className="block w-full rounded-lg border border-[#e4dfd7] p-3 text-xs"/>{frontLogo && <span className="mt-1 block text-[10px] text-[#63876b]">{frontLogo.name}</span>}</label><label className="block"><span className="mb-2 block text-xs text-[#666]">Back logo *</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e => setBackLogo(e.target.files?.[0] ?? null)} className="block w-full rounded-lg border border-[#e4dfd7] p-3 text-xs"/>{backLogo && <span className="mt-1 block text-[10px] text-[#63876b]">{backLogo.name}</span>}</label><label className="block"><span className="mb-2 block text-xs text-[#666]">Customization instructions (optional)</span><textarea rows={3} value={customizationNotes} onChange={e => setCustomizationNotes(e.target.value)} placeholder="Logo placement, print size, or other instructions..." className="w-full rounded-lg border border-[#e4dfd7] px-3 py-3 text-xs outline-none focus:border-[#b99a76]"/></label></div>}
 
             {/* VARIANT DETAILS */}
