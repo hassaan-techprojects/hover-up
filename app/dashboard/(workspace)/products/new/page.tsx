@@ -106,7 +106,9 @@ export default function AddProductPage() {
         attribute.id
       );
 
+      const isColorAttribute = attribute.name.trim().toLowerCase() === "color" || attribute.slug === "color";
       return (
+        isColorAttribute &&
         !alreadySelected &&
         attribute.name.toLowerCase().includes(query)
       );
