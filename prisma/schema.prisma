@@ -612,10 +612,11 @@ model Review {
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  rating     Int
-  title      String?
-  comment    String?  @db.Text
-  isApproved Boolean  @default(false)
+  rating      Int
+  title       String?
+  comment     String?  @db.Text
+  adminReply  String?  @db.Text
+  isApproved  Boolean @default(false)
   images     ReviewImage[]
 
   createdAt DateTime @default(now())
