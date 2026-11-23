@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 
 type RouteContext = {
   params: Promise<{
@@ -11,7 +11,7 @@ type RouteContext = {
 
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     const { id } = await context.params;
@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     const { id } = await context.params;
@@ -156,7 +156,7 @@ export async function PATCH(
   context: RouteContext
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -223,7 +223,7 @@ export async function DELETE(
   context: RouteContext
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
