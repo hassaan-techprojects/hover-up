@@ -19,6 +19,7 @@ const attributeInclude = {
       id: true,
       value: true,
       image: true,
+      termType: true,
     },
     orderBy: {
       value: "asc" as const,
