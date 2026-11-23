@@ -268,7 +268,7 @@ function ProductDetailContent({
 
   const [quantity, setQuantity] = useState(1);
   const [selectedPack, setSelectedPack] = useState(2);
-  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({ "41": 1, "43": 1 });
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [textOnlyDesign, setTextOnlyDesign] = useState(false);
