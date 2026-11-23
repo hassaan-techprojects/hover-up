@@ -22,19 +22,42 @@ export default function AccountRegisterPage() {
     setLoading(true);
     setError("");
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const response = await fetch("/api/account/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, phone, password }),
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: normalizedEmail,
+          phone: phone.trim(),
+          password,
+        }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to create your account.");
-      const login = await signIn("credentials", { email, password, redirect: false });
-      if (login?.error) {
-        router.push("/account/login?created=1");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to create your account. Please try again.");
+      }
+
+      // Registration is complete at this point. If automatic sign-in is
+      // unavailable, send the customer to the login page rather than showing
+      // a false registration failure.
+      try {
+        const login = await signIn("credentials", {
+          email: normalizedEmail,
+          password,
+          redirect: false,
+        });
+        if (login?.error) {
+          router.replace("/account/login?created=1");
+          return;
+        }
+      } catch {
+        router.replace("/account/login?created=1");
         return;
       }
-      router.push("/account/orders");
+
+      router.replace("/account/orders");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create your account.");
