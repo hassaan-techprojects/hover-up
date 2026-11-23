@@ -19,7 +19,6 @@ export async function GET() {
           shipment: true,
         },
         orderBy: { createdAt: "desc" },
-        take: 200,
       }),
       prisma.order.count(),
       prisma.order.count({ where: { status: { in: ["PENDING", "CONFIRMED"] } } }),
@@ -35,7 +34,6 @@ export async function GET() {
         awaitingProcessing,
         inFulfilment,
         paidRevenue: Number(paidRevenue._sum.totalAmount ?? 0),
-        returnedLatest: orders.length,
       },
     });
   } catch (error) {
