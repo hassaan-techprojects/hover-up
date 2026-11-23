@@ -64,7 +64,7 @@ export default function CartPage() {
     const item = next[index];
     const current = item.packSize ?? item.quantity;
     const updated = Math.max(1, current + change);
-    next[index] = { ...item, packSize: updated, quantity: updated };
+    next[index] = { ...item, quantity: updated };
     save(next);
   }
 
