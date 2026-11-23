@@ -330,7 +330,7 @@ export async function POST(request: Request) {
         });
       }
 
-      return tx.order.create({
+      const createdOrder = await tx.order.create({
         data: {
           orderNumber,
           customerId: savedCustomer.id,
@@ -367,6 +367,24 @@ export async function POST(request: Request) {
         },
         select: { id: true, orderNumber: true, totalAmount: true },
       });
+
+      await tx.activityLog.create({
+        data: {
+          userId: session?.user?.id ?? null,
+          action: "ORDER_PLACED",
+          entity: "ORDER",
+          entityId: createdOrder.id,
+          description: `New order ${createdOrder.orderNumber} was placed.`,
+          metadata: {
+            orderNumber: createdOrder.orderNumber,
+            customerId: savedCustomer.id,
+            paymentMethod: body.paymentMethod,
+            status: "PENDING",
+          },
+        },
+      });
+
+      return createdOrder;
     });
 
     if (body.paymentMethod === "ONLINE") {
