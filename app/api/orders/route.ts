@@ -279,7 +279,7 @@ export async function POST(request: Request) {
       return responseError("Online payment is not configured yet. Please choose Cash on Delivery or contact the store.", 503);
     }
 
-    const orderNumber = `HU-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 6).toUpperCase()}`;
+    const orderNumber = `HU-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID().slice(0, 8).toUpperCase()}`;
 
     const session = await getServerSession(authOptions);
 
