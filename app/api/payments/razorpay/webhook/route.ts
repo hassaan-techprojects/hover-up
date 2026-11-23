@@ -2,8 +2,6 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const runtime = "nodejs";
-
 export async function POST(request: Request) {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
