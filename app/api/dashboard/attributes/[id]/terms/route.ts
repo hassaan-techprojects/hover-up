@@ -14,7 +14,6 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/webp": "webp",
 };
 
-const ALLOWED_SIZE_SYMBOLS = ["S", "M", "L", "XL", "XXL"];
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -105,7 +104,6 @@ export async function POST(
 
     const rawValue = formData.get("value");
     const rawTermType = formData.get("termType");
-    const rawSizeSymbol = formData.get("sizeSymbol");
     const file = formData.get("image");
 
     const value =
@@ -116,10 +114,6 @@ export async function POST(
         ? rawTermType.trim().toUpperCase()
         : "COLOR";
 
-    const sizeSymbol =
-      typeof rawSizeSymbol === "string"
-        ? rawSizeSymbol.trim().toUpperCase()
-        : "";
 
     if (!value || value.length > 80) {
       return NextResponse.json(
@@ -128,24 +122,8 @@ export async function POST(
       );
     }
 
-    if (termType !== "COLOR" && termType !== "SIZE") {
-      return NextResponse.json(
-        { error: "Invalid term type." },
-        { status: 400 }
-      );
-    }
-
-    // Validate size symbol
-    if (
-      termType === "SIZE" &&
-      !ALLOWED_SIZE_SYMBOLS.includes(sizeSymbol)
-    ) {
-      return NextResponse.json(
-        {
-          error: "Select a valid size symbol: S, M, L, XL or XXL.",
-        },
-        { status: 400 }
-      );
+    if (termType !== "COLOR") {
+      return NextResponse.json({ error: "Only color terms are supported. Select sizes during product pack customization." }, { status: 400 });
     }
 
     // Check duplicate terms
@@ -174,7 +152,7 @@ export async function POST(
 
     // ─── COLOR TERM IMAGE UPLOAD ─────────────────
 
-    if (termType === "COLOR") {
+    {
       if (!(file instanceof File) || file.size === 0) {
         return NextResponse.json(
           { error: "Please select an image for this color." },
@@ -222,8 +200,8 @@ export async function POST(
       data: {
         value,
         attributeId: id,
-        termType,
-        sizeSymbol: termType === "SIZE" ? sizeSymbol : null,
+        termType: "COLOR",
+        sizeSymbol: null,
         image,
         storageKey,
       },
