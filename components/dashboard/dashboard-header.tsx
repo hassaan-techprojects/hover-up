@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Menu,
@@ -38,6 +38,27 @@ function DashboardHeaderContent({
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const pageTitle = pageNames[pathname] || "Dashboard";
+  const [account, setAccount] = useState({ name: "Administrator", role: "ADMIN" });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/dashboard/me", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to load account");
+        if (!cancelled) setAccount({ name: data.name, role: data.role });
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
+
+  const initials = account.name
+    .split(/\\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || (account.role === "ANALYST" ? "AN" : "AD");
+  const roleLabel = account.role === "ANALYST" ? "Analyst" : "Administrator";
 
   return (
     <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-[#eae6df] bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-9">
@@ -89,16 +110,16 @@ function DashboardHeaderContent({
 
         <div className="ml-1 flex items-center gap-2.5 border-l border-[#eae6df] pl-3 sm:pl-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e0d5] text-xs font-semibold text-[#493b2d]">
-            AD
+            {initials}
           </div>
 
           <div className="hidden sm:block">
             <p className="text-xs font-semibold text-[#222222]">
-              Administrator
+              {account.name}
             </p>
 
             <p className="mt-0.5 text-[10px] text-[#999187]">
-              Admin account
+              {roleLabel}
             </p>
           </div>
         </div>
