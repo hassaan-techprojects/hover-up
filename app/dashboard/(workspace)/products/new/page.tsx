@@ -14,7 +14,6 @@ import {
   Package,
   Layers,
   Tag,
-  FileText,
   Trash2,
   RefreshCw,
   Info,
@@ -77,7 +76,6 @@ export default function AddProductPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [description, setDescription] = useState("");
   const [sku, setSku] = useState("");
   const [regularPrice, setRegularPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
@@ -421,7 +419,6 @@ export default function AddProductPage() {
 
       formData.append("name", name.trim());
       formData.append("slug", slug.trim());
-      formData.append("description", description);
       formData.append("sku", sku.trim());
       formData.append("price", salePrice || regularPrice);
       formData.append("comparePrice", salePrice ? regularPrice : "");
@@ -638,52 +635,10 @@ export default function AddProductPage() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[#333]">
-                    Product Description
-                  </label>
-
-                  <div className="overflow-hidden rounded-lg border border-[#e8e6e1]">
-                    <div className="flex flex-wrap items-center gap-1 border-b border-[#e8e6e1] bg-[#fcfbf9] p-2">
-                      {[
-                        ["H1", "# Heading 1\n"],
-                        ["H2", "## Heading 2\n"],
-                        ["H3", "### Heading 3\n"],
-                        ["H4", "#### Heading 4\n"],
-                        ["H5", "##### Heading 5\n"],
-                        ["H6", "###### Heading 6\n"],
-                        ["P", "\n"],
-                      ].map(([label, prefix]) => (
-                        <button
-                          key={label}
-                          type="button"
-                          onClick={() =>
-                            setDescription((current) =>
-                              current
-                                ? `${current}\n${prefix}`
-                                : prefix
-                            )
-                          }
-                          className="rounded-md px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-200"
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <textarea
-                      value={description}
-                      onChange={(event) =>
-                        setDescription(event.target.value)
-                      }
-                      rows={9}
-                      placeholder="Write your product description..."
-                      className="w-full resize-y p-4 text-sm leading-7 text-[#333] outline-none placeholder:text-gray-400"
-                    />
-                  </div>
-
-                  <p className="mt-2 text-xs text-gray-400">
-                    The heading controls insert Markdown heading markers. A rich-text editor and description-image SEO controls will be integrated separately.
+                <div className="rounded-lg border border-[#e8e6e1] bg-[#fcfbf9] p-4">
+                  <p className="text-xs font-semibold text-[#333]">Shared product description</p>
+                  <p className="mt-1 text-xs leading-6 text-[#888]">
+                    One structured SEO description is automatically displayed on every product page, including existing products. There is no need to write it again for each product.
                   </p>
                 </div>
               </div>
