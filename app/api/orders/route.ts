@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const PACK_PRICES: Record<number, number> = {
@@ -259,21 +261,62 @@ export async function POST(request: Request) {
 
     const orderNumber = `HU-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 
+    const session = await getServerSession(authOptions);
+
     const order = await prisma.$transaction(async (tx) => {
-      const savedCustomer = await tx.customer.upsert({
-        where: { email: customer.email.trim().toLowerCase() },
-        update: {
-          firstName: customer.firstName.trim(),
-          lastName: customer.lastName?.trim() || null,
-          phone: customer.phone.trim(),
+      const signedInCustomer = session?.user?.role === "CUSTOMER"
+        ? await tx.customer.findUnique({ where: { userId: session.user.id } })
+        : null;
+
+      const savedCustomer = signedInCustomer
+        ? await tx.customer.update({
+            where: { id: signedInCustomer.id },
+            data: {
+              firstName: customer.firstName.trim(),
+              lastName: customer.lastName?.trim() || null,
+              phone: customer.phone.trim(),
+            },
+          })
+        : await tx.customer.upsert({
+            where: { email: customer.email.trim().toLowerCase() },
+            update: {
+              firstName: customer.firstName.trim(),
+              lastName: customer.lastName?.trim() || null,
+              phone: customer.phone.trim(),
+            },
+            create: {
+              firstName: customer.firstName.trim(),
+              lastName: customer.lastName?.trim() || null,
+              email: customer.email.trim().toLowerCase(),
+              phone: customer.phone.trim(),
+            },
+          });
+
+      const existingAddress = await tx.address.findFirst({
+        where: {
+          customerId: savedCustomer.id,
+          addressLine1: address.addressLine1.trim(),
+          postalCode: address.postalCode.trim(),
         },
-        create: {
-          firstName: customer.firstName.trim(),
-          lastName: customer.lastName?.trim() || null,
-          email: customer.email.trim().toLowerCase(),
-          phone: customer.phone.trim(),
-        },
+        select: { id: true },
       });
+      if (!existingAddress) {
+        const addressCount = await tx.address.count({ where: { customerId: savedCustomer.id } });
+        await tx.address.create({
+          data: {
+            customerId: savedCustomer.id,
+            fullName,
+            phone: customer.phone.trim(),
+            addressLine1: address.addressLine1.trim(),
+            addressLine2: address.addressLine2?.trim() || null,
+            city: address.city.trim(),
+            state: address.state.trim(),
+            postalCode: address.postalCode.trim(),
+            country: address.country?.trim() || "India",
+            isDefault: addressCount === 0,
+          },
+        });
+      }
 
       return tx.order.create({
         data: {
