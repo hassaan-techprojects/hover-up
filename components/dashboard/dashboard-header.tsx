@@ -42,21 +42,26 @@ function DashboardHeaderContent({
 
   useEffect(() => {
     let cancelled = false;
+    const loadAccount = () => {
+      fetch("/api/dashboard/me", { cache: "no-store" })
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Unable to load account");
+          if (!cancelled) setAccount({ name: data.name, role: data.role });
+        })
+        .catch(() => undefined);
+    };
     const heartbeat = () => {
       fetch("/api/dashboard/heartbeat", { method: "POST" }).catch(() => undefined);
     };
-    fetch("/api/dashboard/me", { cache: "no-store" })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Unable to load account");
-        if (!cancelled) setAccount({ name: data.name, role: data.role });
-      })
-      .catch(() => undefined);
+    loadAccount();
     heartbeat();
+    window.addEventListener("dashboard-account-updated", loadAccount);
     const interval = window.setInterval(heartbeat, 60_000);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener("dashboard-account-updated", loadAccount);
     };
   }, []);
 
