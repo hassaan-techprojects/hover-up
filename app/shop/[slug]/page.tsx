@@ -1295,16 +1295,9 @@ function ProductDetailContent({
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium">
-                          {size.sizeSymbol
-                            ? `${size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} · ${size.value}`
-                            : size.value}
+                        <p className={`inline-flex min-h-8 items-center rounded-sm border px-3 text-xs font-medium ${sizeQuantity > 0 ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] bg-white text-[#171717]"}`}>
+                          {size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} ({size.value})
                         </p>
-                        {hasVariants && (
-                          <p className="mt-1 text-[10px] text-[#999]">
-                            {unavailable ? "Unavailable" : !product?.stockTracked ? "Available to order" : `${stock} available`}
-                          </p>
-                        )}
                       </div>
 
                       <div className="inline-flex h-9 items-center border border-[#dedbd6]">
