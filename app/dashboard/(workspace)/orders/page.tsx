@@ -25,8 +25,8 @@ type Order = {
   customer: { id: string; firstName: string; lastName: string | null; email: string; phone: string | null };
   shippingAddress: Record<string, unknown>;
   items: OrderItem[];
-  payment: { method: string; status: string; gateway: string | null } | null;
-  shipment: { status: string; carrier: string | null; trackingNumber: string | null } | null;
+  payment: { method: string; status: string; gateway: string | null; transactionId: string | null; paidAt: string | null } | null;
+  shipment: { status: string; carrier: string | null; trackingNumber: string | null; trackingUrl: string | null; expectedDeliveryAt: string | null; shippedAt: string | null; deliveredAt: string | null } | null;
 };
 
 const statuses = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
@@ -76,14 +76,14 @@ export default function DashboardOrdersPage() {
 
   useEffect(() => { void loadOrders(); }, [loadOrders]);
 
-  async function updateStatus(orderId: string, status: string) {
+  async function updateOrder(orderId: string, updates: Record<string, string | null>) {
     setUpdating(orderId);
     setError("");
     try {
       const response = await fetch(`/api/dashboard/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(updates),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to update order.");
@@ -93,6 +93,10 @@ export default function DashboardOrdersPage() {
     } finally {
       setUpdating(null);
     }
+  }
+
+  async function updateStatus(orderId: string, status: string) {
+    await updateOrder(orderId, { status });
   }
 
   const visibleOrders = useMemo(() => orders.filter((order) => {
@@ -187,6 +191,9 @@ export default function DashboardOrdersPage() {
                     <div>
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${statusClass(order.status)}`}>{statusLabel(order.status)}</span>
                       <p className="mt-2 text-[10px] text-[#999]">Payment: {statusLabel(order.paymentStatus)}</p>
+                      {order.payment?.transactionId && <p className="mt-1 break-all text-[10px] text-[#999]">Transaction ID: {order.payment.transactionId}</p>}
+                      {order.payment?.gateway && <p className="mt-1 text-[10px] text-[#999]">Gateway: {order.payment.gateway}</p>}
+                      {order.payment?.paidAt && <p className="mt-1 text-[10px] text-[#999]">Paid at: {new Date(order.payment.paidAt).toLocaleString("en-IN")}</p>}
                     </div>
                     <div className="flex flex-wrap gap-2 xl:justify-end">
                       <button type="button" onClick={() => setExpanded(isExpanded ? null : order.id)} className="rounded-lg border border-[#e7e1d8] px-3 py-2 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide details" : "View details"}</button>
@@ -239,7 +246,20 @@ export default function DashboardOrdersPage() {
                           <p className="mt-2 flex items-center gap-2 text-xs text-[#655c52]"><Truck size={14} /> {order.shipment ? statusLabel(order.shipment.status) : "Not shipped yet"}</p>
                           {order.shipment?.carrier && <p className="mt-1 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}
                           {order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}
+                          {order.shipment?.trackingUrl && <a href={order.shipment.trackingUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[10px] text-[#8b7054] underline">Open tracking page</a>}
+                          {order.shipment?.expectedDeliveryAt && <p className="mt-2 text-[10px] text-[#777]">Expected delivery: {new Date(order.shipment.expectedDeliveryAt).toLocaleDateString("en-IN")}</p>}
+                          {order.shipment?.shippedAt && <p className="mt-1 text-[10px] text-[#777]">Shipped: {new Date(order.shipment.shippedAt).toLocaleDateString("en-IN")}</p>}
+                          {order.shipment?.deliveredAt && <p className="mt-1 text-[10px] text-[#777]">Delivered: {new Date(order.shipment.deliveredAt).toLocaleDateString("en-IN")}</p>}
                         </div>
+                        {canManage && <div className="mt-3 grid gap-3 rounded-lg border border-[#eee8df] bg-white p-3 sm:grid-cols-2">
+                          <label className="text-[10px] text-[#777]">Expected delivery<input type="date" value={order.shipment?.expectedDeliveryAt?.slice(0,10) || ""} onChange={(e) => void updateOrder(order.id, { status: order.status, expectedDeliveryAt: e.target.value || null })} className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                          <label className="text-[10px] text-[#777]">Shipped date<input type="date" value={order.shipment?.shippedAt?.slice(0,10) || ""} onChange={(e) => void updateOrder(order.id, { status: order.status, shippedAt: e.target.value || null })} className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                          <label className="text-[10px] text-[#777]">Delivered date<input type="date" value={order.shipment?.deliveredAt?.slice(0,10) || ""} onChange={(e) => void updateOrder(order.id, { status: order.status, deliveredAt: e.target.value || null })} className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                          <label className="text-[10px] text-[#777]">Carrier<input key={order.shipment?.carrier || "carrier"} defaultValue={order.shipment?.carrier || ""} onBlur={(e) => void updateOrder(order.id, { status: order.status, carrier: e.target.value || null })} placeholder="Carrier name" className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                          <label className="text-[10px] text-[#777]">Tracking number<input key={order.shipment?.trackingNumber || "tracking"} defaultValue={order.shipment?.trackingNumber || ""} onBlur={(e) => void updateOrder(order.id, { status: order.status, trackingNumber: e.target.value || null })} placeholder="Tracking ID" className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                          <label className="text-[10px] text-[#777]">Tracking URL<input key={order.shipment?.trackingUrl || "tracking-url"} defaultValue={order.shipment?.trackingUrl || ""} onBlur={(e) => void updateOrder(order.id, { status: order.status, trackingUrl: e.target.value || null })} placeholder="https://..." className="mt-1 h-9 w-full rounded-md border border-[#e8e3dc] px-2 text-xs"/></label>
+                        </div>}
+                      </div>
                       </div>
                     </div>
                   )}
