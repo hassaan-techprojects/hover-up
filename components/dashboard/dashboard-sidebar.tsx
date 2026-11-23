@@ -18,6 +18,7 @@ import {
   Images,
   TicketPercent,
   Megaphone,
+  Star,
   FileChartColumn,
   ShieldCheck,
   Settings,
@@ -57,6 +58,7 @@ const navigation = [
     label: "GROWTH",
     items: [
       { name: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
+      { name: "Reviews", href: "/dashboard/reviews", icon: Star },
       { name: "Reports", href: "/dashboard/reports", icon: FileChartColumn },
     ],
   },
