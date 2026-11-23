@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 import { s3, storageBucket, getPublicObjectUrl } from "@/lib/storage";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -27,7 +27,7 @@ export async function GET(
   { params }: Context
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -74,7 +74,7 @@ export async function POST(
   let uploadedKey: string | null = null;
 
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
