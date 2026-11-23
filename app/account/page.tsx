@@ -6,7 +6,7 @@ import { Package,Truck,LogOut } from "lucide-react";
 type Order={id:string;orderNumber:string;status:string;paymentStatus:string;totalAmount:string|number;createdAt:string;items:{id:string;productName:string;quantity:number;totalPrice:string|number;customization:unknown}[];shipment:{carrier:string|null;trackingNumber:string|null;trackingUrl:string|null;status:string}|null};
 type Customer={id:string;firstName:string;lastName:string|null;email:string;phone:string|null};
 const money=(n:string|number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(n||0));
-const pretty=(s:string)=>s.replaceAll("_"," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+const pretty=(s:string)=>s==="PENDING"?"Received":s.replaceAll("_"," ").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 export default function AccountPage(){
  const [customer,setCustomer]=useState<Customer|null>(null),[orders,setOrders]=useState<Order[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState("");
  useEffect(()=>{fetch("/api/account/orders",{cache:"no-store"}).then(async r=>{const d=await r.json();if(r.status===401){window.location.href="/account/login";return;}if(!r.ok)throw new Error(d.error);setCustomer(d.customer);setOrders(d.orders||[]);}).catch(e=>setError(e instanceof Error?e.message:"Unable to load account.")).finally(()=>setLoading(false));},[]);
