@@ -444,7 +444,7 @@ export default function AllProductsPage() {
                                 <img
                                   src={primaryImage.url}
                                   alt={product.name}
-                                  className="h-full w-full object-cover"
+                                  className="h-full w-full object-contain p-1"
                                 />
                               ) : (
                                 <ImageIcon
