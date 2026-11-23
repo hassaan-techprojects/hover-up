@@ -116,10 +116,34 @@ type CartEntry = {
   image: string;
   quantity: number;
   variantName: string | null;
+  packSize: number;
+  color: string;
+  sizeBreakdown: {
+    size: string;
+    quantity: number;
+    variantId: string | null;
+  }[];
+  frontImageUrl: string;
+  backImageUrl: string;
 };
 
 const CART_STORAGE_KEY = "hover-up-cart";
 const WISHLIST_STORAGE_KEY = "hover-up-wishlist";
+
+const PACK_PRICES: Record<number, number> = {
+  2: 1399,
+  5: 3250,
+  10: 6250,
+  15: 9100,
+  20: 11700,
+  50: 27600,
+  75: 39100,
+  100: 50100,
+};
+
+const PACK_SIZES = Object.keys(PACK_PRICES).map(Number);
+
+const MAX_CUSTOMIZATION_FILE_SIZE = 8 * 1024 * 1024;
 
 function formatPrice(value: number | string | null | undefined) {
   const amount = Number(value ?? 0);
@@ -191,6 +215,10 @@ function ProductDetailContent({
   const [viewerOpen, setViewerOpen] = useState(false);
 
   const [quantity, setQuantity] = useState(1);
+  const [selectedPack, setSelectedPack] = useState(2);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
+  const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
+  const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [wishlist, setWishlist] = useState(false);
 
   const [cartMessage, setCartMessage] = useState("");
@@ -309,8 +337,10 @@ function ProductDetailContent({
 
   // PRICE
 
-  const currentPrice = Number(
-    selectedVariant?.price ?? product?.price ?? 0
+  const currentPrice = PACK_PRICES[selectedPack] ?? 0;
+  const selectedSizeTotal = Object.values(sizeQuantities).reduce(
+    (total, value) => total + value,
+    0
   );
 
   const currentComparePrice = Number(
@@ -543,75 +573,135 @@ function ProductDetailContent({
 
   // ADD TO CART
 
-  function addToCart(goToCart = false) {
+  async function uploadCustomizationImage(file: File, side: "front" | "back") {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("side", side);
+
+    const response = await fetch("/api/customization-uploads", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.url) {
+      throw new Error(data.error || `Unable to upload the ${side} image.`);
+    }
+
+    return data.url as string;
+  }
+
+  async function addToCart(goToCart = false) {
     if (!product) return;
 
-    if (hasVariants && !selectedVariant) {
-      setCartMessage(
-        "Please select an available color and size combination."
-      );
+    if (colorOptions.length > 0 && !selectedColor) {
+      setCartMessage("Please select a color.");
       return;
     }
 
-    if (availableStock <= 0) {
-      setCartMessage("This product is currently out of stock.");
+    if (sizeOptions.length === 0) {
+      setCartMessage("Please add size options to this product before ordering packs.");
       return;
     }
 
-    if (quantity > availableStock) {
-      setCartMessage(
-        `Only ${availableStock} item(s) are available.`
-      );
+    if (selectedSizeTotal !== selectedPack) {
+      setCartMessage(`Please allocate exactly ${selectedPack} item(s) across the sizes. Currently selected: ${selectedSizeTotal}.`);
       return;
+    }
+
+    if (!frontImageFile || !backImageFile) {
+      setCartMessage("Please upload both front and back design images.");
+      return;
+    }
+
+    const allocations = sizeOptions
+      .map((size) => {
+        const sizeQuantity = sizeQuantities[size.value] ?? 0;
+        const matches = matchingVariants(selectedColor, size.value);
+        const variant = matches[0] ?? null;
+
+        return {
+          size: size.value,
+          quantity: sizeQuantity,
+          variantId: variant?.id ?? null,
+          variant,
+        };
+      })
+      .filter((item) => item.quantity > 0);
+
+    if (hasVariants && allocations.some((item) => !item.variant)) {
+      setCartMessage("One or more selected sizes are unavailable for this color.");
+      return;
+    }
+
+    const unavailableAllocation = allocations.find((item) => {
+      if (!item.variant) return false;
+      return getAvailableStock(item.variant) < item.quantity;
+    });
+
+    if (unavailableAllocation) {
+      setCartMessage(`Not enough stock available for size ${unavailableAllocation.size}.`);
+      return;
+    }
+
+    for (const file of [frontImageFile, backImageFile]) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setCartMessage("Upload JPG, PNG, or WEBP images only.");
+        return;
+      }
+      if (file.size > MAX_CUSTOMIZATION_FILE_SIZE) {
+        setCartMessage("Each design image must be 8 MB or smaller.");
+        return;
+      }
     }
 
     setAddingToCart(true);
-    setCartMessage("");
+    setCartMessage("Uploading your design images...");
 
     try {
+      const [frontImageUrl, backImageUrl] = await Promise.all([
+        uploadCustomizationImage(frontImageFile, "front"),
+        uploadCustomizationImage(backImageFile, "back"),
+      ]);
+
       const stored = localStorage.getItem(CART_STORAGE_KEY);
-
-      const cart: CartEntry[] = stored
-        ? JSON.parse(stored)
-        : [];
-
-      const variantId = selectedVariant?.id ?? null;
-
-      const existingIndex = cart.findIndex(
-        (item) =>
-          item.productId === product.id &&
-          item.variantId === variantId
-      );
+      const cart: CartEntry[] = stored ? JSON.parse(stored) : [];
 
       const entry: CartEntry = {
         productId: product.id,
-        variantId,
+        variantId: null,
         name: product.name,
         slug: product.slug,
         price: currentPrice,
         image: selectedImageUrl,
-        quantity,
-        variantName: selectedVariant?.name ?? null,
+        quantity: selectedPack,
+        variantName: selectedColor || null,
+        packSize: selectedPack,
+        color: selectedColor,
+        sizeBreakdown: allocations.map(({ size, quantity: sizeQuantity, variantId }) => ({
+          size,
+          quantity: sizeQuantity,
+          variantId,
+        })),
+        frontImageUrl,
+        backImageUrl,
       };
 
-      if (existingIndex >= 0) {
-        cart[existingIndex].quantity += quantity;
-      } else {
-        cart.push(entry);
-      }
+      // Keep separately configured packs/customizations as separate cart lines.
+      cart.push(entry);
 
-      localStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(cart)
-      );
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
 
       if (goToCart) {
         router.push("/cart");
       } else {
-        setCartMessage("Added to your bag successfully.");
+        setCartMessage("Your customized pack has been added to your bag.");
       }
-    } catch {
-      setCartMessage("Unable to add this product to your bag.");
+    } catch (err) {
+      setCartMessage(
+        err instanceof Error ? err.message : "Unable to add this pack to your bag."
+      );
     } finally {
       setAddingToCart(false);
     }
@@ -931,8 +1021,11 @@ function ProductDetailContent({
               <span className="text-[25px] font-medium tracking-wide">
                 {formatPrice(currentPrice)}
               </span>
+              <span className="text-[10px] tracking-[0.12em] text-[#777]">
+                PACK PRICE
+              </span>
 
-              {currentComparePrice > currentPrice && (
+              {false && currentComparePrice > currentPrice && (
                 <>
                   <span className="text-[15px] text-[#999] line-through">
                     {formatPrice(currentComparePrice)}
@@ -1033,55 +1126,152 @@ function ProductDetailContent({
               </div>
             )}
 
-            {/* SIZES */}
+            {/* PACK SELECTION */}
 
-            {sizeOptions.length > 0 && (
-              <div className="mt-8">
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-[11px] tracking-[0.16em]">
-                    SIZE
-                  </p>
-
-                  <span className="text-[11px] text-[#777]">
-                    {selectedSize || "Select a size"}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {sizeOptions.map((size) => {
-                    const isSelected =
-                      selectedSize === size.value;
-
-                    const sizeMatches = matchingVariants(
-                      selectedColor,
-                      size.value
-                    );
-
-                    const unavailable =
-                      hasVariants && sizeMatches.length === 0;
-
-                    return (
-                      <button
-                        key={size.id}
-                        onClick={() => changeSize(size)}
-                        disabled={unavailable}
-                        className={`flex min-w-[58px] items-center justify-center border px-4 py-3 text-[11px] tracking-wide transition ${
-                          isSelected
-                            ? "border-[#171717] bg-[#171717] text-white"
-                            : "border-[#dedbd6] hover:border-[#171717]"
-                        } ${
-                          unavailable
-                            ? "cursor-not-allowed opacity-35"
-                            : ""
-                        }`}
-                      >
-                        {size.sizeSymbol || size.value}
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="mt-8">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-[11px] tracking-[0.16em]">SELECT PACK</p>
+                <span className="text-[11px] text-[#777]">
+                  {selectedPack} pieces · {formatPrice(currentPrice)}
+                </span>
               </div>
-            )}
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {PACK_SIZES.map((packSize) => (
+                  <button
+                    key={packSize}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPack(packSize);
+                      setSizeQuantities({});
+                      setCartMessage("");
+                    }}
+                    className={`border px-3 py-3 text-left transition ${
+                      selectedPack === packSize
+                        ? "border-[#171717] bg-[#171717] text-white"
+                        : "border-[#dedbd6] hover:border-[#171717]"
+                    }`}
+                  >
+                    <span className="block text-[11px] tracking-wide">Pack of {packSize}</span>
+                    <span className={`mt-1 block text-sm ${selectedPack === packSize ? "text-white" : "text-[#555]"}`}>
+                      {formatPrice(PACK_PRICES[packSize])}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* SIZE-WISE QUANTITY */}
+
+            <div className="mt-8">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-[11px] tracking-[0.16em]">SELECT SIZE QUANTITIES</p>
+                <span className="text-[11px] text-[#777]">
+                  {selectedSizeTotal} / {selectedPack} selected
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {sizeOptions.map((size) => {
+                  const sizeQuantity = sizeQuantities[size.value] ?? 0;
+                  const matches = matchingVariants(selectedColor, size.value);
+                  const variant = matches[0] ?? null;
+                  const stock = variant ? getAvailableStock(variant) : 0;
+                  const unavailable = hasVariants && !variant;
+                  const atPackLimit = selectedSizeTotal >= selectedPack;
+
+                  return (
+                    <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
+                      <div>
+                        <p className="text-sm">{size.sizeSymbol || size.value}</p>
+                        {hasVariants && (
+                          <p className="mt-1 text-[10px] text-[#999]">
+                            {unavailable ? "Unavailable" : `${stock} available`}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="inline-flex h-9 items-center border border-[#dedbd6]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSizeQuantities((current) => ({
+                              ...current,
+                              [size.value]: Math.max(0, (current[size.value] ?? 0) - 1),
+                            }));
+                            setCartMessage("");
+                          }}
+                          disabled={sizeQuantity <= 0}
+                          className="flex h-full w-9 items-center justify-center disabled:opacity-30"
+                          aria-label={`Decrease ${size.value} quantity`}
+                        >
+                          <Minus size={13} />
+                        </button>
+                        <span className="flex w-9 justify-center text-sm">{sizeQuantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSizeQuantities((current) => ({
+                              ...current,
+                              [size.value]: (current[size.value] ?? 0) + 1,
+                            }));
+                            setCartMessage("");
+                          }}
+                          disabled={unavailable || atPackLimit || sizeQuantity >= stock && hasVariants}
+                          className="flex h-full w-9 items-center justify-center disabled:opacity-30"
+                          aria-label={`Increase ${size.value} quantity`}
+                        >
+                          <Plus size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-[11px]">
+                <span className="text-[#777]">Allocate all pieces to continue</span>
+                <span className={selectedSizeTotal === selectedPack ? "text-[#63876b]" : "text-[#a16b42]"}>
+                  {selectedSizeTotal === selectedPack ? "Pack complete" : `${selectedPack - selectedSizeTotal} remaining`}
+                </span>
+              </div>
+            </div>
+
+            {/* DESIGN IMAGE UPLOADS */}
+
+            <div className="mt-8">
+              <p className="mb-4 text-[11px] tracking-[0.16em]">UPLOAD YOUR DESIGN</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
+                  <span className="block text-[11px] tracking-wide">FRONT DESIGN IMAGE *</span>
+                  <span className="mt-2 block text-[11px] text-[#888]">
+                    {frontImageFile ? frontImageFile.name : "Choose JPG, PNG or WEBP (max 8 MB)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="mt-3 block w-full text-[11px]"
+                    onChange={(event) => setFrontImageFile(event.target.files?.[0] ?? null)}
+                  />
+                </label>
+
+                <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
+                  <span className="block text-[11px] tracking-wide">BACK DESIGN IMAGE *</span>
+                  <span className="mt-2 block text-[11px] text-[#888]">
+                    {backImageFile ? backImageFile.name : "Choose JPG, PNG or WEBP (max 8 MB)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="mt-3 block w-full text-[11px]"
+                    onChange={(event) => setBackImageFile(event.target.files?.[0] ?? null)}
+                  />
+                </label>
+              </div>
+              <p className="mt-2 text-[10px] text-[#999]">
+                Upload the artwork you want printed on the front and back of the selected items.
+              </p>
+            </div>
 
             {/* VARIANT DETAILS */}
 
@@ -1115,49 +1305,6 @@ function ProductDetailContent({
               </span>
             </div>
 
-            {/* QUANTITY */}
-
-            <div className="mt-7">
-              <p className="mb-3 text-[10px] tracking-[0.16em]">
-                QUANTITY
-              </p>
-
-              <div className="inline-flex h-12 items-center border border-[#dedbd6]">
-                <button
-                  onClick={() =>
-                    setQuantity((current) =>
-                      Math.max(1, current - 1)
-                    )
-                  }
-                  disabled={quantity <= 1}
-                  className="flex h-full w-12 items-center justify-center transition hover:bg-[#f5f4f1] disabled:opacity-30"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus size={15} />
-                </button>
-
-                <span className="flex w-12 justify-center text-sm">
-                  {quantity}
-                </span>
-
-                <button
-                  onClick={() =>
-                    setQuantity((current) =>
-                      Math.min(
-                        availableStock,
-                        current + 1
-                      )
-                    )
-                  }
-                  disabled={quantity >= availableStock}
-                  className="flex h-full w-12 items-center justify-center transition hover:bg-[#f5f4f1] disabled:opacity-30"
-                  aria-label="Increase quantity"
-                >
-                  <Plus size={15} />
-                </button>
-              </div>
-            </div>
-
             {/* ACTION BUTTONS */}
 
             <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_1fr]">
@@ -1165,8 +1312,10 @@ function ProductDetailContent({
                 onClick={() => addToCart(false)}
                 disabled={
                   addingToCart ||
-                  availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  !product.isInStock ||
+                  selectedSizeTotal !== selectedPack ||
+                  !frontImageFile ||
+                  !backImageFile
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -1178,8 +1327,10 @@ function ProductDetailContent({
                 onClick={() => addToCart(true)}
                 disabled={
                   addingToCart ||
-                  availableStock <= 0 ||
-                  (hasVariants && !selectedVariant)
+                  !product.isInStock ||
+                  selectedSizeTotal !== selectedPack ||
+                  !frontImageFile ||
+                  !backImageFile
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
