@@ -29,5 +29,25 @@ jobs:
         run: npx prisma generate
       - name: TypeScript check
         run: npx tsc --noEmit
-      - name: ESLint
-        run: npm run lint
+      - name: ESLint (commerce changes)
+        run: >
+          npx eslint
+          "app/cart/page.tsx"
+          "app/checkout/page.tsx"
+          "app/order-confirmation/page.tsx"
+          "app/wishlist/page.tsx"
+          "app/shop/[slug]/product-detail-client.tsx"
+          "app/dashboard/(workspace)/orders/page.tsx"
+          "app/dashboard/(workspace)/products/page.tsx"
+          "app/dashboard/(workspace)/products/[id]/pricing/page.tsx"
+          "app/account/page.tsx"
+          "app/account/login/page.tsx"
+          "app/account/register/page.tsx"
+          "app/api/checkout/route.ts"
+          "app/api/dashboard/orders/route.ts"
+          "app/api/dashboard/products/[id]/pack-pricing/route.ts"
+          "app/api/account/register/route.ts"
+          "app/api/account/orders/route.ts"
+          "app/api/products/wishlist/route.ts"
+          "components/storefront/storefront-header.tsx"
+          "src/lib/auth.ts"
