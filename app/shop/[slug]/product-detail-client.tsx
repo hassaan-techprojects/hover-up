@@ -1081,8 +1081,8 @@ export default function ProductDetailClient({
             {sizeOptions.length > 0 && (
               <details className="mt-4 rounded-lg border border-[#e9e4dc] bg-[#fcfbf9] px-4 py-3">
                 <summary className="cursor-pointer text-[10px] font-semibold tracking-[0.14em]">SIZE GUIDE</summary>
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {sizeOptions.map(size => <div key={size.id} className="rounded-md bg-white px-3 py-2 text-xs"><span className="font-semibold">{size.sizeSymbol || size.value}</span>{size.sizeSymbol && size.sizeSymbol !== size.value && <span className="ml-1 text-[#777]">({size.value})</span>}</div>)}
+                <div className="mt-3 overflow-hidden rounded-lg bg-white">
+                  <img src="/size-chart.svg" alt="Hover Up size measurement guide" className="h-auto w-full object-contain" />
                 </div>
               </details>
             )}
