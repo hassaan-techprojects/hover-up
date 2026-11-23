@@ -21,7 +21,7 @@ export async function GET() {
       take: 200,
     });
 
-    return NextResponse.json({ orders });
+    return NextResponse.json({ orders, canManage: session.user.role === "ADMIN" });
   } catch (error) {
     console.error("Dashboard orders API error:", error);
     return NextResponse.json({ error: "Unable to load orders." }, { status: 500 });
