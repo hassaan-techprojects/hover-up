@@ -23,6 +23,7 @@ function money(value: number | string) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value));
 }
 function label(value: string) {
+  if (value === "CONFIRMED") return "Received";
   return value.charAt(0) + value.slice(1).toLowerCase().replaceAll("_", " ");
 }
 function pill(value: string) {
