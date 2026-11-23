@@ -1,12 +1,15 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ChevronRight,
-  Play,
+  ChevronLeft,
   Video,
+  Volume2,
+  VolumeX,
+  X,
 } from "lucide-react";
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
@@ -31,24 +34,43 @@ type Brand = {
 };
 
 const brands: Brand[] = [
-  { name: "Jio", logo: "/brands/jio.png" },
-  { name: "Airtel", logo: "/brands/airtel.jpeg" },
-  { name: "HDFC Bank", logo: "/brands/hdfc-bank.jpeg" },
-  { name: "ICICI Bank", logo: "/brands/icici-bank.jpeg" },
-  { name: "Tata Electronics", logo: "/brands/tata-electronics.jpeg" },
-  { name: "ITC Limited", logo: "/brands/itc.jpeg" },
-  { name: "SRM University", logo: "/brands/srm.jpeg" },
-  { name: "VIT University", logo: "/brands/vit.jpeg" },
-  { name: "BSNL", logo: "/brands/bsnl.jpeg" },
+  { name: "Jio", logo: "/brands/jio.jpg" },
+  { name: "Airtel", logo: "/brands/airtel.jpg" },
+  { name: "HDFC Bank", logo: "/brands/hdfc-bank.jpg" },
+  { name: "ICICI Bank", logo: "/brands/icici-bank.jpg" },
+  { name: "Tata Electronics", logo: "/brands/tata-electronics.jpg" },
+  { name: "ITC Limited", logo: "/brands/itc.jpg" },
+  { name: "SRM University", logo: "/brands/srm.jpg" },
+  { name: "VIT University", logo: "/brands/vit.jpg" },
+  { name: "BSNL", logo: "/brands/bsnl.jpg" },
 ];
 
-// Add your video files here when they are ready.
-// Example: { id: "1", title: "Product video", video: "/videos/video-1.mp4" }
 const watchVideos: {
   id: string;
   title: string;
   video: string;
-}[] = [];
+}[] = [
+  {
+    id: "1",
+    title: "Product Video 1",
+    video: "/videos/video-1.webm",
+  },
+  {
+    id: "2",
+    title: "Product Video 2",
+    video: "/videos/video-2.webm",
+  },
+  {
+    id: "3",
+    title: "Product Video 3",
+    video: "/videos/video-3.webm",
+  },
+  {
+    id: "4",
+    title: "Product Video 4",
+    video: "/videos/video-4.webm",
+  },
+];
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -58,8 +80,11 @@ export default function HomePage() {
   const [bannersLoading, setBannersLoading] = useState(true);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
+  // Watch & Buy viewer
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [playingVideo, setPlayingVideo] = useState(false);
+  const [videoViewerOpen, setVideoViewerOpen] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const activeVideoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch categories
   useEffect(() => {
@@ -139,21 +164,77 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  const showPreviousVideo = () => {
-    if (watchVideos.length <= 1) return;
+  // Play the selected video when the viewer opens or video changes
+  useEffect(() => {
+    if (!videoViewerOpen) return;
 
-    setPlayingVideo(false);
+    const video = activeVideoRef.current;
+
+    if (video) {
+      video.play().catch((error) => {
+        console.warn("Video autoplay was prevented:", error);
+      });
+    }
+  }, [videoViewerOpen, currentVideoIndex]);
+
+  // Lock page scrolling and support keyboard controls in video viewer
+  useEffect(() => {
+    if (!videoViewerOpen) return;
+
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setVideoViewerOpen(false);
+      }
+
+      if (event.key === "ArrowLeft") {
+        setCurrentVideoIndex((index) =>
+          index === 0 ? watchVideos.length - 1 : index - 1
+        );
+      }
+
+      if (event.key === "ArrowRight") {
+        setCurrentVideoIndex((index) =>
+          (index + 1) % watchVideos.length
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [videoViewerOpen]);
+
+  const openVideoViewer = (index: number) => {
+    setCurrentVideoIndex(index);
+    setIsVideoMuted(true);
+    setVideoViewerOpen(true);
+  };
+
+  const closeVideoViewer = () => {
+    activeVideoRef.current?.pause();
+    setVideoViewerOpen(false);
+  };
+
+  const showPreviousVideo = () => {
     setCurrentVideoIndex((index) =>
       index === 0 ? watchVideos.length - 1 : index - 1
     );
   };
 
   const showNextVideo = () => {
-    if (watchVideos.length <= 1) return;
-
-    setPlayingVideo(false);
     setCurrentVideoIndex((index) =>
       (index + 1) % watchVideos.length
+    );
+  };
+
+  const handleBrandImageError = (brand: Brand) => {
+    console.error(
+      `Unable to load brand logo: ${brand.logo}. Check that the file exists inside public/brands/.`
     );
   };
 
@@ -348,9 +429,7 @@ export default function HomePage() {
                       className="h-20 w-40 object-contain md:h-24 md:w-48"
                       loading="eager"
                       decoding="async"
-                      onError={() =>
-                        console.error(`Unable to load brand logo: ${brand.logo}`)
-                      }
+                      onError={() => handleBrandImageError(brand)}
                     />
                   </div>
                 ))}
@@ -382,9 +461,7 @@ export default function HomePage() {
                       className="h-20 w-40 object-contain md:h-24 md:w-48"
                       loading="eager"
                       decoding="async"
-                      onError={() =>
-                        console.error(`Unable to load brand logo: ${brand.logo}`)
-                      }
+                      onError={() => handleBrandImageError(brand)}
                     />
                   </div>
                 ))}
@@ -407,79 +484,117 @@ export default function HomePage() {
                 Watch & Buy
               </h2>
             </div>
-
-            {watchVideos.length > 1 && (
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={showPreviousVideo}
-                  aria-label="Previous video"
-                  className="flex h-11 w-11 items-center justify-center border border-black bg-white transition-colors hover:bg-black hover:text-white"
-                >
-                  <ChevronRight className="rotate-180" size={18} />
-                </button>
-
-                <button
-                  onClick={showNextVideo}
-                  aria-label="Next video"
-                  className="flex h-11 w-11 items-center justify-center border border-black bg-white transition-colors hover:bg-black hover:text-white"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            )}
           </div>
 
-          {watchVideos.length === 0 ? (
-            <div className="flex min-h-[300px] flex-col items-center justify-center border border-dashed border-[#c9b9a7] bg-white px-6 py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f8f6f2]">
-                <Video size={28} className="text-[#b99a76]" />
-              </div>
+          <div className="watch-video-grid">
+            {watchVideos.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => openVideoViewer(index)}
+                aria-label={`Watch ${item.title}`}
+                className="watch-video-card group relative block cursor-pointer overflow-hidden border-0 bg-black p-0 text-left"
+              >
+                <video
+                  src={item.video}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
 
-              <h3 className="mt-5 text-lg font-bold text-black">
-                Videos coming soon
-              </h3>
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
 
-              <p className="mt-2 max-w-md text-sm leading-6 text-neutral-500">
-                Product videos will appear here. The Watch & Buy section is ready for your video files.
-              </p>
-            </div>
-          ) : (
-            <div className="watch-video-grid">
-              {watchVideos.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={`watch-video-card ${
-                    index === currentVideoIndex ? "watch-video-active" : ""
-                  }`}
-                >
-                  <video
-                    key={item.id}
-                    src={item.video}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    className="h-full w-full object-cover"
-                    onPlay={() => setPlayingVideo(true)}
-                    onPause={() => setPlayingVideo(false)}
-                  />
-
-                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 to-transparent p-4">
-                    <p className="text-sm font-bold text-white">
-                      {item.title}
-                    </p>
-                  </div>
-
-                  {!playingVideo && (
-                    <div className="pointer-events-none absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-black">
-                      <Play size={20} fill="currentColor" />
-                    </div>
-                  )}
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-4">
+                  <p className="text-sm font-bold text-white">
+                    {item.title}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
+
+                <div className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm">
+                  <Video size={17} />
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* Full-screen Watch & Buy Video Viewer */}
+      {videoViewerOpen && watchVideos[currentVideoIndex] && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Watch product video"
+          onClick={closeVideoViewer}
+        >
+          {/* Video */}
+          <div
+            className="relative flex h-full w-full items-center justify-center"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <video
+              key={watchVideos[currentVideoIndex].id}
+              ref={activeVideoRef}
+              src={watchVideos[currentVideoIndex].video}
+              autoPlay
+              loop
+              muted={isVideoMuted}
+              playsInline
+              controls
+              preload="auto"
+              className="h-full w-full object-contain"
+            />
+
+            {/* Mute / Unmute */}
+            <button
+              type="button"
+              onClick={() => setIsVideoMuted((muted) => !muted)}
+              aria-label={isVideoMuted ? "Unmute video" : "Mute video"}
+              className="absolute left-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            >
+              {isVideoMuted ? (
+                <VolumeX size={22} />
+              ) : (
+                <Volume2 size={22} />
+              )}
+            </button>
+
+            {/* Close */}
+            <button
+              type="button"
+              onClick={closeVideoViewer}
+              aria-label="Close video"
+              className="absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Previous Video */}
+            <button
+              type="button"
+              onClick={showPreviousVideo}
+              aria-label="Previous video"
+              className="absolute left-3 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30 sm:left-6"
+            >
+              <ChevronLeft size={28} />
+            </button>
+
+            {/* Next Video */}
+            <button
+              type="button"
+              onClick={showNextVideo}
+              aria-label="Next video"
+              className="absolute right-3 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/30 sm:right-6"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Shop CTA */}
       <section className="px-6 py-20 text-center">
