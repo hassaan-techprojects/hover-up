@@ -1,6 +1,6 @@
 "use client";
 import { useCallback,useEffect,useState } from "react";
-import { RefreshCw,ChartNoAxesCombined,ShoppingBag,Truck,CheckCircle2 } from "lucide-react";
+import { RefreshCw,ChartNoAxesCombined,ShoppingBag,Truck,CheckCircle2,XCircle } from "lucide-react";
 import { Area,AreaChart,Bar,BarChart,CartesianGrid,ResponsiveContainer,Tooltip,XAxis,YAxis } from "recharts";
 type Stats={totalOrders:number;deliveredOrders:number;processingOrders:number;shippedOrders:number;cancelledOrders:number;pendingOrders:number;totalProducts:number;publishedProducts:number;draftOrInactiveProducts:number;totalCustomers:number;totalRevenue:number};
 type Data={stats:Stats;chart:{date:string;label:string;orders:number;processing:number;shipped:number;delivered:number;cancelled:number}[]};
