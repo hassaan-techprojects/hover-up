@@ -737,7 +737,7 @@ function ProductDetailContent({
 
     const unavailableAllocation = allocations.find((item) => {
       if (!item.variant) return false;
-      return getAvailableStock(item.variant) < item.quantity;
+      return product.stockTracked && getAvailableStock(item.variant) < item.quantity;
     });
 
     if (unavailableAllocation) {
@@ -1297,7 +1297,7 @@ function ProductDetailContent({
                   const stock = variant ? getAvailableStock(variant) : 0;
                   const unavailable = hasVariants && !variant;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
-                  const atStockLimit = !hasVariants && selectedSizeTotal >= availableStock;
+                  const atStockLimit = product?.stockTracked === true && !hasVariants && selectedSizeTotal >= availableStock;
 
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
@@ -1343,9 +1343,9 @@ function ProductDetailContent({
 
                               if (
                                 currentTotal >= selectedPack ||
-                                (!hasVariants && currentTotal >= availableStock) ||
+                                (product?.stockTracked === true && !hasVariants && currentTotal >= availableStock) ||
                                 unavailable ||
-                                (hasVariants && currentSizeQuantity >= stock)
+                                (product?.stockTracked === true && hasVariants && currentSizeQuantity >= stock)
                               ) {
                                 return current;
                               }
@@ -1357,7 +1357,7 @@ function ProductDetailContent({
                             });
                             setCartMessage("");
                           }}
-                          disabled={unavailable || atPackLimit || atStockLimit || (hasVariants && sizeQuantity >= stock)}
+                          disabled={unavailable || atPackLimit || atStockLimit || (product?.stockTracked === true && hasVariants && sizeQuantity >= stock)}
                           className="flex h-full w-9 items-center justify-center disabled:opacity-30"
                           aria-label={`Increase ${size.value} quantity`}
                         >
@@ -1477,11 +1477,13 @@ function ProductDetailContent({
               />
 
               <span className="text-[11px] tracking-wide text-[#666]">
-                {availableStock > 0
-                  ? availableStock <= 5
-                    ? `Only ${availableStock} left in stock`
-                    : "In stock and ready to ship"
-                  : !product.stockTracked ? "Available to order" : "Currently unavailable"}
+                {!product.stockTracked
+                  ? "Available to order"
+                  : availableStock > 0
+                    ? availableStock <= 5
+                      ? `Only ${availableStock} left in stock`
+                      : "In stock and ready to ship"
+                    : "Currently unavailable"}
               </span>
             </div>
 
