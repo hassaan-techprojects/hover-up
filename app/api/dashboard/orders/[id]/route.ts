@@ -38,6 +38,22 @@ export async function PATCH(
       return NextResponse.json({ error: "Choose a valid order status." }, { status: 400 });
     }
 
+    const dateInputs = [body.expectedDeliveryAt, body.shippedAt, body.deliveredAt];
+    if (dateInputs.some((value) => value !== undefined && value !== null && value !== "" && Number.isNaN(new Date(`${value}T12:00:00.000Z`).getTime()))) {
+      return NextResponse.json({ error: "Enter valid shipment dates." }, { status: 400 });
+    }
+    if (body.trackingUrl) {
+      try {
+        const trackingUrl = new URL(body.trackingUrl);
+        if (!["http:", "https:"].includes(trackingUrl.protocol)) throw new Error("Invalid protocol");
+      } catch {
+        return NextResponse.json({ error: "Enter a valid tracking URL." }, { status: 400 });
+      }
+    }
+    if ((body.carrier?.length ?? 0) > 120 || (body.trackingNumber?.length ?? 0) > 120) {
+      return NextResponse.json({ error: "Carrier and tracking number must be 120 characters or fewer." }, { status: 400 });
+    }
+
     const current = await prisma.order.findUnique({
       where: { id },
       select: { id: true, status: true, orderNumber: true, shipment: true, payment: { select: { method: true, status: true } } },
