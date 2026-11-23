@@ -27,6 +27,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import ProductSeoDescription from "@/components/storefront/product-seo-description";
 
 type ProductImage = {
   id: string;
@@ -1222,19 +1223,14 @@ export default function ProductDetailClient({
             </div>
 
             {activeTab === "description" ? (
-              <div className="max-w-3xl py-9">
-                <h2 className="text-xl font-light tracking-wide">
-                  Product Description
-                </h2>
-
-                <div className="mt-5 whitespace-pre-line text-[13px] leading-8 text-[#666]">
-                  {product.description ||
-                    product.shortDescription ||
-                    "Product details will be updated soon."}
-                </div>
-
+              <div>
+                <ProductSeoDescription
+                  productName={product.name}
+                  categoryName={product.categories[0]?.category.name}
+                  categorySlug={product.categories[0]?.category.slug}
+                />
                 {product.sku && (
-                  <p className="mt-8 text-[11px] text-[#999]">
+                  <p className="max-w-3xl border-t border-[#eae8e4] pt-5 text-[11px] text-[#999]">
                     Product SKU: {product.sku}
                   </p>
                 )}
