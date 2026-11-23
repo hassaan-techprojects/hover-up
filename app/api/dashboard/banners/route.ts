@@ -50,9 +50,9 @@ async function getAdmin() {
     };
   }
 
-  if (user.role !== "ADMIN") {
+  if (!["ADMIN", "ANALYST"].includes(user.role)) {
     return {
-      error: "Forbidden. Admin access required.",
+      error: "Forbidden. Catalogue staff access required.",
       status: 403,
     };
   }
