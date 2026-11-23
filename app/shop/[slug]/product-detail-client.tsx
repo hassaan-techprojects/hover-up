@@ -586,10 +586,6 @@ export default function ProductDetailClient({
 
   async function submitReview() {
     if (!product) return;
-    if (!reviewTitle.trim() && !reviewComment.trim()) {
-      setReviewMessage("Write a review or add a title before submitting.");
-      return;
-    }
     if (reviewFiles.length > 4) {
       setReviewMessage("You can upload up to four photos.");
       return;
