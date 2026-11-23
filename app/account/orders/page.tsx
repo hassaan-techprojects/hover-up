@@ -131,6 +131,7 @@ export default function AccountOrdersPage() {
                           <p className="mt-1 text-[10px] text-[#999]">Quantity: {item.quantity}</p>
                           {custom.packSize && <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
                           {sizes.length>0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map(size=><span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
+                          {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Text-only design requested</p>}
                           <div className="mt-3 flex flex-wrap gap-3">
                             {typeof custom.frontImageUrl==="string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Front logo</a>}
                             {typeof custom.backImageUrl==="string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Back logo</a>}
