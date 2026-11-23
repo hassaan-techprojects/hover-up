@@ -119,6 +119,7 @@ type CartEntry = {
 };
 
 const CART_STORAGE_KEY = "hover-up-cart";
+const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 const WISHLIST_STORAGE_KEY = "hover-up-wishlist";
 
 function formatPrice(value: number | string | null | undefined) {
@@ -533,52 +534,36 @@ export default function ProductDetailClient({
         setCartMessage("Uploading your logo files...");
         const [frontImageUrl, backImageUrl] = await Promise.all([uploadLogo(frontLogo!, "front"), uploadLogo(backLogo!, "back")]);
         const allocations = sizeOptions.map(size => ({ size: size.value, quantity: sizeQuantities[size.value] ?? 0, variantId: matchingVariants(selectedColor, size.value)[0]?.id ?? null })).filter(entry => entry.quantity > 0);
-        const storedPackCart = localStorage.getItem(CART_STORAGE_KEY);
-        const packCart: CartEntry[] = storedPackCart ? JSON.parse(storedPackCart) : [];
-        packCart.push({ productId: product.id, variantId: null, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity: selectedPack, variantName: selectedColor || null, packSize: selectedPack, color: selectedColor, sizeBreakdown: allocations, frontImageUrl, backImageUrl, customizationNotes });
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(packCart));
-        if (goToCart) router.push("/checkout"); else setCartMessage("Customized pack added to your bag.");
+        const entry: CartEntry = { productId: product.id, variantId: null, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity: selectedPack, variantName: selectedColor || null, packSize: selectedPack, color: selectedColor, sizeBreakdown: allocations, frontImageUrl, backImageUrl, customizationNotes };
+        if (goToCart) {
+          localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
+          router.push("/checkout?mode=buy-now");
+        } else {
+          const storedPackCart = localStorage.getItem(CART_STORAGE_KEY);
+          const packCart: CartEntry[] = storedPackCart ? JSON.parse(storedPackCart) : [];
+          packCart.push(entry);
+          localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(packCart));
+          setCartMessage("Customized pack added to your bag.");
+        }
         return;
       }
       const stored = localStorage.getItem(CART_STORAGE_KEY);
-
-      const cart: CartEntry[] = stored
-        ? JSON.parse(stored)
-        : [];
-
+      const cart: CartEntry[] = stored ? JSON.parse(stored) : [];
       const variantId = selectedVariant?.id ?? null;
-
-      const existingIndex = cart.findIndex(
-        (item) =>
-          item.productId === product.id &&
-          item.variantId === variantId
-      );
-
       const entry: CartEntry = {
-        productId: product.id,
-        variantId,
-        name: product.name,
-        slug: product.slug,
-        price: currentPrice,
-        image: selectedImageUrl,
-        quantity,
+        productId: product.id, variantId, name: product.name, slug: product.slug,
+        price: currentPrice, image: selectedImageUrl, quantity,
         variantName: selectedVariant?.name ?? null,
       };
 
-      if (existingIndex >= 0) {
-        cart[existingIndex].quantity += quantity;
-      } else {
-        cart.push(entry);
-      }
-
-      localStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(cart)
-      );
-
       if (goToCart) {
-        router.push("/checkout");
+        localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
+        router.push("/checkout?mode=buy-now");
       } else {
+        const existingIndex = cart.findIndex((item) => item.productId === product.id && item.variantId === variantId);
+        if (existingIndex >= 0) cart[existingIndex].quantity += quantity;
+        else cart.push(entry);
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
         setCartMessage("Added to your bag successfully.");
       }
     } catch {
