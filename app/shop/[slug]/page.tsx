@@ -368,25 +368,17 @@ function ProductDetailContent({
       "4XL": 7,
     };
 
-    const configuredSizes = product.attributes
-      .map((item) => item.attributeValue)
-      .filter((value) => value.termType === "SIZE");
-
-    const fallbackSizes: AttributeValue[] = [
-      { id: "default-size-s", value: "41", image: null, sizeSymbol: "S", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
-      { id: "default-size-m", value: "43", image: null, sizeSymbol: "M", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
-      { id: "default-size-l", value: "45", image: null, sizeSymbol: "L", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
-      { id: "default-size-xl", value: "47", image: null, sizeSymbol: "XL", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
-      { id: "default-size-2xl", value: "49", image: null, sizeSymbol: "2XL", termType: "SIZE", attribute: { id: "default-size", name: "Size", slug: "size" } },
+    // The pack configurator always uses this exact size-to-number mapping.
+    // Do not hide these choices just because a product has other configured terms.
+    const canonicalSizes: AttributeValue[] = [
+      { id: "pack-size-s", value: "41", image: null, sizeSymbol: "S", termType: "SIZE", attribute: { id: "pack-size", name: "Size", slug: "size" } },
+      { id: "pack-size-m", value: "43", image: null, sizeSymbol: "M", termType: "SIZE", attribute: { id: "pack-size", name: "Size", slug: "size" } },
+      { id: "pack-size-l", value: "45", image: null, sizeSymbol: "L", termType: "SIZE", attribute: { id: "pack-size", name: "Size", slug: "size" } },
+      { id: "pack-size-xl", value: "47", image: null, sizeSymbol: "XL", termType: "SIZE", attribute: { id: "pack-size", name: "Size", slug: "size" } },
+      { id: "pack-size-2xl", value: "49", image: null, sizeSymbol: "2XL", termType: "SIZE", attribute: { id: "pack-size", name: "Size", slug: "size" } },
     ];
 
-    return (configuredSizes.length > 0 ? configuredSizes : fallbackSizes)
-      .sort((a, b) => {
-        const aSymbol = (a.sizeSymbol || a.value).toUpperCase();
-        const bSymbol = (b.sizeSymbol || b.value).toUpperCase();
-        return (order[aSymbol] ?? 99) - (order[bSymbol] ?? 99) ||
-          a.value.localeCompare(b.value, undefined, { numeric: true });
-      });
+    return canonicalSizes.sort((a, b) => (order[a.sizeSymbol || ""] ?? 99) - (order[b.sizeSymbol || ""] ?? 99));
   }, [product]);
 
   // PRODUCT IMAGES
@@ -729,11 +721,6 @@ function ProductDetailContent({
         };
       })
       .filter((item) => item.quantity > 0);
-
-    if (hasVariants && allocations.some((item) => !item.variant)) {
-      setCartMessage("One or more selected sizes are unavailable for this color.");
-      return;
-    }
 
     const unavailableAllocation = allocations.find((item) => {
       if (!item.variant) return false;
@@ -1295,7 +1282,7 @@ function ProductDetailContent({
                   const matches = matchingVariants(selectedColor, size.value);
                   const variant = matches[0] ?? null;
                   const stock = variant ? getAvailableStock(variant) : 0;
-                  const unavailable = hasVariants && !variant;
+                  const unavailable = false;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
                   const atStockLimit = product?.stockTracked === true && !hasVariants && selectedSizeTotal >= availableStock;
 
@@ -1398,7 +1385,7 @@ function ProductDetailContent({
               <p className="mb-4 mt-5 text-[11px] tracking-[0.16em]">UPLOAD FRONT AND BACK LOGOS</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE *</span>
+                  <span className="block text-[11px] font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE</span>
                   <span className="mt-2 block truncate text-[11px] text-[#777]">
                     {frontImageFile ? frontImageFile.name : "Add your front artwork"}
                   </span>
@@ -1414,7 +1401,7 @@ function ProductDetailContent({
                 </label>
 
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] font-semibold tracking-[0.12em]">BACK DESIGN IMAGE *</span>
+                  <span className="block text-[11px] font-semibold tracking-[0.12em]">BACK DESIGN IMAGE</span>
                   <span className="mt-2 block truncate text-[11px] text-[#777]">
                     {backImageFile ? backImageFile.name : "Add your back artwork"}
                   </span>
@@ -1430,7 +1417,7 @@ function ProductDetailContent({
                 </label>
               </div>
               <p className="mt-2 text-[10px] text-[#999]">
-                Upload the artwork you want printed on the front and back of the selected items.
+                Add artwork now or share your design instructions after placing the order.
               </p>
               </>
               )}
@@ -1469,21 +1456,11 @@ function ProductDetailContent({
 
             <div className="mt-8 flex items-center gap-2">
               <span
-                className={`h-2 w-2 rounded-full ${
-                  availableStock > 0
-                    ? "bg-[#63876b]"
-                    : "bg-[#b45b50]"
-                }`}
+                className="h-2 w-2 rounded-full bg-[#63876b]"
               />
 
               <span className="text-[11px] tracking-wide text-[#666]">
-                {!product.stockTracked
-                  ? "Available to order"
-                  : availableStock > 0
-                    ? availableStock <= 5
-                      ? `Only ${availableStock} left in stock`
-                      : "In stock and ready to ship"
-                    : "Currently unavailable"}
+                "Available to order"
               </span>
             </div>
 
@@ -1493,10 +1470,7 @@ function ProductDetailContent({
               <button
                 onClick={() => addToCart(false)}
                 disabled={
-                  addingToCart ||
-                  !product.isInStock ||
-                  selectedSizeTotal !== selectedPack ||
-                  (textOnlyDesign && !customizationNotes.trim())
+                  addingToCart
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -1507,10 +1481,7 @@ function ProductDetailContent({
               <button
                 onClick={() => addToCart(true)}
                 disabled={
-                  addingToCart ||
-                  !product.isInStock ||
-                  selectedSizeTotal !== selectedPack ||
-                  (textOnlyDesign && !customizationNotes.trim())
+                  addingToCart
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
