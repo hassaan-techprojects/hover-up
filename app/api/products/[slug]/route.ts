@@ -163,7 +163,10 @@ export async function GET(
     console.error("Product detail API error:", error);
 
     return NextResponse.json(
-      { error: "Unable to load product details." },
+      {
+        error: "The product could not be loaded because the server encountered a data or database error.",
+        code: "PRODUCT_DETAIL_LOAD_FAILED",
+      },
       { status: 500 }
     );
   }
