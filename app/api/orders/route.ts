@@ -127,6 +127,11 @@ export async function POST(request: Request) {
       const productColors = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "COLOR");
+      const standardSizes = ["S", "M", "L", "XL", "2XL"];
+      const hasSizeVariants = product.variants.some((variant) => {
+        const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+        return productSizes.some((size) => values.includes(size.value.toLowerCase()) || Boolean(size.sizeSymbol && values.includes(size.sizeSymbol.toLowerCase())));
+      });
 
       if (item.packSize) {
         const packPricing = product.packPricing && typeof product.packPricing === "object" && !Array.isArray(product.packPricing)
@@ -145,8 +150,8 @@ export async function POST(request: Request) {
           return responseError(`Size quantities for ${product.name} must add up to exactly ${item.packSize}.`);
         }
 
-        if (productSizes.length === 0) {
-          return responseError(`Size options are not configured for ${product.name}.`);
+        if (productSizes.length === 0 && !standardSizes.includes(String(item.sizeBreakdown[0]?.size || "").toUpperCase()) && !item.sizeBreakdown.every((size) => standardSizes.includes(size.size.toUpperCase()))) {
+          return responseError(`Choose a valid size for ${product.name}.`);
         }
 
         if (product.variants.length === 0 && product.inventories.length > 0) {
@@ -174,29 +179,31 @@ export async function POST(request: Request) {
           return responseError("Upload valid front and back logo files, or choose the text-only design option.");
         }
 
+        if (product.variants.length > 0 && !hasSizeVariants) {
+          const colorVariant = product.variants.find((variant) => {
+            const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+            return !item.color || values.includes(item.color.toLowerCase());
+          });
+          if (!colorVariant) return responseError(`The selected color is unavailable for ${product.name}.`, 409);
+          const stock = colorVariant.inventory ? Math.max(0, colorVariant.inventory.quantity - colorVariant.inventory.reserved) : Math.max(0, colorVariant.stock);
+          if (stock < item.packSize) return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
+        }
+
         const activeAllocations = item.sizeBreakdown.filter((size) => size.quantity > 0);
         for (const allocation of activeAllocations) {
-          const sizeTerm = productSizes.find((size) => size.value === allocation.size || size.sizeSymbol === allocation.size);
-          if (!sizeTerm) return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
+          const sizeTerm = productSizes.find((size) => size.value.toUpperCase() === allocation.size.toUpperCase() || size.sizeSymbol?.toUpperCase() === allocation.size.toUpperCase());
+          const validStandardSize = productSizes.length === 0 && standardSizes.includes(allocation.size.toUpperCase());
+          if (!sizeTerm && !validStandardSize) return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
 
-          if (product.variants.length > 0) {
+          if (product.variants.length > 0 && hasSizeVariants) {
             const variant = product.variants.find((entry) => entry.id === allocation.variantId);
-            if (!variant) return responseError(`The selected size ${allocation.size} is unavailable for ${product.name}.`, 409);
-
+            if (!variant || !sizeTerm) return responseError(`The selected size ${allocation.size} is unavailable for ${product.name}.`, 409);
             const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
-            const matchesSize = values.includes(sizeTerm.value.toLowerCase()) ||
-              Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()));
+            const matchesSize = values.includes(sizeTerm.value.toLowerCase()) || Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()));
             const matchesColor = !item.color || values.includes(item.color.toLowerCase());
-            if (!matchesSize || !matchesColor) {
-              return responseError(`The selected variant for size ${allocation.size} does not match your options.`);
-            }
-
-            const stock = variant.inventory
-              ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
-              : Math.max(0, variant.stock);
-            if (stock < allocation.quantity) {
-              return responseError(`Only ${stock} item(s) are available in size ${allocation.size}.`, 409);
-            }
+            if (!matchesSize || !matchesColor) return responseError(`The selected variant for size ${allocation.size} does not match your options.`);
+            const stock = variant.inventory ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved) : Math.max(0, variant.stock);
+            if (stock < allocation.quantity) return responseError(`Only ${stock} item(s) are available in size ${allocation.size}.`, 409);
           }
         }
 
