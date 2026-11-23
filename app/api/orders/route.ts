@@ -314,12 +314,14 @@ export async function POST(request: Request) {
               firstName: customer.firstName.trim(),
               lastName: customer.lastName?.trim() || null,
               phone: customer.phone.trim(),
+              ...(session?.user?.role === "CUSTOMER" ? { userId: session.user.id } : {}),
             },
             create: {
               firstName: customer.firstName.trim(),
               lastName: customer.lastName?.trim() || null,
               email: customer.email.trim().toLowerCase(),
               phone: customer.phone.trim(),
+              ...(session?.user?.role === "CUSTOMER" ? { userId: session.user.id } : {}),
             },
           });
 
