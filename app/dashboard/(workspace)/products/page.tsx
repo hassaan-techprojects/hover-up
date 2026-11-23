@@ -1,6 +1,8 @@
 
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -10,9 +12,11 @@ import {
   Pencil,
   Trash2,
   Power,
+  Eye,
   RefreshCw,
   X,
   Image as ImageIcon,
+  Tags,
 } from "lucide-react";
 
 type ProductCategory = {
@@ -248,17 +252,13 @@ export default function AllProductsPage() {
     (product) => product.status === "ACTIVE" && product.isActive
   ).length;
 
-  const draftCount = products.filter(
-    (product) => product.status === "DRAFT"
-  ).length;
-
-  const inactiveCount = products.filter(
-    (product) => !product.isActive || product.status === "ARCHIVED"
+  const draftOrInactiveCount = products.filter(
+    (product) => product.status === "DRAFT" || product.status === "ARCHIVED" || !product.isActive
   ).length;
 
   return (
     <div className="min-h-screen bg-[#f8f7f4] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1680px]">
         {/* Page Header */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -312,7 +312,7 @@ export default function AllProductsPage() {
               <span className="h-2 w-2 rounded-full bg-amber-500" />
             </div>
             <p className="mt-3 text-2xl font-semibold text-[#171717]">
-              {loading ? "—" : draftCount + inactiveCount}
+              {loading ? "—" : draftOrInactiveCount}
             </p>
           </div>
         </div>
@@ -444,7 +444,7 @@ export default function AllProductsPage() {
                                 <img
                                   src={primaryImage.url}
                                   alt={product.name}
-                                  className="h-full w-full object-cover"
+                                  className="h-full w-full object-contain p-1"
                                 />
                               ) : (
                                 <ImageIcon
@@ -501,6 +501,17 @@ export default function AllProductsPage() {
 
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-1">
+                            <Link href={`/shop/${product.slug}`} target="_blank" title="View product page (admin preview for drafts)" className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#f5f1eb] hover:text-[#8b7054]">
+                              <Eye size={16} />
+                            </Link>
+                            <Link
+                              href={`/dashboard/products/${product.id}/pricing`}
+                              title="Configure pack pricing"
+                              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#f5f1eb] hover:text-[#8b7054]"
+                            >
+                              <Tags size={16} />
+                            </Link>
+
                             <Link
                               href={`/dashboard/products/${product.id}/edit`}
                               title="Edit product"

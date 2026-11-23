@@ -7,7 +7,7 @@ import {
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 import {
   s3,
   storageBucket,
@@ -130,7 +130,7 @@ async function deleteUploadedObjects(objects: UploadedObject[]) {
 
 export async function GET() {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
   const uploadedObjects: UploadedObject[] = [];
 
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -409,6 +409,7 @@ export async function POST(request: NextRequest) {
         select: {
           id: true,
           attributeId: true,
+          termType: true,
         },
       });
 
@@ -419,6 +420,10 @@ export async function POST(request: NextRequest) {
           },
           { status: 400 }
         );
+      }
+
+      if (existingTerms.some((term) => term.termType !== "COLOR")) {
+        return NextResponse.json({ error: "Only color terms can be assigned as product attributes. Select sizes during pack customization." }, { status: 400 });
       }
 
       for (const selection of attributeSelections) {

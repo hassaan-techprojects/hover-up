@@ -16,6 +16,7 @@ type CartItem = {
   image: string;
   quantity: number;
   variantName: string | null;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
@@ -268,7 +269,7 @@ export default function CheckoutPage() {
                     {items.map((item, index) => (
                       <div key={`${item.productId}-${index}`} className="flex gap-3">
                         <div className="h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-[#f2f0ec]">{item.image && <img src={item.image} alt={item.name} className="h-full w-full object-cover" />}</div>
-                        <div className="min-w-0 flex-1"><p className="text-xs font-semibold leading-5">{item.name}</p><p className="mt-1 text-[10px] text-[#888]">{item.packSize ? `Pack of ${item.packSize}` : `Qty ${item.quantity}`}</p></div>
+                        <div className="min-w-0 flex-1"><p className="text-xs font-semibold leading-5">{item.name}</p><p className="mt-1 text-[10px] text-[#888]">{item.packSize ? `Pack of ${item.packSize}` : `Qty ${item.quantity}`}</p>{item.size && <p className="mt-1 text-[10px] text-[#888]">Size: {item.size}</p>}{item.color && <p className="mt-1 text-[10px] text-[#888]">Color: {item.color}</p>}</div>
                         <p className="text-xs font-semibold">{formatPrice(Number(item.price))}</p>
                       </div>
                     ))}

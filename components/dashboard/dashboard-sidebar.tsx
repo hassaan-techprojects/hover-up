@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   LayoutDashboard,
   ChartNoAxesCombined,
@@ -82,6 +82,21 @@ function DashboardSidebarContent({
   onClose,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/dashboard/me", { cache: "no-store" })
+      .then(response => response.json())
+      .then(data => setRole(data.role || "CUSTOMER"))
+      .catch(() => setRole("CUSTOMER"));
+  }, []);
+
+  const visibleNavigation = role === null ? [] : role === "ANALYST"
+    ? navigation.filter(section => section.label === "CATALOGUE").map(section => ({
+        ...section,
+        items: section.items.filter(item => ["Products", "Categories", "Attributes", "Banners & Media"].includes(item.name)),
+      }))
+    : navigation;
 
   return (
     <>
@@ -128,7 +143,7 @@ function DashboardSidebarContent({
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-6">
-          {navigation.map((section) => (
+          {visibleNavigation.map((section) => (
             <div key={section.label} className="mb-7">
               <p className="mb-3 px-3 text-[10px] font-semibold tracking-[0.2em] text-white/35">
                 {section.label}
@@ -173,7 +188,7 @@ function DashboardSidebarContent({
           ))}
         </div>
 
-        <div className="border-t border-white/10 p-4">
+        {role !== "ANALYST" && <div className="border-t border-white/10 p-4">
           <div className="rounded-xl bg-white/[0.06] p-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] tracking-[0.15em] text-white/45">
@@ -190,7 +205,7 @@ function DashboardSidebarContent({
               View your website
             </Link>
           </div>
-        </div>
+        </div>}
       </aside>
     </>
   );

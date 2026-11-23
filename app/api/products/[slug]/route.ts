@@ -1,5 +1,7 @@
 
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -22,12 +24,10 @@ export async function GET(
       );
     }
 
+    const session = await getServerSession(authOptions);
+    const canPreviewUnpublished = ["ADMIN", "ANALYST"].includes(session?.user?.role || "");
     const product = await prisma.product.findFirst({
-      where: {
-        slug,
-        status: "ACTIVE",
-        isActive: true,
-      },
+      where: { slug, ...(canPreviewUnpublished ? {} : { status: "ACTIVE", isActive: true }) },
       include: {
         images: {
           orderBy: [

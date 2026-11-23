@@ -4,17 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const PACK_PRICES: Record<number, number> = {
-  2: 1399,
-  5: 3250,
-  10: 6250,
-  15: 9100,
-  20: 11700,
-  50: 27600,
-  75: 39100,
-  100: 50100,
-};
-
 type SizeAllocation = {
   size: string;
   quantity: number;
@@ -25,6 +14,7 @@ type CheckoutItem = {
   productId: string;
   variantId?: string | null;
   quantity: number;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: SizeAllocation[];
@@ -138,11 +128,19 @@ export async function POST(request: Request) {
       const productColors = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "COLOR");
+      const standardSizes = ["S", "M", "L", "XL", "2XL"];
+      const hasSizeVariants = product.variants.some((variant) => {
+        const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+        return productSizes.some((size) => values.includes(size.value.toLowerCase()) || Boolean(size.sizeSymbol && values.includes(size.sizeSymbol.toLowerCase())));
+      });
 
       if (item.packSize) {
-        const packPrice = PACK_PRICES[item.packSize];
-        if (!packPrice || item.quantity !== item.packSize) {
-          return responseError(`The selected pack for ${product.name} is invalid.`);
+        const packPricing = product.packPricing && typeof product.packPricing === "object" && !Array.isArray(product.packPricing)
+          ? product.packPricing as unknown as Record<string, unknown>
+          : null;
+        const packPrice = Number(packPricing?.[String(item.packSize)]);
+        if (!Number.isFinite(packPrice) || packPrice <= 0 || item.quantity !== item.packSize) {
+          return responseError(`The selected pack for ${product.name} is not configured or is invalid.`);
         }
         if (!Array.isArray(item.sizeBreakdown) || item.sizeBreakdown.length === 0) {
           return responseError(`Select sizes for ${product.name} before checkout.`);
@@ -151,10 +149,6 @@ export async function POST(request: Request) {
         const allocated = item.sizeBreakdown.reduce((sum, size) => sum + Number(size.quantity || 0), 0);
         if (allocated !== item.packSize || item.sizeBreakdown.some((size) => !Number.isInteger(size.quantity) || size.quantity < 0)) {
           return responseError(`Size quantities for ${product.name} must add up to exactly ${item.packSize}.`);
-        }
-
-        if (productSizes.length === 0) {
-          return responseError(`Size options are not configured for ${product.name}.`);
         }
 
         if (product.variants.length === 0 && product.inventories.length > 0) {
@@ -182,29 +176,31 @@ export async function POST(request: Request) {
           return responseError("Upload valid front and back logo files, or choose the text-only design option.");
         }
 
+        if (product.variants.length > 0 && !hasSizeVariants) {
+          const colorVariant = product.variants.find((variant) => {
+            const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+            return !item.color || values.includes(item.color.toLowerCase());
+          });
+          if (!colorVariant) return responseError(`The selected color is unavailable for ${product.name}.`, 409);
+          const stock = colorVariant.inventory ? Math.max(0, colorVariant.inventory.quantity - colorVariant.inventory.reserved) : Math.max(0, colorVariant.stock);
+          if (stock < item.packSize) return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
+        }
+
         const activeAllocations = item.sizeBreakdown.filter((size) => size.quantity > 0);
         for (const allocation of activeAllocations) {
-          const sizeTerm = productSizes.find((size) => size.value === allocation.size || size.sizeSymbol === allocation.size);
-          if (!sizeTerm) return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
+          const sizeTerm = productSizes.find((size) => size.value.toUpperCase() === allocation.size.toUpperCase() || size.sizeSymbol?.toUpperCase() === allocation.size.toUpperCase());
+          const validStandardSize = productSizes.length === 0 && standardSizes.includes(allocation.size.toUpperCase());
+          if (!sizeTerm && !validStandardSize) return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
 
-          if (product.variants.length > 0) {
+          if (product.variants.length > 0 && hasSizeVariants) {
             const variant = product.variants.find((entry) => entry.id === allocation.variantId);
-            if (!variant) return responseError(`The selected size ${allocation.size} is unavailable for ${product.name}.`, 409);
-
+            if (!variant || !sizeTerm) return responseError(`The selected size ${allocation.size} is unavailable for ${product.name}.`, 409);
             const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
-            const matchesSize = values.includes(sizeTerm.value.toLowerCase()) ||
-              Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()));
+            const matchesSize = values.includes(sizeTerm.value.toLowerCase()) || Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()));
             const matchesColor = !item.color || values.includes(item.color.toLowerCase());
-            if (!matchesSize || !matchesColor) {
-              return responseError(`The selected variant for size ${allocation.size} does not match your options.`);
-            }
-
-            const stock = variant.inventory
-              ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
-              : Math.max(0, variant.stock);
-            if (stock < allocation.quantity) {
-              return responseError(`Only ${stock} item(s) are available in size ${allocation.size}.`, 409);
-            }
+            if (!matchesSize || !matchesColor) return responseError(`The selected variant for size ${allocation.size} does not match your options.`);
+            const stock = variant.inventory ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved) : Math.max(0, variant.stock);
+            if (stock < allocation.quantity) return responseError(`Only ${stock} item(s) are available in size ${allocation.size}.`, 409);
           }
         }
 
@@ -230,10 +226,24 @@ export async function POST(request: Request) {
         });
         subtotal += packPrice;
       } else {
+        const selectedSize = item.size?.trim().toUpperCase() || "";
+        if (!standardSizes.includes(selectedSize)) {
+          return responseError(`Choose a valid size for ${product.name}.`);
+        }
+        if (productSizes.length > 0 && !productSizes.some((size) => size.value.toUpperCase() === selectedSize || size.sizeSymbol?.toUpperCase() === selectedSize)) {
+          return responseError(`Size ${selectedSize} is not configured for ${product.name}.`);
+        }
+
         const variant = item.variantId
           ? product.variants.find((entry) => entry.id === item.variantId)
           : null;
         if (item.variantId && !variant) return responseError(`A selected option for ${product.name} is no longer available.`, 409);
+        if (variant && hasSizeVariants) {
+          const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
+          const sizeTerm = productSizes.find((size) => size.value.toUpperCase() === selectedSize || size.sizeSymbol?.toUpperCase() === selectedSize);
+          const matchesSize = Boolean(sizeTerm && (values.includes(sizeTerm.value.toLowerCase()) || Boolean(sizeTerm.sizeSymbol && values.includes(sizeTerm.sizeSymbol.toLowerCase()))));
+          if (!matchesSize) return responseError(`The selected variant does not match size ${selectedSize}.`);
+        }
 
         const unitPrice = Number(variant?.price ?? product.price);
         const stock = variant
@@ -241,7 +251,7 @@ export async function POST(request: Request) {
             ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
             : Math.max(0, variant.stock)
           : product.inventories?.[0]?.quantity ?? 0;
-        if (product.inventories.length > 0 && stock < item.quantity) {
+        if ((variant || product.inventories.length > 0) && stock < item.quantity) {
           return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
         }
 
@@ -254,6 +264,7 @@ export async function POST(request: Request) {
           quantity: item.quantity,
           unitPrice,
           totalPrice: unitPrice * item.quantity,
+          customization: { size: selectedSize },
         });
         subtotal += unitPrice * item.quantity;
       }
@@ -303,12 +314,14 @@ export async function POST(request: Request) {
               firstName: customer.firstName.trim(),
               lastName: customer.lastName?.trim() || null,
               phone: customer.phone.trim(),
+              ...(session?.user?.role === "CUSTOMER" ? { userId: session.user.id } : {}),
             },
             create: {
               firstName: customer.firstName.trim(),
               lastName: customer.lastName?.trim() || null,
               email: customer.email.trim().toLowerCase(),
               phone: customer.phone.trim(),
+              ...(session?.user?.role === "CUSTOMER" ? { userId: session.user.id } : {}),
             },
           });
 
@@ -338,7 +351,7 @@ export async function POST(request: Request) {
         });
       }
 
-      return tx.order.create({
+      const createdOrder = await tx.order.create({
         data: {
           orderNumber,
           customerId: savedCustomer.id,
@@ -375,6 +388,24 @@ export async function POST(request: Request) {
         },
         select: { id: true, orderNumber: true, totalAmount: true },
       });
+
+      await tx.activityLog.create({
+        data: {
+          userId: session?.user?.id ?? null,
+          action: "ORDER_PLACED",
+          entity: "ORDER",
+          entityId: createdOrder.id,
+          description: `New order ${createdOrder.orderNumber} was placed.`,
+          metadata: {
+            orderNumber: createdOrder.orderNumber,
+            customerId: savedCustomer.id,
+            paymentMethod: body.paymentMethod,
+            status: "PENDING",
+          },
+        },
+      });
+
+      return createdOrder;
     });
 
     if (body.paymentMethod === "ONLINE") {

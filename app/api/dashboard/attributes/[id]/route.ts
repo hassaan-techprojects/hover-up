@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 import { s3, storageBucket } from "@/lib/storage";
 
 type Context = {
@@ -24,7 +24,7 @@ export async function PATCH(
   { params }: Context
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -121,7 +121,7 @@ export async function DELETE(
   { params }: Context
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,7 +14,6 @@ import {
   Package,
   Layers,
   Tag,
-  FileText,
   Trash2,
   RefreshCw,
   Info,
@@ -23,8 +22,7 @@ import {
 type AttributeTerm = {
   id: string;
   value: string;
-  termType: "COLOR" | "SIZE";
-  sizeSymbol?: string | null;
+  termType: "COLOR";
   image?: string | null;
 };
 
@@ -57,7 +55,6 @@ type ProductImageFile = {
   altText: string;
 };
 
-const SIZE_SYMBOLS = ["S", "M", "L", "XL", "XXL"];
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -77,7 +74,6 @@ export default function AddProductPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [description, setDescription] = useState("");
   const [sku, setSku] = useState("");
   const [regularPrice, setRegularPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
@@ -108,10 +104,7 @@ export default function AddProductPage() {
         attribute.id
       );
 
-      return (
-        !alreadySelected &&
-        attribute.name.toLowerCase().includes(query)
-      );
+      return !alreadySelected && attribute.name.toLowerCase().includes(query);
     });
   }, [attributes, attributeSearch, selectedAttributes]);
 
@@ -136,7 +129,7 @@ export default function AddProductPage() {
     return counts.reduce((total, count) => total * count, 1);
   }, [selectedAttributeList, selectedAttributes]);
 
-  async function loadOptions() {
+  const loadOptions = useCallback(async () => {
     try {
       setLoadingOptions(true);
       setError("");
@@ -161,7 +154,7 @@ export default function AddProductPage() {
         );
       }
 
-      setAttributes(attributeData.attributes ?? []);
+      setAttributes((attributeData.attributes ?? []).map((attribute: Attribute) => ({ ...attribute, values: attribute.values.filter((term) => term.termType === "COLOR") })).filter((attribute: Attribute) => attribute.values.length > 0));
       setCategories(categoryData.categories ?? []);
     } catch (err) {
       setError(
@@ -170,7 +163,11 @@ export default function AddProductPage() {
     } finally {
       setLoadingOptions(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    void loadOptions();
+  }, [loadOptions]);
 
   function handleNameChange(value: string) {
     setName(value);
@@ -223,6 +220,28 @@ export default function AddProductPage() {
       if (image) URL.revokeObjectURL(image.preview);
 
       return current.filter((item) => item.id !== id);
+    });
+  }
+
+  function moveImage(id: string, direction: -1 | 1) {
+    setImages((current) => {
+      const index = current.findIndex((image) => image.id === id);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) return current;
+      const updated = [...current];
+      [updated[index], updated[nextIndex]] = [updated[nextIndex], updated[index]];
+      return updated;
+    });
+  }
+
+  function setMainImage(id: string) {
+    setImages((current) => {
+      const index = current.findIndex((image) => image.id === id);
+      if (index <= 0) return current;
+      const updated = [...current];
+      const [mainImage] = updated.splice(index, 1);
+      updated.unshift(mainImage);
+      return updated;
     });
   }
 
@@ -421,7 +440,6 @@ export default function AddProductPage() {
 
       formData.append("name", name.trim());
       formData.append("slug", slug.trim());
-      formData.append("description", description);
       formData.append("sku", sku.trim());
       formData.append("price", salePrice || regularPrice);
       formData.append("comparePrice", salePrice ? regularPrice : "");
@@ -461,7 +479,6 @@ export default function AddProductPage() {
                     {
                       id: term.id,
                       value: term.value,
-                      sizeSymbol: term.sizeSymbol,
                     },
                   ];
                 }
@@ -638,52 +655,10 @@ export default function AddProductPage() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[#333]">
-                    Product Description
-                  </label>
-
-                  <div className="overflow-hidden rounded-lg border border-[#e8e6e1]">
-                    <div className="flex flex-wrap items-center gap-1 border-b border-[#e8e6e1] bg-[#fcfbf9] p-2">
-                      {[
-                        ["H1", "# Heading 1\n"],
-                        ["H2", "## Heading 2\n"],
-                        ["H3", "### Heading 3\n"],
-                        ["H4", "#### Heading 4\n"],
-                        ["H5", "##### Heading 5\n"],
-                        ["H6", "###### Heading 6\n"],
-                        ["P", "\n"],
-                      ].map(([label, prefix]) => (
-                        <button
-                          key={label}
-                          type="button"
-                          onClick={() =>
-                            setDescription((current) =>
-                              current
-                                ? `${current}\n${prefix}`
-                                : prefix
-                            )
-                          }
-                          className="rounded-md px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-200"
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <textarea
-                      value={description}
-                      onChange={(event) =>
-                        setDescription(event.target.value)
-                      }
-                      rows={9}
-                      placeholder="Write your product description..."
-                      className="w-full resize-y p-4 text-sm leading-7 text-[#333] outline-none placeholder:text-gray-400"
-                    />
-                  </div>
-
-                  <p className="mt-2 text-xs text-gray-400">
-                    The heading controls insert Markdown heading markers. A rich-text editor and description-image SEO controls will be integrated separately.
+                <div className="rounded-lg border border-[#e8e6e1] bg-[#fcfbf9] p-4">
+                  <p className="text-xs font-semibold text-[#333]">Shared product description</p>
+                  <p className="mt-1 text-xs leading-6 text-[#888]">
+                    One structured SEO description is automatically displayed on every product page, including existing products. There is no need to write it again for each product.
                   </p>
                 </div>
               </div>
@@ -745,17 +720,15 @@ export default function AddProductPage() {
                           </span>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => removeImage(image.id)}
-                          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm hover:text-red-600"
-                          aria-label="Remove image"
-                        >
-                          <X size={15} />
-                        </button>
+                        <div className="absolute right-3 top-3 flex items-center gap-1">
+                          <button type="button" onClick={() => moveImage(image.id, -1)} disabled={index === 0} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-gray-600 shadow-sm hover:text-[#8b7054] disabled:opacity-30" aria-label="Move image earlier">←</button>
+                          <button type="button" onClick={() => moveImage(image.id, 1)} disabled={index === images.length - 1} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs text-gray-600 shadow-sm hover:text-[#8b7054] disabled:opacity-30" aria-label="Move image later">→</button>
+                          <button type="button" onClick={() => removeImage(image.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm hover:text-red-600" aria-label="Remove image"><X size={15} /></button>
+                        </div>
                       </div>
 
                       <div className="p-3">
+                        {index > 0 && <button type="button" onClick={() => setMainImage(image.id)} className="mb-3 rounded-md border border-[#e8e6e1] px-3 py-1.5 text-[10px] font-medium text-[#786b5c] hover:border-[#b99a76]">Make main image</button>}
                         <label className="mb-1 block text-xs font-medium text-gray-500">
                           Image name / ALT text
                         </label>
@@ -1035,12 +1008,6 @@ export default function AddProductPage() {
                                       alt=""
                                       className="h-5 w-5 rounded-full border border-white/20 object-cover"
                                     />
-                                  )}
-
-                                  {term.termType === "SIZE" && (
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-current text-[10px]">
-                                      {term.sizeSymbol || term.value}
-                                    </span>
                                   )}
 
                                   {term.value}

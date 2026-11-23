@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 
 function createSlug(value: string) {
   return value
@@ -19,6 +19,7 @@ const attributeInclude = {
       id: true,
       value: true,
       image: true,
+      termType: true,
     },
     orderBy: {
       value: "asc" as const,
@@ -33,7 +34,7 @@ const attributeInclude = {
 
 export async function GET() {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -60,7 +61,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(

@@ -233,22 +233,27 @@ button {
 
 /* HOMEPAGE CATEGORY LIST */
 .category-list {
-  scrollbar-width: thin;
-  scrollbar-color: #b99a76 #f8f6f2;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  overflow: hidden;
 }
 
-.category-list::-webkit-scrollbar {
-  height: 5px;
+.category-marquee-track {
+  width: max-content;
+  animation: category-marquee 34s linear infinite;
+  will-change: transform;
 }
 
-.category-list::-webkit-scrollbar-track {
-  background: #f8f6f2;
+.category-list:hover .category-marquee-track {
+  animation-play-state: paused;
 }
 
-.category-list::-webkit-scrollbar-thumb {
-  background: #b99a76;
-  border-radius: 20px;
+@keyframes category-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-marquee-track { animation: none; }
 }
 
 /* EQUAL CATEGORY IMAGE CONTAINERS */

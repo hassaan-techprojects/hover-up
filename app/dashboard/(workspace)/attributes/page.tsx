@@ -287,17 +287,16 @@ export default function AttributesPage() {
                         {attribute.values.map((term) => (
                           <span
                             key={term.id}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-[#e9e6df] bg-[#faf9f7] px-3 py-1.5 text-xs font-medium text-[#49443e]"
+                            className="inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden rounded-full border border-[#e9e6df] bg-[#faf9f7] px-3 py-1.5 text-xs font-medium text-[#49443e]"
                           >
                             {term.image && (
                               <img
                                 src={term.image}
                                 alt=""
-                                className="h-4 w-4 rounded-full border border-[#e5e0d8] object-cover"
+                                className="block h-4 w-4 shrink-0 overflow-hidden rounded-full border border-[#e5e0d8] object-cover"
                               />
                             )}
-
-                            {term.value}
+                            <span className="truncate">{term.value}</span>
                           </span>
                         ))}
                       </div>

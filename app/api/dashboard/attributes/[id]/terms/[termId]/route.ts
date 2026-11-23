@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { prisma } from "@/lib/prisma";
-import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { getDashboardCatalogStaff } from "@/lib/dashboard-catalog-staff";
 import { s3, storageBucket, getPublicObjectUrl } from "@/lib/storage";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -25,7 +25,7 @@ export async function PATCH(
   let uploadedKey: string | null = null;
 
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(
@@ -45,6 +45,9 @@ export async function PATCH(
         { error: "Term not found." },
         { status: 404 }
       );
+    }
+    if (existing.termType !== "COLOR") {
+      return NextResponse.json({ error: "Only color terms can be edited here." }, { status: 400 });
     }
 
     const formData = await request.formData();
@@ -164,7 +167,7 @@ export async function DELETE(
   { params }: Context
 ) {
   try {
-    const auth = await getDashboardAdmin();
+    const auth = await getDashboardCatalogStaff();
 
     if ("error" in auth) {
       return NextResponse.json(

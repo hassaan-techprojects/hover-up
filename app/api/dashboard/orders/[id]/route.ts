@@ -24,24 +24,62 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await request.json() as { status?: keyof typeof shipmentStatus };
+    const body = await request.json() as {
+      status?: keyof typeof shipmentStatus;
+      expectedDeliveryAt?: string | null;
+      shippedAt?: string | null;
+      deliveredAt?: string | null;
+      carrier?: string | null;
+      trackingNumber?: string | null;
+      trackingUrl?: string | null;
+    };
     const allowed = Object.keys(shipmentStatus);
     if (!body.status || !allowed.includes(body.status)) {
       return NextResponse.json({ error: "Choose a valid order status." }, { status: 400 });
     }
 
+    const dateInputs = [body.expectedDeliveryAt, body.shippedAt, body.deliveredAt];
+    if (dateInputs.some((value) => value !== undefined && value !== null && value !== "" && Number.isNaN(new Date(`${value}T12:00:00.000Z`).getTime()))) {
+      return NextResponse.json({ error: "Enter valid shipment dates." }, { status: 400 });
+    }
+    if (body.trackingUrl) {
+      try {
+        const trackingUrl = new URL(body.trackingUrl);
+        if (!["http:", "https:"].includes(trackingUrl.protocol)) throw new Error("Invalid protocol");
+      } catch {
+        return NextResponse.json({ error: "Enter a valid tracking URL." }, { status: 400 });
+      }
+    }
+    if ((body.carrier?.length ?? 0) > 120 || (body.trackingNumber?.length ?? 0) > 120) {
+      return NextResponse.json({ error: "Carrier and tracking number must be 120 characters or fewer." }, { status: 400 });
+    }
+
     const current = await prisma.order.findUnique({
       where: { id },
-      select: { id: true, status: true, orderNumber: true, payment: { select: { method: true, status: true } } },
+      select: { id: true, status: true, orderNumber: true, shipment: true, payment: { select: { method: true, status: true } } },
     });
     if (!current) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
     const now = new Date();
     const nextStatus = body.status;
+    const parseDate = (value: string | null | undefined) => {
+      if (value === undefined) return undefined;
+      if (value === null || value === "") return null;
+      const parsed = new Date(`${value}T12:00:00.000Z`);
+      if (Number.isNaN(parsed.getTime())) throw new Error("Enter a valid shipment date.");
+      return parsed;
+    };
+    const expectedDeliveryAt = parseDate(body.expectedDeliveryAt);
+    const shippedAt = parseDate(body.shippedAt);
+    const deliveredAt = parseDate(body.deliveredAt);
     const shipmentUpdate = {
       status: shipmentStatus[nextStatus],
-      ...(nextStatus === "SHIPPED" ? { shippedAt: now } : {}),
-      ...(nextStatus === "DELIVERED" ? { deliveredAt: now } : {}),
+      ...(body.expectedDeliveryAt !== undefined ? { expectedDeliveryAt } : {}),
+      ...(body.shippedAt !== undefined ? { shippedAt } : nextStatus === "SHIPPED" ? { shippedAt: current.shipment?.shippedAt ?? now } : {}),
+      ...(body.deliveredAt !== undefined ? { deliveredAt } : nextStatus === "DELIVERED" ? { deliveredAt: current.shipment?.deliveredAt ?? now } : {}),
+      ...(body.carrier !== undefined ? { carrier: body.carrier?.trim() || null } : {}),
+      ...(body.trackingNumber !== undefined ? { trackingNumber: body.trackingNumber?.trim() || null } : {}),
+      ...(body.trackingUrl !== undefined ? { trackingUrl: body.trackingUrl?.trim() || null } : {}),
     };
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -75,11 +113,13 @@ export async function PATCH(
       await tx.activityLog.create({
         data: {
           userId: session.user.id,
-          action: "ORDER_STATUS_UPDATED",
+          action: current.status === nextStatus ? "SHIPMENT_DETAILS_UPDATED" : "ORDER_STATUS_UPDATED",
           entity: "ORDER",
           entityId: id,
-          description: `Order ${current.orderNumber} status changed from ${current.status} to ${nextStatus}.`,
-          metadata: { previousStatus: current.status, status: nextStatus },
+          description: current.status === nextStatus
+            ? `Shipment details updated for order ${current.orderNumber}.`
+            : `Order ${current.orderNumber} status changed from ${current.status} to ${nextStatus}.`,
+          metadata: { previousStatus: current.status, status: nextStatus, expectedDeliveryAt: body.expectedDeliveryAt ?? null },
         },
       });
 

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
@@ -15,6 +17,7 @@ type CartEntry = {
   image: string;
   quantity: number;
   variantName: string | null;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
@@ -64,7 +67,7 @@ export default function CartPage() {
     const item = next[index];
     const current = item.packSize ?? item.quantity;
     const updated = Math.max(1, current + change);
-    next[index] = { ...item, packSize: updated, quantity: updated };
+    next[index] = { ...item, quantity: updated };
     save(next);
   }
 
@@ -113,7 +116,7 @@ export default function CartPage() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <Link href={`/shop/${item.slug}`} className="text-sm font-semibold leading-6 hover:underline sm:text-base">{item.name}</Link>
-                            {item.color && <p className="mt-1 text-xs text-[#777]">Color: {item.color}</p>}
+                            {item.color && <p className="mt-1 text-xs text-[#777]">Color: {item.color}</p>}{item.size && <p className="mt-1 text-xs text-[#777]">Size: {item.size}</p>}
                             <p className="mt-2 text-sm font-semibold">{formatPrice(Number(item.price))}</p>
                           </div>
                           <button type="button" onClick={() => removeItem(index)} aria-label="Remove item" className="rounded-lg p-2 text-[#999] transition hover:bg-[#f8f4ef] hover:text-[#9b4b40]">

@@ -40,7 +40,7 @@ export async function GET() {
       select: { role: true, isActive: true },
     });
 
-    if (!user || user.role !== "ADMIN" || !user.isActive) {
+    if (!user || !["ADMIN", "ANALYST"].includes(user.role) || !user.isActive) {
       return NextResponse.json(
         { error: "Admin access required" },
         { status: 403 }
@@ -80,9 +80,9 @@ export async function POST(request: Request) {
       select: { role: true, isActive: true },
     });
 
-    if (!user || user.role !== "ADMIN" || !user.isActive) {
+    if (!user || !["ADMIN", "ANALYST"].includes(user.role) || !user.isActive) {
       return NextResponse.json(
-        { error: "Only active admins can create categories" },
+        { error: "Only active catalogue staff can create categories" },
         { status: 403 }
       );
     }

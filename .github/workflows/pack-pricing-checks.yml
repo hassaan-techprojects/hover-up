@@ -1,0 +1,68 @@
+name: Hover Up Storefront and Dashboard Checks
+# Runs TypeScript and lint validation for the admin dashboard development branch.
+# Includes customer orders, team permissions, and catalogue screens.
+
+on:
+  push:
+    branches:
+      - feat/storefront-pack-pricing
+      - feat/admin-dashboard-live-analytics
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/hoverup
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/hoverup
+      NEXTAUTH_SECRET: pack-pricing-ci-validation-secret
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: ESLint (pack pricing changes)
+        run: >
+          npx eslint
+          "app/cart/page.tsx"
+          "app/shop/[slug]/product-detail-client.tsx"
+          "app/dashboard/(workspace)/products/page.tsx"
+          "app/dashboard/(workspace)/products/[id]/pricing/page.tsx"
+          "app/api/orders/route.ts"
+          "app/api/dashboard/products/[id]/pack-pricing/route.ts"
+          "app/dashboard/(workspace)/page.tsx"
+          "app/dashboard/(workspace)/analytics/page.tsx"
+          "app/dashboard/(workspace)/customers/page.tsx"
+          "app/dashboard/(workspace)/shipping/page.tsx"
+          "app/dashboard/(workspace)/activity-logs/page.tsx"
+          "app/dashboard/(workspace)/team/page.tsx"
+          "app/dashboard/(workspace)/settings/page.tsx"
+          "app/dashboard/(workspace)/inventory/page.tsx"
+          "app/dashboard/(workspace)/products/new/page.tsx"
+          "app/dashboard/(workspace)/products/[id]/edit/page.tsx"
+          "app/dashboard/(workspace)/orders/page.tsx"
+          "app/dashboard/(workspace)/categories/page.tsx"
+          "app/dashboard/(workspace)/reviews/page.tsx"
+          "app/api/dashboard/overview/route.ts"
+          "app/api/dashboard/customers/route.ts"
+          "app/api/dashboard/activity-logs/route.ts"
+          "app/api/dashboard/team/route.ts"
+          "app/api/dashboard/settings/route.ts"
+          "app/api/dashboard/inventory/route.ts"
+          "app/api/dashboard/orders/route.ts"
+          "app/api/dashboard/orders/[id]/route.ts"
+          "app/api/dashboard/reviews/route.ts"
+          "app/api/orders/route.ts"
+          "app/shop/[slug]/product-detail-client.tsx"
+          "src/lib/auth.ts"

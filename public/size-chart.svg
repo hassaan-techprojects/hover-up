@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+  <rect width="1200" height="820" fill="#faf8f5"/>
+  <rect x="34" y="34" width="1132" height="752" rx="24" fill="#ffffff" stroke="#e8e1d7" stroke-width="2"/>
+  <text x="84" y="112" font-family="Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="4" fill="#171717">HOVER UP · SIZE GUIDE</text>
+  <text x="84" y="158" font-family="Arial, sans-serif" font-size="18" fill="#817b72">Use these measurement points when checking your garment size.</text>
+  <g transform="translate(120 220)" fill="none" stroke="#8b7054" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M220 55 L135 95 L65 205 L135 255 L175 205 L175 450 L425 450 L425 205 L465 255 L535 205 L465 95 L380 55 L330 95 L270 95 Z" fill="#f5f1eb"/>
+    <path d="M220 55 Q300 145 380 55"/>
+    <path d="M175 205 L425 205" stroke-dasharray="9 10"/>
+    <path d="M175 205 L175 450 M425 205 L425 450" stroke-dasharray="9 10"/>
+    <path d="M175 185 L425 185"/>
+    <path d="M175 175 L175 195 M425 175 L425 195"/>
+    <path d="M455 205 L455 450"/>
+    <path d="M445 205 L465 205 M445 450 L465 450"/>
+    <path d="M135 95 L65 205 M465 95 L535 205" stroke-dasharray="9 10"/>
+  </g>
+  <g font-family="Arial, sans-serif" fill="#51483f">
+    <text x="750" y="300" font-size="22" font-weight="700">CHEST</text>
+    <text x="750" y="332" font-size="17" fill="#817b72">Measure straight across the chest</text>
+    <text x="750" y="357" font-size="17" fill="#817b72">from one side seam to the other.</text>
+    <text x="750" y="430" font-size="22" font-weight="700">BODY LENGTH</text>
+    <text x="750" y="462" font-size="17" fill="#817b72">Measure from the highest shoulder</text>
+    <text x="750" y="487" font-size="17" fill="#817b72">point down to the bottom hem.</text>
+    <text x="750" y="560" font-size="22" font-weight="700">SLEEVE</text>
+    <text x="750" y="592" font-size="17" fill="#817b72">Measure from the shoulder seam</text>
+    <text x="750" y="617" font-size="17" fill="#817b72">to the sleeve opening.</text>
+  </g>
+  <rect x="84" y="700" width="1032" height="48" rx="10" fill="#f5f1eb"/>
+  <text x="600" y="730" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#786b5c">Standard size options: S · M · L · XL · 2XL — confirm exact garment measurements with Hover Up before ordering.</text>
+</svg>

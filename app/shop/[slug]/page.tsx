@@ -97,6 +97,7 @@ type Product = {
   isInStock: boolean;
   averageRating: number;
   reviewCount: number;
+  packPricing: Record<string, number> | null;
   reviews: {
     id: string;
     rating: number;
@@ -148,7 +149,7 @@ const PACK_PRICES: Record<number, number> = {
   100: 50100,
 };
 
-const PACK_SIZES = Object.keys(PACK_PRICES).map(Number);
+const DEFAULT_PACK_SIZES = Object.keys(PACK_PRICES).map(Number);
 
 const MAX_CUSTOMIZATION_FILE_SIZE = 8 * 1024 * 1024;
 
@@ -335,6 +336,18 @@ function ProductDetailContent({
     };
   }, [slug]);
 
+  useEffect(() => {
+    const availablePackSizes = Object.entries(product?.packPricing ?? {})
+      .map(([size, price]) => ({ size: Number(size), price: Number(price) }))
+      .filter((item) => Number.isInteger(item.size) && item.size > 0 && Number.isFinite(item.price) && item.price >= 0)
+      .sort((a, b) => a.size - b.size);
+
+    if (availablePackSizes.length > 0 && !availablePackSizes.some((item) => item.size === selectedPack)) {
+      setSelectedPack(availablePackSizes[0].size);
+      setSizeQuantities({});
+    }
+  }, [product, selectedPack]);
+
   // COLOR OPTIONS
 
   const colorOptions = useMemo(() => {
@@ -405,7 +418,16 @@ function ProductDetailContent({
 
   // PRICE
 
-  const currentPrice = PACK_PRICES[selectedPack] ?? 0;
+  const configuredPackSizes = Object.entries(product?.packPricing ?? {})
+    .map(([size, price]) => ({ size: Number(size), price: Number(price) }))
+    .filter((item) => Number.isInteger(item.size) && item.size > 0 && Number.isFinite(item.price) && item.price >= 0)
+    .sort((a, b) => a.size - b.size);
+  const packSizes = configuredPackSizes.length > 0
+    ? configuredPackSizes.map((item) => item.size)
+    : DEFAULT_PACK_SIZES;
+  const getPackPrice = (packSize: number) =>
+    Number(product?.packPricing?.[String(packSize)] ?? PACK_PRICES[packSize] ?? product?.price ?? 0);
+  const currentPrice = getPackPrice(selectedPack);
   const selectedSizeTotal = Object.values(sizeQuantities).reduce(
     (total, value) => total + value,
     0
@@ -947,7 +969,7 @@ function ProductDetailContent({
                     <img
                       src={image.url}
                       alt={image.altText || product.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain p-1"
                     />
                   </button>
                 ))}
@@ -968,7 +990,7 @@ function ProductDetailContent({
                         productImages[selectedImage]?.altText ||
                         product.name
                       }
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
+                      className="h-full w-full object-contain p-4 transition duration-700 group-hover:scale-[1.015]"
                     />
                   </button>
                 ) : (
@@ -1225,7 +1247,7 @@ function ProductDetailContent({
               </div>
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {PACK_SIZES.map((packSize) => (
+                {packSizes.map((packSize) => (
                   <button
                     key={packSize}
                     type="button"
@@ -1242,7 +1264,7 @@ function ProductDetailContent({
                   >
                     <span className="block text-[11px] tracking-wide">Pack of {packSize}</span>
                     <span className={`mt-1 block text-sm ${selectedPack === packSize ? "text-white" : "text-[#555]"}`}>
-                      {formatPrice(PACK_PRICES[packSize])}
+                      {formatPrice(getPackPrice(packSize))}
                     </span>
                   </button>
                 ))}
