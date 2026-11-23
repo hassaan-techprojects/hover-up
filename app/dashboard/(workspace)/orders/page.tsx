@@ -14,7 +14,7 @@ type OrderItem = {
   customization: Record<string, unknown> | null;
 };
 
-type OrderStats = { totalOrders: number; awaitingProcessing: number; inFulfilment: number; paidRevenue: number; returnedLatest: number };
+type OrderStats = { totalOrders: number; awaitingProcessing: number; inFulfilment: number; paidRevenue: number; returnedLatest?: number };
 
 type Order = {
   id: string;
@@ -162,7 +162,6 @@ export default function DashboardOrdersPage() {
         </div>
 
         {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff5f2] px-4 py-3 text-xs text-[#a14d3d]">{error}</p>}
-        {!loading && stats.totalOrders > orders.length && <p className="mt-3 text-[10px] text-[#999]">Showing the latest {orders.length} of {stats.totalOrders} total orders. Use search to find recent orders or ask to add pagination for older orders.</p>}
 
         {loading ? (
           <div className="space-y-3 py-6">{[1, 2, 3].map((value) => <div key={value} className="h-20 animate-pulse rounded-xl bg-[#f4f1ec]" />)}</div>
