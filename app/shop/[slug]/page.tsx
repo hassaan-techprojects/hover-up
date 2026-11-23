@@ -1355,12 +1355,7 @@ function ProductDetailContent({
                 })}
               </div>
 
-              <div className="mt-3 flex items-center justify-between text-[11px]">
-                <span className="text-[#777]">Allocate all pieces to continue</span>
-                <span className={selectedSizeTotal === selectedPack ? "text-[#63876b]" : "text-[#a16b42]"}>
-                  {selectedSizeTotal === selectedPack ? "Pack complete" : `${selectedPack - selectedSizeTotal} remaining`}
-                </span>
-              </div>
+              <p className="mt-3 text-[11px] text-[#171717]">Selected {selectedSizeTotal} out of {selectedPack} item(s)</p>
             </div>
 
             {/* DESIGN IMAGE UPLOADS */}
