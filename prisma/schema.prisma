@@ -566,10 +566,11 @@ model Shipment {
 
   status         ShipmentStatus @default(PENDING)
   carrier        String?
-  trackingNumber String?        @unique
-  trackingUrl    String?
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
+  trackingNumber     String?   @unique
+  trackingUrl        String?
+  expectedDeliveryAt DateTime?
+  shippedAt          DateTime?
+  deliveredAt        DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
