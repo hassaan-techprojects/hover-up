@@ -178,8 +178,11 @@ export async function POST(request: Request) {
           if ((item.frontImageUrl && !isValidArtworkUrl(item.frontImageUrl)) || (item.backImageUrl && !isValidArtworkUrl(item.backImageUrl))) {
             return responseError("One of the uploaded logo files is invalid.");
           }
-        } else if (!isValidArtworkUrl(item.frontImageUrl) || !isValidArtworkUrl(item.backImageUrl)) {
-          return responseError("Upload valid front and back logo files, or choose the text-only design option.");
+        } else if (
+          (item.frontImageUrl && !isValidArtworkUrl(item.frontImageUrl)) ||
+          (item.backImageUrl && !isValidArtworkUrl(item.backImageUrl))
+        ) {
+          return responseError("One of the uploaded logo files is invalid.");
         }
 
         const activeAllocations = item.sizeBreakdown.filter((size) => size.quantity > 0);
