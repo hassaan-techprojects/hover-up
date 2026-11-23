@@ -947,7 +947,7 @@ function ProductDetailContent({
                     <img
                       src={image.url}
                       alt={image.altText || product.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain object-center p-1"
                     />
                   </button>
                 ))}
@@ -968,7 +968,7 @@ function ProductDetailContent({
                         productImages[selectedImage]?.altText ||
                         product.name
                       }
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
+                      className="h-full w-full object-contain object-center p-4"
                     />
                   </button>
                 ) : (
