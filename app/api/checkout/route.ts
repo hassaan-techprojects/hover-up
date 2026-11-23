@@ -84,21 +84,34 @@ export async function POST(request: Request) {
         if (allocated !== packSize || breakdown.some((size) => !clean(size.size, 30) || !Number.isInteger(Number(size.quantity)) || Number(size.quantity) < 1)) {
           return NextResponse.json({ error: "Size quantities must add up exactly to the selected pack." }, { status: 400 });
         }
+        if (product.variants.length > 0 && breakdown.some((size) => !size.variantId)) {
+          return NextResponse.json({ error: "Choose an available product variant for every selected size." }, { status: 409 });
+        }
         for (const size of breakdown) {
-          if (!size.variantId) continue;
+          if (product.variants.length === 0) continue;
           const variant = product.variants.find((candidate) => candidate.id === size.variantId);
           if (!variant) return NextResponse.json({ error: "A selected size or color is no longer available." }, { status: 409 });
           const stock = variant.inventory ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved) : variant.stock;
           if (stock < Number(size.quantity)) return NextResponse.json({ error: `Insufficient stock for size ${size.size}.` }, { status: 409 });
         }
+        if (product.variants.length === 0) {
+          const inventory = product.inventories[0];
+          const stock = inventory ? Math.max(0, inventory.quantity - inventory.reserved) : 0;
+          if (stock < packSize) return NextResponse.json({ error: "Insufficient stock for this pack." }, { status: 409 });
+        }
       } else {
         const variant = item.variantId ? product.variants.find((candidate) => candidate.id === item.variantId) : null;
         if (item.variantId && !variant) return NextResponse.json({ error: "A selected product option is no longer available." }, { status: 409 });
+        if (product.variants.length > 0 && !item.variantId) return NextResponse.json({ error: "Choose a product option before ordering." }, { status: 409 });
         linePrice = Number(variant?.price ?? product.price);
         if (!Number.isFinite(linePrice) || linePrice <= 0) return NextResponse.json({ error: "Invalid product price." }, { status: 400 });
         if (variant) {
           const stock = variant.inventory ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved) : variant.stock;
           if (stock < quantity) return NextResponse.json({ error: "Insufficient stock for a selected product." }, { status: 409 });
+        } else if (product.variants.length === 0) {
+          const inventory = product.inventories[0];
+          const stock = inventory ? Math.max(0, inventory.quantity - inventory.reserved) : 0;
+          if (stock < quantity) return NextResponse.json({ error: "Insufficient stock for this product." }, { status: 409 });
         }
       }
 
