@@ -92,6 +92,10 @@ export async function GET(
             title: true,
             comment: true,
             createdAt: true,
+            images: {
+              orderBy: { sortOrder: "asc" },
+              select: { id: true, url: true },
+            },
             customer: {
               select: {
                 firstName: true,
