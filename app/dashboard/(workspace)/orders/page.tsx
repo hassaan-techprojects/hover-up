@@ -14,6 +14,8 @@ type OrderItem = {
   customization: Record<string, unknown> | null;
 };
 
+type OrderStats = { totalOrders: number; awaitingProcessing: number; inFulfilment: number; paidRevenue: number; returnedLatest: number };
+
 type Order = {
   id: string;
   orderNumber: string;
@@ -50,6 +52,7 @@ function statusClass(status: string) {
 
 export default function DashboardOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [stats, setStats] = useState<OrderStats>({ totalOrders: 0, awaitingProcessing: 0, inFulfilment: 0, paidRevenue: 0, returnedLatest: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -66,6 +69,7 @@ export default function DashboardOrdersPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to load orders.");
       setOrders(data.orders ?? []);
+      setStats(data.stats ?? { totalOrders: 0, awaitingProcessing: 0, inFulfilment: 0, paidRevenue: 0, returnedLatest: 0 });
       setCanManage(Boolean(data.canManage));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load orders.");
@@ -115,9 +119,6 @@ export default function DashboardOrdersPage() {
     return matchesFilter && matchesQuery;
   }), [orders, filter, query]);
 
-  const totalRevenue = orders.filter((order) => order.paymentStatus === "PAID" || order.payment?.method === "COD" && order.status !== "CANCELLED")
-    .reduce((sum, order) => sum + Number(order.totalAmount), 0);
-
   return (
     <div className="space-y-6">
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -133,10 +134,10 @@ export default function DashboardOrdersPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "All orders", value: orders.length },
-          { label: "Awaiting processing", value: orders.filter((order) => ["PENDING", "CONFIRMED"].includes(order.status)).length },
-          { label: "In fulfilment", value: orders.filter((order) => ["PROCESSING", "SHIPPED"].includes(order.status)).length },
-          { label: "Order value", value: formatPrice(totalRevenue) },
+          { label: "All orders", value: stats.totalOrders },
+          { label: "Awaiting processing", value: stats.awaitingProcessing },
+          { label: "In fulfilment", value: stats.inFulfilment },
+          { label: "Paid order value", value: formatPrice(stats.paidRevenue) },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-[#ebe6de] bg-white p-5">
             <p className="text-xs text-[#817b72]">{stat.label}</p>
@@ -161,6 +162,7 @@ export default function DashboardOrdersPage() {
         </div>
 
         {error && <p role="alert" className="mt-4 rounded-lg bg-[#fff5f2] px-4 py-3 text-xs text-[#a14d3d]">{error}</p>}
+        {!loading && stats.totalOrders > orders.length && <p className="mt-3 text-[10px] text-[#999]">Showing the latest {orders.length} of {stats.totalOrders} total orders. Use search to find recent orders or ask to add pagination for older orders.</p>}
 
         {loading ? (
           <div className="space-y-3 py-6">{[1, 2, 3].map((value) => <div key={value} className="h-20 animate-pulse rounded-xl bg-[#f4f1ec]" />)}</div>
@@ -220,8 +222,8 @@ export default function DashboardOrdersPage() {
                                 {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
                                 {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — create artwork from customer instructions</p>}
                                 <div className="mt-3 flex flex-wrap gap-3">
-                                  {typeof custom.frontImageUrl === "string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] text-[#8b7054] underline">Front logo <ExternalLink size={10} /></a>}
-                                  {typeof custom.backImageUrl === "string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] text-[#8b7054] underline">Back logo <ExternalLink size={10} /></a>}
+                                  {typeof custom.frontImageUrl === "string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="inline-flex flex-col items-center gap-1 text-[10px] text-[#8b7054]"><img src={custom.frontImageUrl} alt="Customer front artwork" className="h-20 w-20 rounded-lg border border-[#e8e3dc] object-contain" />Front logo</a>}
+                                  {typeof custom.backImageUrl === "string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="inline-flex flex-col items-center gap-1 text-[10px] text-[#8b7054]"><img src={custom.backImageUrl} alt="Customer back artwork" className="h-20 w-20 rounded-lg border border-[#e8e3dc] object-contain" />Back logo</a>}
                                 </div>
                                 {typeof custom.customizationNotes === "string" && custom.customizationNotes && <p className="mt-3 rounded-lg bg-[#faf8f5] p-2 text-[11px] leading-5 text-[#655c52]">Notes: {custom.customizationNotes}</p>}
                               </div>
