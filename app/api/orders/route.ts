@@ -132,9 +132,18 @@ export async function POST(request: Request) {
 
       if (!product) return responseError("A product in your bag is no longer available.", 409);
 
-      const productSizes = product.attributes
+      const configuredProductSizes = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "SIZE");
+      const productSizes = configuredProductSizes.length > 0
+        ? configuredProductSizes
+        : [
+            { value: "41", sizeSymbol: "S" },
+            { value: "43", sizeSymbol: "M" },
+            { value: "45", sizeSymbol: "L" },
+            { value: "47", sizeSymbol: "XL" },
+            { value: "49", sizeSymbol: "2XL" },
+          ];
       const productColors = product.attributes
         .map((entry) => entry.attributeValue)
         .filter((value) => value.termType === "COLOR");
@@ -157,7 +166,11 @@ export async function POST(request: Request) {
           return responseError(`Size options are not configured for ${product.name}.`);
         }
 
-        if (product.variants.length === 0 && product.inventories.length > 0) {
+        const stockTracked =
+          product.inventories.length > 0 ||
+          product.variants.some((variant) => Boolean(variant.inventory) || variant.stock > 0);
+
+        if (stockTracked && product.variants.length === 0 && product.inventories.length > 0) {
           const availableProductStock = product.inventories.reduce(
             (sum, inventory) => sum + Math.max(0, inventory.quantity - inventory.reserved),
             0
@@ -205,7 +218,7 @@ export async function POST(request: Request) {
             const stock = variant.inventory
               ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
               : Math.max(0, variant.stock);
-            if (stock < allocation.quantity) {
+            if (stockTracked && stock < allocation.quantity) {
               return responseError(`Only ${stock} item(s) are available in size ${allocation.size}.`, 409);
             }
           }
@@ -244,7 +257,10 @@ export async function POST(request: Request) {
             ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
             : Math.max(0, variant.stock)
           : product.inventories?.[0]?.quantity ?? 0;
-        if (product.inventories.length > 0 && stock < item.quantity) {
+        const stockTracked =
+          product.inventories.length > 0 ||
+          product.variants.some((entry) => Boolean(entry.inventory) || entry.stock > 0);
+        if (stockTracked && stock < item.quantity) {
           return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
         }
 
