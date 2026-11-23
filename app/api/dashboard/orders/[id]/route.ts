@@ -30,7 +30,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Choose a valid order status." }, { status: 400 });
     }
 
-    const current = await prisma.order.findUnique({ where: { id }, select: { id: true, status: true, orderNumber: true } });
+    const current = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, status: true, orderNumber: true, payment: { select: { method: true, status: true } } },
+    });
     if (!current) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
     const now = new Date();
@@ -46,6 +49,7 @@ export async function PATCH(
         where: { id },
         data: {
           status: nextStatus,
+          ...(nextStatus === "DELIVERED" && current.payment?.method === "COD" ? { paymentStatus: "PAID" as const } : {}),
           shipment: {
             upsert: {
               create: shipmentUpdate,
@@ -60,6 +64,13 @@ export async function PATCH(
           shipment: true,
         },
       });
+
+      if (nextStatus === "DELIVERED" && current.payment?.method === "COD" && current.payment.status !== "PAID") {
+        await tx.payment.update({
+          where: { orderId: id },
+          data: { status: "PAID", paidAt: now },
+        });
+      }
 
       await tx.activityLog.create({
         data: {
