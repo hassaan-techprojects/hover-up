@@ -5,8 +5,6 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { authOptions } from "@/lib/auth";
 import { getPublicObjectUrl, s3, storageBucket } from "@/lib/storage";
 
-export const runtime = "nodejs";
-
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
