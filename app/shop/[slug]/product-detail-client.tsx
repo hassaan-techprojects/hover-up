@@ -115,6 +115,7 @@ type CartEntry = {
   image: string;
   quantity: number;
   variantName: string | null;
+  size?: string;
   packSize?: number;
   color?: string;
   sizeBreakdown?: { size: string; quantity: number; variantId: string | null }[];
@@ -526,6 +527,9 @@ export default function ProductDetailClient({
       if (!frontLogo || !backLogo) { setCartMessage("Please upload both front and back logo images."); return; }
       if (hasVariants && sizeOptions.some(size => (sizeQuantities[size.value] ?? 0) > 0 && !matchingVariants(selectedColor, size.value).length)) { setCartMessage("One or more selected sizes are unavailable for this color."); return; }
       for (const file of [frontLogo, backLogo]) if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024) { setCartMessage("Upload JPG, PNG or WEBP logo files up to 8 MB each."); return; }
+    } else if (!isPackProduct && sizeOptions.length > 0 && !selectedSize) {
+      setCartMessage("Please select a size.");
+      return;
     } else if (!isPackProduct && hasVariants && !selectedVariant) {
       setCartMessage("Please select an available color and size combination.");
       return;
@@ -566,12 +570,12 @@ export default function ProductDetailClient({
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       const cart: CartEntry[] = stored ? JSON.parse(stored) : [];
       const variantId = selectedVariant?.id ?? null;
-      const entry: CartEntry = { productId: product.id, variantId, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity, variantName: selectedVariant?.name ?? null };
+      const entry: CartEntry = { productId: product.id, variantId, name: product.name, slug: product.slug, price: currentPrice, image: selectedImageUrl, quantity, variantName: selectedVariant?.name ?? null, size: selectedSize || undefined };
       if (goToCart) {
         localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
         router.push("/checkout");
       } else {
-        const existingIndex = cart.findIndex(item => item.productId === product.id && item.variantId === variantId);
+        const existingIndex = cart.findIndex(item => item.productId === product.id && item.variantId === variantId && item.size === selectedSize);
         if (existingIndex >= 0) cart[existingIndex].quantity += quantity;
         else cart.push(entry);
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
