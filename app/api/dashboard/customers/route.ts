@@ -16,14 +16,12 @@ export async function GET() {
       prisma.customer.count({ where: { orders: { some: { status: "SHIPPED" } } } }),
       prisma.customer.count({ where: { orders: { some: { status: "DELIVERED" } } } }),
       prisma.customer.findMany({
-        take: 250,
         orderBy: { updatedAt: "desc" },
         include: {
           user: { select: { id: true, isActive: true } },
           addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }] },
           orders: {
             orderBy: { createdAt: "desc" },
-            take: 20,
             include: {
               items: true,
               payment: true,
