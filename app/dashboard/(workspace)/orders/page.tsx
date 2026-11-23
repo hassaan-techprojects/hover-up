@@ -209,7 +209,7 @@ export default function DashboardOrdersPage() {
                               <div key={item.id} className="rounded-lg border border-[#eee8df] bg-white p-3">
                                 <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold">{item.productName}</p><p className="mt-1 text-[10px] text-[#999]">{item.variantName || item.sku || "Standard"}</p></div><p className="text-xs font-semibold">{formatPrice(item.totalPrice)}</p></div>
                                 <p className="mt-2 text-[10px] text-[#777]">Quantity: {item.quantity}</p>
-                                {custom.packSize && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
+                                {(typeof custom.packSize === "number" || typeof custom.packSize === "string") && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
                                 {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
                                 {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — create artwork from customer instructions</p>}
                                 <div className="mt-3 flex flex-wrap gap-3">
