@@ -36,6 +36,7 @@ function formatPrice(value: number | string) {
 }
 
 function statusLabel(status: string) {
+  if (status === "CONFIRMED") return "Received";
   return status.charAt(0) + status.slice(1).toLowerCase().replaceAll("_", " ");
 }
 
