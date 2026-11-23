@@ -37,7 +37,6 @@ export async function PATCH(request: Request, { params }: Context) {
       }
       pricing[String(pack)] = Math.round(price * 100) / 100;
     }
-    if (!Object.keys(pricing).length) return NextResponse.json({ error: "Add at least one pack price." }, { status: 400 });
     const product = await prisma.product.update({ where: { id }, data: { packPricing: pricing }, select: { id: true, name: true, packPricing: true } });
     return NextResponse.json({ success: true, product });
   } catch (error) {
