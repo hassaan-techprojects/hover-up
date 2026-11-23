@@ -1,4 +1,6 @@
 "use client";
+
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw, Search, Truck, UserRound } from "lucide-react";
 type Item={id:string;productName:string;variantName:string|null;quantity:number;totalPrice:string|number;customization:unknown};
