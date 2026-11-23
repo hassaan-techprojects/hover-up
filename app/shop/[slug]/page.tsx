@@ -128,6 +128,7 @@ type CartEntry = {
   }[];
   frontImageUrl: string;
   backImageUrl: string;
+  textOnlyDesign: boolean;
   customizationNotes: string;
 };
 
@@ -264,6 +265,7 @@ function ProductDetailContent({
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
+  const [textOnlyDesign, setTextOnlyDesign] = useState(false);
   const [customizationNotes, setCustomizationNotes] = useState("");
   const [wishlist, setWishlist] = useState(false);
 
@@ -686,8 +688,13 @@ function ProductDetailContent({
       return;
     }
 
-    if (!frontImageFile || !backImageFile) {
-      setCartMessage("Please upload both front and back design images.");
+    if (!textOnlyDesign && (!frontImageFile || !backImageFile)) {
+      setCartMessage("Upload both front and back logo files, or choose the text-only design option.");
+      return;
+    }
+
+    if (textOnlyDesign && !customizationNotes.trim()) {
+      setCartMessage("Tell us what text or design you want our team to create.");
       return;
     }
 
@@ -721,7 +728,7 @@ function ProductDetailContent({
       return;
     }
 
-    for (const file of [frontImageFile, backImageFile]) {
+    for (const file of [frontImageFile, backImageFile].filter((file): file is File => Boolean(file))) {
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
         setCartMessage("Upload JPG, PNG, or WEBP images only.");
         return;
@@ -733,12 +740,12 @@ function ProductDetailContent({
     }
 
     setAddingToCart(true);
-    setCartMessage("Uploading your design images...");
+    setCartMessage(textOnlyDesign ? "Preparing your text-only design request..." : "Uploading your design images...");
 
     try {
       const [frontImageUrl, backImageUrl] = await Promise.all([
-        uploadCustomizationImage(frontImageFile, "front"),
-        uploadCustomizationImage(backImageFile, "back"),
+        frontImageFile ? uploadCustomizationImage(frontImageFile, "front") : Promise.resolve(""),
+        backImageFile ? uploadCustomizationImage(backImageFile, "back") : Promise.resolve(""),
       ]);
 
       const stored = localStorage.getItem(CART_STORAGE_KEY);
@@ -762,6 +769,7 @@ function ProductDetailContent({
         })),
         frontImageUrl,
         backImageUrl,
+        textOnlyDesign,
         customizationNotes: customizationNotes.trim(),
       };
 
@@ -1338,8 +1346,23 @@ function ProductDetailContent({
 
             {/* DESIGN IMAGE UPLOADS */}
 
-            <div className="mt-8">
-              <p className="mb-4 text-[11px] tracking-[0.16em]">UPLOAD YOUR DESIGN</p>
+            <div className="mt-8 rounded-xl border border-[#e8e1d7] bg-[#faf8f5] p-4">
+              <p className="text-xs font-semibold text-[#4f463d]">We’ll send your design for approval</p>
+              <p className="mt-1 text-[11px] leading-5 text-[#82766a]">After your order is placed and confirmed, our team will share the design with you before production.</p>
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-3 text-[11px] font-semibold tracking-[0.16em]">YOUR LOGO / DESIGN</p>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e7e2da] bg-white p-4 transition hover:border-[#b99a76]">
+                <input type="checkbox" checked={textOnlyDesign} onChange={(event) => setTextOnlyDesign(event.target.checked)} className="mt-0.5 h-4 w-4 accent-[#b99a76]" />
+                <span>
+                  <span className="block text-xs font-semibold text-[#171717]">I don’t have a logo — create a design using my text</span>
+                  <span className="mt-1 block text-[11px] leading-5 text-[#888]">No problem. Tell us what you want, and our team will create a design and share it for your approval.</span>
+                </span>
+              </label>
+              {!textOnlyDesign && (
+              <>
+              <p className="mb-4 mt-5 text-[11px] tracking-[0.16em]">UPLOAD FRONT AND BACK LOGOS</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
                   <span className="block text-[11px] font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE *</span>
@@ -1378,12 +1401,14 @@ function ProductDetailContent({
               <p className="mt-2 text-[10px] text-[#999]">
                 Upload the artwork you want printed on the front and back of the selected items.
               </p>
+              </>
+              )}
             </div>
 
             {/* OPTIONAL CUSTOMIZATION NOTES */}
             <div className="mt-6">
               <label htmlFor="customization-notes" className="mb-3 block text-[11px] font-semibold tracking-[0.14em]">
-                ANY TEXT OR CUSTOMIZATION NEEDED <span className="font-normal normal-case tracking-normal text-[#999]">(Optional)</span>
+                {textOnlyDesign ? "TEXT / DESIGN INSTRUCTIONS" : "ANY TEXT OR CUSTOMIZATION NEEDED"} <span className="font-normal normal-case tracking-normal text-[#999]">{textOnlyDesign ? "(Required)" : "(Optional)"}</span>
               </label>
               <textarea
                 id="customization-notes"
@@ -1391,7 +1416,7 @@ function ProductDetailContent({
                 onChange={(event) => setCustomizationNotes(event.target.value)}
                 maxLength={1000}
                 rows={4}
-                placeholder="Tell us about text, placement, print colors, or any special instructions..."
+                placeholder={textOnlyDesign ? "Describe the text, wording, style, colours or design you want us to create..." : "Tell us about text, placement, print colors, or any special instructions..."}
                 className="w-full resize-y border border-[#dedbd6] bg-white px-4 py-3 text-sm text-[#171717] outline-none transition placeholder:text-[#aaa] focus:border-[#b99a76] focus:ring-2 focus:ring-[#b99a76]/15"
               />
               <p className="mt-1 text-right text-[10px] text-[#999]">{customizationNotes.length}/1000</p>
@@ -1438,8 +1463,8 @@ function ProductDetailContent({
                   addingToCart ||
                   !product.isInStock ||
                   selectedSizeTotal !== selectedPack ||
-                  !frontImageFile ||
-                  !backImageFile
+                  (!textOnlyDesign && (!frontImageFile || !backImageFile)) ||
+                  (textOnlyDesign && !customizationNotes.trim())
                 }
                 className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
