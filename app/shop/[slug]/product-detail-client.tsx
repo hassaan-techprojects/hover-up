@@ -96,7 +96,9 @@ type Product = {
     rating: number;
     title: string | null;
     comment: string | null;
+    adminReply: string | null;
     createdAt: string;
+    images: { id: string; url: string }[];
     customer: {
       firstName: string;
       lastName: string | null;
