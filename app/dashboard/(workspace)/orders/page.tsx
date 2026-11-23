@@ -56,6 +56,7 @@ export default function DashboardOrdersPage() {
   const [filter, setFilter] = useState("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [canManage, setCanManage] = useState(false);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -65,6 +66,7 @@ export default function DashboardOrdersPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to load orders.");
       setOrders(data.orders ?? []);
+      setCanManage(Boolean(data.canManage));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load orders.");
     } finally {
@@ -188,9 +190,11 @@ export default function DashboardOrdersPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 xl:justify-end">
                       <button type="button" onClick={() => setExpanded(isExpanded ? null : order.id)} className="rounded-lg border border-[#e7e1d8] px-3 py-2 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide details" : "View details"}</button>
-                      <select aria-label={`Update status for ${order.orderNumber}`} disabled={updating === order.id} value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)} className="max-w-[150px] rounded-lg border border-[#e7e1d8] bg-white px-2 py-2 text-[10px] outline-none focus:border-[#b99a76] disabled:opacity-50">
-                        {statuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}
-                      </select>
+                      {canManage && (
+                        <select aria-label={`Update status for ${order.orderNumber}`} disabled={updating === order.id} value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)} className="max-w-[150px] rounded-lg border border-[#e7e1d8] bg-white px-2 py-2 text-[10px] outline-none focus:border-[#b99a76] disabled:opacity-50">
+                          {statuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}
+                        </select>
+                      )}
                     </div>
                   </div>
                   {isExpanded && (
