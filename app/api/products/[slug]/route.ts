@@ -139,6 +139,27 @@ export async function GET(
           0
         );
 
+    let packPricing: Record<string, number> | null = null;
+    try {
+      const pricingRows = await prisma.$queryRaw<Array<{ packPricing: unknown }>>`
+        SELECT "packPricing"
+        FROM "Product"
+        WHERE "id" = ${product.id}
+        LIMIT 1
+      `;
+      const savedPricing = pricingRows[0]?.packPricing;
+      if (savedPricing && typeof savedPricing === "object" && !Array.isArray(savedPricing)) {
+        packPricing = Object.fromEntries(
+          Object.entries(savedPricing as Record<string, unknown>)
+            .map(([size, price]) => [size, Number(price)])
+            .filter(([size, price]) => Number.isInteger(Number(size)) && Number(size) > 0 && Number.isFinite(Number(price)) && Number(price) >= 0)
+        );
+      }
+    } catch (pricingError) {
+      // Older Preview databases may not have the per-product pack pricing migration yet.
+      console.warn("Product pack pricing is not available in this database yet:", pricingError);
+    }
+
     const reviewCount = product.reviews.length;
 
     const averageRating =
@@ -152,7 +173,7 @@ export async function GET(
     return NextResponse.json({
       product: {
         ...product,
-        packPricing: null,
+        packPricing,
         reviews: product.reviews.map((review) => ({ ...review, images: [] })),
         totalStock,
         isInStock: totalStock > 0,
