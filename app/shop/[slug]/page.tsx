@@ -134,6 +134,7 @@ type CartEntry = {
 };
 
 const CART_STORAGE_KEY = "hover-up-cart";
+const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 const WISHLIST_STORAGE_KEY = "hover-up-wishlist";
 
 const PACK_PRICES: Record<number, number> = {
@@ -775,14 +776,14 @@ function ProductDetailContent({
         customizationNotes: customizationNotes.trim(),
       };
 
-      // Keep separately configured packs/customizations as separate cart lines.
-      cart.push(entry);
-
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-
       if (goToCart) {
+        localStorage.setItem(BUY_NOW_STORAGE_KEY, JSON.stringify([entry]));
         router.push("/checkout");
       } else {
+        localStorage.removeItem(BUY_NOW_STORAGE_KEY);
+        // Keep separately configured packs/customizations as separate cart lines.
+        cart.push(entry);
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
         setCartMessage("Your customized pack has been added to your bag.");
       }
     } catch (err) {
