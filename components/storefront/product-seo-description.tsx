@@ -14,7 +14,9 @@ export default function ProductSeoDescription({
   return (
     <article className="max-w-3xl space-y-5 py-9 text-[#625d55]">
       <header>
-        <p className="text-[10px] font-medium tracking-[0.2em] text-[#a18c75]">HOVER UP · PRODUCT INFORMATION</p>
+        <p className="text-[10px] font-medium tracking-[0.2em] text-[#a18c75]">
+          HOVER UP · PRODUCT INFORMATION
+        </p>
         <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#171717]">
           Discover {productName} at Hover Up
         </h2>
@@ -38,8 +40,24 @@ export default function ProductSeoDescription({
         <h3 className="text-sm font-semibold text-[#29251f]">Ordering and customer support</h3>
         <p className="text-[13px] leading-8">
           Add your selected product to the bag and complete checkout with your delivery details. You can review order progress from your customer account after placing an order. For more products, visit the{" "}
-          <Link href="/shop" className="font-medium text-[#8b7054] underline underline-offset-4 hover:text-[#171717]">Hover Up shop</Link>
-          {categoryName && categorySlug ? <> or browse more items in <Link href={`/shop?category=${categorySlug}`} className="font-medium text-[#8b7054] underline underline-offset-4 hover:text-[#171717]}>{categoryName}</Link></> : null}.
+          <Link
+            href="/shop"
+            className="font-medium text-[#8b7054] underline underline-offset-4 hover:text-[#171717]"
+          >
+            Hover Up shop
+          </Link>
+          {categoryName && categorySlug ? (
+            <>
+              {" "}or browse more items in{" "}
+              <Link
+                href={`/shop?category=${encodeURIComponent(categorySlug)}`}
+                className="font-medium text-[#8b7054] underline underline-offset-4 hover:text-[#171717]"
+              >
+                {categoryName}
+              </Link>
+            </>
+          ) : null}
+          .
         </p>
       </section>
     </article>
