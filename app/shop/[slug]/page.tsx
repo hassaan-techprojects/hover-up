@@ -769,7 +769,7 @@ function ProductDetailContent({
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
 
       if (goToCart) {
-        router.push("/cart");
+        router.push("/checkout");
       } else {
         setCartMessage("Your customized pack has been added to your bag.");
       }
