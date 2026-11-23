@@ -1,5 +1,6 @@
 name: Hover Up Storefront and Dashboard Checks
 # Runs TypeScript and lint validation for the admin dashboard development branch.
+# Includes customer orders, team permissions, and catalogue screens.
 
 on:
   push:
