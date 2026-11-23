@@ -227,7 +227,7 @@ export default function DashboardOrdersPage() {
                         <div className="mt-3 rounded-lg border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]">
                           <p className="font-semibold text-[#171717]">{String(address.fullName || "")}</p>
                           <p>{String(address.addressLine1 || "")}</p>
-                          {address.addressLine2 && <p>{String(address.addressLine2)}</p>}
+                          {typeof address.addressLine2 === "string" && address.addressLine2.length > 0 && <p>{address.addressLine2}</p>}
                           <p>{String(address.city || "")}, {String(address.state || "")} {String(address.postalCode || "")}</p>
                           <p>{String(address.country || "India")}</p>
                           <p className="mt-2">Contact: {String(address.phone || "")}</p>
