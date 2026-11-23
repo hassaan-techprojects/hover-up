@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, RefreshCw, Star, X } from "lucide-react";
+import { Check, RefreshCw, Star, X, Trash2, Send } from "lucide-react";
 
 type Review = {
   id: string;
@@ -9,6 +9,7 @@ type Review = {
   title: string | null;
   comment: string | null;
   isApproved: boolean;
+  adminReply: string | null;
   createdAt: string;
   customer: { id: string; firstName: string; lastName: string | null; email: string };
   product: { id: string; name: string; slug: string };
@@ -21,6 +22,7 @@ export default function DashboardReviewsPage() {
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
   const [canManage, setCanManage] = useState(false);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,6 +60,41 @@ export default function DashboardReviewsPage() {
     }
   }
 
+  async function saveReply(reviewId: string) {
+    setUpdating(reviewId);
+    try {
+      const response = await fetch("/api/dashboard/reviews", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId, adminReply: replyDrafts[reviewId] ?? "" }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to save reply.");
+      setReviews(current => current.map(review => review.id === reviewId ? { ...review, adminReply: data.review.adminReply } : review));
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save reply.");
+    } finally { setUpdating(null); }
+  }
+
+  async function deleteReview(reviewId: string) {
+    if (!window.confirm("Delete this customer review permanently?")) return;
+    setUpdating(reviewId);
+    try {
+      const response = await fetch("/api/dashboard/reviews", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to delete review.");
+      setReviews(current => current.filter(review => review.id !== reviewId));
+      setError("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete review.");
+    } finally { setUpdating(null); }
+  }
+
   return (
     <div className="space-y-6">
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -76,10 +113,16 @@ export default function DashboardReviewsPage() {
             {review.title && <h2 className="mt-3 text-sm font-semibold">{review.title}</h2>}
             {review.comment && <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-[#666]">{review.comment}</p>}
             {review.images.length>0 && <div className="mt-4 flex flex-wrap gap-3">{review.images.map(image=><a key={image.id} href={image.url} target="_blank" rel="noreferrer" className="h-20 w-20 overflow-hidden rounded-lg border border-[#e8e3dc]"><img src={image.url} alt="Customer review" className="h-full w-full object-cover" /></a>)}</div>}
+            {review.adminReply && <div className="mt-4 rounded-xl bg-[#faf8f5] p-4"><p className="text-[10px] font-semibold tracking-[0.12em] text-[#8b7054]">HOVER UP REPLY</p><p className="mt-2 whitespace-pre-wrap text-xs leading-6 text-[#655c52]">{review.adminReply}</p></div>}
             {canManage && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {!review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,true)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#171717] px-4 text-[10px] font-semibold text-white hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Check size={13}/> Approve review</button>}
-                {review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,false)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e3dc] px-4 text-[10px] font-semibold text-[#776b5e] hover:border-[#b99a76] disabled:opacity-50"><X size={13}/> Hide review</button>}
+              <div className="mt-5 space-y-3">
+                <label className="block text-[10px] font-semibold tracking-[0.12em] text-[#8b7864]">ADMINISTRATOR REPLY<textarea value={replyDrafts[review.id] ?? review.adminReply ?? ""} onChange={(event) => setReplyDrafts(current => ({ ...current, [review.id]: event.target.value }))} rows={3} maxLength={3000} placeholder="Write a reply to this customer..." className="mt-2 w-full rounded-lg border border-[#e8e3dc] px-3 py-2 text-xs leading-5 outline-none focus:border-[#b99a76]"/></label>
+                <div className="flex flex-wrap gap-2">
+                  {!review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,true)} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#171717] px-4 text-[10px] font-semibold text-white hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Check size={13}/> Approve review</button>}
+                  {review.isApproved && <button disabled={updating===review.id} onClick={()=>void setApproval(review.id,false)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e3dc] px-4 text-[10px] font-semibold text-[#776b5e] hover:border-[#b99a76] disabled:opacity-50"><X size={13}/> Hide review</button>}
+                  <button disabled={updating===review.id} onClick={()=>void saveReply(review.id)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e3dc] px-4 text-[10px] font-semibold text-[#776b5e] hover:border-[#b99a76] disabled:opacity-50"><Send size={12}/> Save reply</button>
+                  <button disabled={updating===review.id} onClick={()=>void deleteReview(review.id)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#f0d9d5] px-4 text-[10px] font-semibold text-[#a34d4d] hover:bg-[#fff5f2] disabled:opacity-50"><Trash2 size={12}/> Delete</button>
+                </div>
               </div>
             )}
           </article>)}
