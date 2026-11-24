@@ -96,20 +96,6 @@ function isValidArtworkUrl(value: string | undefined) {
   return value.startsWith(`${endpoint}/${bucket}/customizations/`);
 }
 
-function getPackPrice(packPricing: unknown, packSize: number): number | null {
-  if (!packPricing || typeof packPricing !== "object" || Array.isArray(packPricing)) {
-    return null;
-  }
-  const rawPrice = (packPricing as Record<string, unknown>)[String(packSize)];
-  const price =
-    typeof rawPrice === "number"
-      ? rawPrice
-      : typeof rawPrice === "string"
-        ? Number(rawPrice)
-        : Number.NaN;
-  return Number.isFinite(price) && price > 0 ? price : null;
-}
-
 function getSizeAliases(size: ProductSize): string[] {
   const value = String(size.value).trim();
   const symbol = size.sizeSymbol?.trim() || "";
