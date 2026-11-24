@@ -47,7 +47,7 @@ function OrderTimeline({ order }: { order: Order }) {
 
   if (cancelled) {
     return <div className="rounded-xl border border-[#f0d8d5] bg-[#fff8f7] p-4">
-      <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f8e5e3] text-[#a34d4d]">×</span><div><p className="text-xs font-semibold text-[#a34d4d]">{order.status === "CANCELLED" ? "Order cancelled" : "Order refunded"}</p><p className="mt-1 text-[10px] text-[#987b77]">{events.find(event => event.status === order.status) ? new Date(events.find(event => event.status === order.status)!.createdAt).toLocaleString("en-IN") : new Date(order.updatedAt || order.createdAt).toLocaleString("en-IN")}</p></div></div>
+      <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f8e5e3] text-[#a34d4d]">×</span><div><p className="text-sm font-semibold text-[#a34d4d]">{order.status === "CANCELLED" ? "Order cancelled" : "Order refunded"}</p><p className="mt-1 text-xs text-[#987b77]">{events.find(event => event.status === order.status) ? new Date(events.find(event => event.status === order.status)!.createdAt).toLocaleString("en-IN") : new Date(order.updatedAt || order.createdAt).toLocaleString("en-IN")}</p></div></div>
     </div>;
   }
 
@@ -143,11 +143,16 @@ export default function AccountOrdersPage() {
       <StorefrontHeader />
       <main className="min-h-[65vh] bg-[#faf9f7] px-5 py-12 text-[#171717] md:px-10 md:py-16">
         <div className="mx-auto max-w-[1050px]">
-          <p className="text-[10px] font-semibold tracking-[0.2em] text-[#a18c75]">YOUR HOVER UP ACCOUNT</p>
+          <p className="text-sm font-semibold tracking-[0.14em] text-[#8b7054]">YOUR HOVER UP ACCOUNT</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div><h1 className="text-3xl font-semibold sm:text-4xl">{signedIn ? `Hello, ${customerName}` : "Track your order"}</h1><p className="mt-2 text-sm text-[#888]">{signedIn ? "Your order history and delivery updates." : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
+            <div><h1 className="text-3xl font-semibold sm:text-4xl">Order Tracker</h1><p className="mt-2 text-base text-[#777]">{signedIn ? `Welcome back, ${customerName}. Follow your orders and delivery updates here.` : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
             {!signedIn && <Link href="/account/login" className="text-xs font-semibold text-[#8b7054] underline">Sign in to your account</Link>}
           </div>
+
+          <nav aria-label="Customer account" className="mt-7 flex flex-wrap gap-2 border-b border-[#e7e1d8] pb-3">
+            <Link href="/account" className="rounded-xl border border-[#b99a76] bg-[#b99a76]/10 px-5 py-3 text-sm font-semibold text-[#5d4936]">Account</Link>
+            <Link href="/account/orders" aria-current="page" className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-semibold text-white">Order Tracker</Link>
+          </nav>
 
           {!signedIn && (
             <form onSubmit={lookup} className="mt-8 grid gap-4 rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:grid-cols-3 sm:p-6">
@@ -159,20 +164,6 @@ export default function AccountOrdersPage() {
           )}
 
           {error && <p role="alert" className="mt-5 rounded-xl border border-[#ead8cb] bg-[#fff8f2] px-4 py-3 text-sm text-[#945a3a]">{error}</p>}
-
-          {signedIn && <section className="mt-8 grid gap-4 lg:grid-cols-[1.15fr_1fr]">
-            <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-6">
-              <p className="text-[10px] font-semibold tracking-[0.18em] text-[#a18c75]">MY PROFILE</p>
-              <p className="mt-3 text-xl font-semibold text-[#24211d]">{customerName}</p>
-              <p className="mt-2 text-xs text-[#777]">{customerEmail}</p>
-              <p className="mt-1 text-xs text-[#777]">{customerPhone || "Phone number not added"}</p>
-              <Link href="/account" className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-[#8b7054] underline">Account settings <ArrowRight size={12} /></Link>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Total orders</p><p className="mt-3 text-2xl font-semibold text-[#24211d]">{orders.length}</p></div>
-              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Delivered</p><p className="mt-3 text-2xl font-semibold text-[#47724b]">{orders.filter(order => order.status === "DELIVERED").length}</p></div>
-            </div>
-          </section>}
 
           {loading ? <div className="mt-8 h-36 animate-pulse rounded-2xl bg-[#efede9]" /> : orders.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white px-6 py-14 text-center">
@@ -204,7 +195,7 @@ export default function AccountOrdersPage() {
                             {typeof custom.frontImageUrl==="string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Front logo</a>}
                             {typeof custom.backImageUrl==="string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Back logo</a>}
                           </div>
-                          {typeof custom.customizationNotes==="string" && custom.customizationNotes && <p className="mt-2 text-[11px] leading-5 text-[#777]">Customization: {custom.customizationNotes}</p>}
+                          {typeof custom.customizationNotes==="string" && custom.customizationNotes && <p className="mt-2 text-sm leading-5 text-[#777]">Customization: {custom.customizationNotes}</p>}
                         </div>;
                       })}</div></div>
                       <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY ADDRESS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]">{order.shippingAddress.addressLine1 ? <><p className="font-semibold text-[#171717]">{String(order.shippingAddress.fullName || "")}</p><p>{String(order.shippingAddress.addressLine1 || "")}</p><p>{String(order.shippingAddress.addressLine2 || "")}</p><p>{String(order.shippingAddress.city || "")}, {String(order.shippingAddress.state || "")} {String(order.shippingAddress.postalCode || "")}</p><p>{String(order.shippingAddress.country || "India")}</p></> : <p className="text-[11px] leading-5 text-[#8b7864]">For privacy, delivery details are shown after verifying your checkout email and phone number.</p>}</div><h2 className="mt-4 text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ORDER JOURNEY</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4"><OrderTimeline order={order} /><div className="mt-2 border-t border-[#eee8df] pt-3"><p className="text-[11px] text-[#888]">Payment: {label(order.paymentStatus)} · {order.payment?.method || "—"}</p>{order.shipment?.carrier && <p className="mt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}{order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}</div></div></div>
