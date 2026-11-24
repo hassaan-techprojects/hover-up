@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { ArrowUp, MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 
+const WHATSAPP_URL = "https://wa.me/919363254591?text=Hello%20Hover%20Up%2C%20I%20need%20assistance%20with%20my%20order.";
+
 function FacebookMark() {
   return <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[19px] w-[19px]" fill="currentColor"><path d="M13.5 21v-8.2h2.8l.42-3.2H13.5V7.56c0-.93.26-1.56 1.6-1.56h1.7V3.14C16.5 3.05 15.48 3 14.3 3c-2.48 0-4.18 1.51-4.18 4.29V9.6H7.3v3.2h2.82V21h3.38Z"/></svg>;
 }
@@ -47,14 +49,14 @@ export default function StorefrontFooter() {
           <section>
             <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4b998]">Contact information</h3>
             <div className="mt-5 space-y-4 text-sm text-white/70">
-              <p className="flex items-start gap-3"><Phone size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>+91 00000 00000 <span className="block pt-1 text-xs text-white/40">Temporary sample number</span></span></p>
+              <p className="flex items-start gap-3"><Phone size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <a href="tel:+919363254591" className="transition hover:text-white">+91 93632 54591</a></p>
               <p className="flex items-start gap-3"><Mail size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Contact details will be updated soon</span></p>
               <p className="flex items-start gap-3"><Clock size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Customer support: 24/7</span></p>
               <p className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Hover Up, Chennai, Tamil Nadu, India <span className="block pt-1 text-xs text-white/40">Temporary sample location</span></span></p>
             </div>
-            <button type="button" disabled title="WhatsApp contact will be connected soon" className="mt-6 inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-full bg-[#25D366] px-5 text-xs font-bold text-white opacity-90 shadow-lg">
-              <MessageCircle size={17}/> WhatsApp us <span className="font-medium opacity-80">· Coming soon</span>
-            </button>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-5 text-xs font-bold text-white shadow-lg transition hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
+              <MessageCircle size={17}/> Chat on WhatsApp
+            </a>
           </section>
         </div>
 
@@ -71,7 +73,7 @@ export default function StorefrontFooter() {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">Secure and flexible payments</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {["Cash on Delivery", "Razorpay", "UPI", "Google Pay", "PhonePe", "Visa", "Mastercard"].map((item) => <span key={item} className="rounded-md border border-white/15 bg-white px-3 py-2 text-[10px] font-bold text-[#222]">{item}</span>)}
+                <img src="/brands/cod.png" alt="Cash on Delivery" loading="lazy" className="h-10 w-auto max-w-[132px] rounded-md bg-white object-contain p-1.5" /><img src="/brands/razorpay.png" alt="Razorpay" loading="lazy" className="h-10 w-auto max-w-[132px] rounded-md bg-white object-contain p-1.5" />
               </div>
             </div>
             <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-3 rounded-sm bg-white px-7 text-xs font-bold uppercase tracking-[0.12em] text-[#111] shadow-sm transition hover:bg-[#d4b998] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d4b998]">
@@ -82,9 +84,9 @@ export default function StorefrontFooter() {
         </div>
       </footer>
 
-      <button type="button" disabled aria-label="WhatsApp support coming soon" title="WhatsApp contact will be connected soon" className="fixed bottom-5 right-5 z-[80] flex h-14 w-14 cursor-not-allowed items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105">
+      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" title="Chat with Hover Up on WhatsApp" className="fixed bottom-5 right-5 z-[80] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105 hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
         <MessageCircle size={27} strokeWidth={2.2}/>
-      </button>
+      </a>
     </>
   );
 }
