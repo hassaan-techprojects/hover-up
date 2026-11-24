@@ -212,7 +212,7 @@ export default function CheckoutPage() {
                   <div className="mt-5 space-y-4">
                     {items.map((item, index) => (
                       <div key={`${item.productId}-${index}`} className="flex gap-3">
-                        <div className="h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-[#f2f0ec]">{item.image && <img src={item.image} alt={item.name} className="h-full w-full object-cover" />}</div>
+                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[#f2f0ec]">{item.image && <img src={item.image} alt={item.name} className="h-full w-full object-contain object-center p-1" />}</div>
                         <div className="min-w-0 flex-1"><p className="text-xs font-semibold leading-5">{item.name}</p><p className="mt-1 text-[10px] text-[#888]">{item.packSize ? `Pack of ${item.packSize}` : `Qty ${item.quantity}`}</p></div>
                         <p className="text-xs font-semibold">{formatPrice(Number(item.price))}</p>
                       </div>
