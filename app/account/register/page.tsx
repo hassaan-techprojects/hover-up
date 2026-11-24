@@ -16,7 +16,7 @@ export default function AccountRegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
-  const [stage, setStage] = useState<"details" | "verify">("details");
+  const [stage, setStage] = useState<"details" | "verify" | "success">("details");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +48,7 @@ export default function AccountRegisterPage() {
       if (!response.ok) throw new Error(data.error || "Unable to verify your email.");
       const login = await signIn("credentials", { email: normalizedEmail, password, redirect: false });
       if (login?.error) { router.replace("/account/login?created=1"); return; }
-      router.replace("/account/orders"); router.refresh();
+      setStage("success");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to verify your email."); }
     finally { setLoading(false); }
   }
@@ -58,6 +58,14 @@ export default function AccountRegisterPage() {
     <>
       <StorefrontHeader />
       <main className="flex min-h-[65vh] items-center justify-center bg-[#faf9f7] px-5 py-14">
+        {stage === "success" ? (
+          <section className="w-full max-w-lg rounded-3xl border border-[#e9e4dc] bg-white p-8 text-center shadow-[0_20px_70px_rgba(30,24,18,0.05)] sm:p-10">
+            <p className="text-[10px] font-semibold tracking-[0.2em] text-[#a18c75]">HOVER UP ACCOUNT</p>
+            <h1 className="mt-4 text-3xl font-semibold">Account successfully created</h1>
+            <p className="mt-3 text-sm text-[#888]">Your email has been verified and your account is ready.</p>
+            <button type="button" onClick={() => { router.replace("/account/orders"); router.refresh(); }} className="mt-7 min-h-12 w-full rounded-xl bg-[#171717] text-xs font-semibold tracking-[0.12em] text-white transition hover:bg-[#b99a76] hover:text-[#171717]">GO TO ACCOUNT</button>
+          </section>
+        ) : (
         <form onSubmit={stage === "details" ? requestCode : verify} className="w-full max-w-lg rounded-3xl border border-[#e9e4dc] bg-white p-6 shadow-[0_20px_70px_rgba(30,24,18,0.05)] sm:p-9">
           <p className="text-[10px] font-semibold tracking-[0.2em] text-[#a18c75]">HOVER UP ACCOUNT</p>
           <h1 className="mt-3 text-3xl font-semibold">{stage === "details" ? "Create your account" : "Verify your email"}</h1>
@@ -82,6 +90,7 @@ export default function AccountRegisterPage() {
           {stage === "verify" && <button type="button" disabled={loading} onClick={() => requestCode()} className="mt-4 w-full text-xs font-semibold text-[#8b7054] underline disabled:opacity-50">Resend verification code</button>}
           <p className="mt-6 text-center text-xs text-[#888]">Already have an account? <Link href="/account/login" className="font-semibold text-[#8b7054] underline">Sign in</Link></p>
         </form>
+        )}
       </main>
       <StorefrontFooter />
     </>
