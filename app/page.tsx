@@ -35,6 +35,7 @@ type HomeProduct = {
   name: string;
   slug: string;
   images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[];
+  attributes?: { attributeValue: { value: string; termType: "COLOR" | "SIZE"; attribute: { name: string } } }[];
 };
 
 type Brand = {
@@ -274,7 +275,7 @@ export default function HomePage() {
 
       {/* Homepage Banner Slider */}
       {!bannersLoading && banners.length > 0 && (
-        <section className="relative w-full overflow-hidden bg-[#f8f6f2]">
+        <section className="relative flex min-h-[190px] w-full items-center overflow-hidden bg-[#f8f6f2] py-2 sm:min-h-[240px] md:py-3">
           <div
             className="flex transition-transform duration-700 ease-in-out will-change-transform"
             style={{
@@ -426,12 +427,17 @@ export default function HomePage() {
                 const image = product.images?.find((item) => item.isPrimary) || product.images?.[0];
                 return (
                   <article key={product.id} className="min-w-0">
-                    <Link href={`/shop/${product.slug}`} className="block aspect-[3/4] overflow-hidden bg-white">
+                    <Link href={`/shop/${product.slug}`} className="block aspect-[3/4] overflow-hidden">
                       {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-xs text-[#999]">NO IMAGE</div>}
                     </Link>
-                    <Link href={`/shop/${product.slug}`}><h3 className="mt-3 line-clamp-2 text-sm font-semibold leading-6 text-[#171717] sm:text-base">{product.name}</h3></Link>
-                    
-                    <Link href={`/shop/${product.slug}`} className="mt-3 flex min-h-11 items-center justify-center border border-[#222] bg-white px-3 text-xs font-semibold tracking-[0.12em] transition hover:bg-[#171717] hover:text-white">VIEW PRODUCT</Link>
+                    <Link href={`/shop/${product.slug}`}><h3 className="mt-4 line-clamp-2 text-lg font-bold leading-7 text-[#171717] transition-colors hover:text-[#987b5c] sm:text-xl">{product.name}</h3></Link>
+                    <p className="mt-2 text-lg font-semibold text-[#171717]">₹1,299</p>
+                    <p className="mt-1 text-xs font-medium text-[#82766a]">
+                      {(() => {
+                        const colors = [...new Set((product.attributes || []).filter((item) => item.attributeValue.termType === "COLOR").map((item) => item.attributeValue.value))];
+                        return colors.length ? `Colours: ${colors.join(", ")}` : "2-piece pack";
+                      })()}
+                    </p>
                   </article>
                 );
               })}
