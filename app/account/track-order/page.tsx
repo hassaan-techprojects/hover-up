@@ -72,7 +72,7 @@ export default function TrackOrderPage() {
 
           <form onSubmit={findOrder} className="mt-8 grid gap-5 rounded-2xl border border-[#e9e4dc] bg-white p-6 sm:grid-cols-2 sm:p-8">
             <label className="text-base font-bold text-[#333] sm:col-span-2">Order number
-              <input required value={orderNumber} onChange={event => setOrderNumber(event.target.value)} placeholder="Enter your order number (optional)" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
+              <input value={orderNumber} onChange={event => setOrderNumber(event.target.value)} placeholder="Enter your order number (optional)" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
             </label>
             <label className="text-base font-bold text-[#333]">Email address
               <input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="Email used at checkout" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
