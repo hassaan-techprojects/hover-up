@@ -26,8 +26,8 @@ export async function POST(request: Request) {
     const include = {
       customer: { select: { firstName: true, lastName: true, email: true, phone: true } },
       items: true,
-      payment: true,
-      shipment: true,
+      payment: { select: { method: true, status: true, amount: true } },
+      shipment: { select: { status: true, trackingNumber: true, carrier: true, trackingUrl: true, shippedAt: true, deliveredAt: true } },
     } as const;
 
     if (orderNumber) {
