@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   const [isBuyNow, setIsBuyNow] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "ONLINE">("COD");
   const [message, setMessage] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -125,13 +126,14 @@ export default function CheckoutPage() {
             country: "India",
           },
           items,
-          paymentMethod: "COD",
+          paymentMethod,
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to place your order.");
 
       localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
+      window.dispatchEvent(new Event("hover-up-cart-updated"));
       router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
       return;
     } catch (error) {
@@ -170,15 +172,37 @@ export default function CheckoutPage() {
               </section>
 
               <section className="rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-7">
-                <h2 className="text-lg font-semibold">Payment after confirmation</h2>
-                <p className="mt-2 text-xs leading-6 text-[#777]">Place your order now. Our team will review your selected pack, sizes, artwork and availability, then coordinate payment with you. Online payment will be enabled later.</p>
+                <h2 className="text-lg font-semibold">Payment</h2>
+                <p className="mt-1 text-xs leading-6 text-[#777]">Choose how you would like to pay for your order.</p>
+                <div className="mt-4 space-y-3">
+                  <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${paymentMethod === "COD" ? "border-[#171717] bg-[#faf9f7]" : "border-[#e9e4dc]"}`}>
+                    <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} className="mt-1 h-4 w-4 accent-[#171717]" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold">Cash on Delivery (COD)</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#777]">Pay when your order is delivered. Our team will confirm the order before dispatch.</span>
+                    </span>
+                  </label>
+                  <div className="flex items-start gap-3 rounded-xl border border-dashed border-[#e9e4dc] bg-[#faf9f7] p-4 opacity-75">
+                    <input type="radio" name="paymentMethod" value="ONLINE" disabled checked={paymentMethod === "ONLINE"} className="mt-1 h-4 w-4 accent-[#171717]" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold">Online payment</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#777]">Razorpay · UPI · Google Pay · PhonePe</span>
+                      <span className="mt-2 inline-flex flex-wrap gap-2 text-[10px] font-semibold text-[#5f554a]">
+                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">Razorpay</span>
+                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">Google Pay</span>
+                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">PhonePe</span>
+                      </span>
+                      <span className="mt-2 block text-[10px] text-[#9a8064]">Online payments will be enabled after the Razorpay checkout and verification are configured.</span>
+                    </span>
+                  </div>
+                </div>
               </section>
 
               {message && <p role="alert" className="rounded-xl border border-[#e7d4c5] bg-[#fff9f3] px-4 py-3 text-sm text-[#8b5636]">{message}</p>}
               <button type="submit" disabled={submitting || !loaded || items.length === 0} className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#171717] px-6 text-xs font-semibold tracking-[0.14em] text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:cursor-not-allowed disabled:opacity-50">
                 {submitting ? "SUBMITTING ORDER..." : "PLACE ORDER"} <ArrowRight size={16} />
               </button>
-              <p className="text-center text-[10px] text-[#999]">No online payment is collected at this stage. Our team will contact you to confirm the order and payment.</p>
+              <p className="text-center text-[10px] text-[#999]">Cash on Delivery is currently available. Our team will contact you to confirm your order.</p>
             </form>
 
             <aside className="h-fit rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-6 lg:sticky lg:top-28">
