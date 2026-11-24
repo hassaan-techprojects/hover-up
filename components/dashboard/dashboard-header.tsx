@@ -8,7 +8,9 @@ import {
   Search,
   Bell,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 type DashboardHeaderProps = {
   onMenuClick: () => void;
@@ -87,6 +89,15 @@ function DashboardHeaderContent({
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#b99a76]" />
         </button>
 
+
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/account/login" })}
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#e8e3dc] px-3 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2] hover:text-[#171717]"
+        >
+          <LogOut size={16} />
+          <span className="hidden sm:inline">Log out</span>
+        </button>
 
         <div className="ml-1 flex items-center gap-2.5 border-l border-[#eae6df] pl-3 sm:pl-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e0d5] text-xs font-semibold text-[#493b2d]">

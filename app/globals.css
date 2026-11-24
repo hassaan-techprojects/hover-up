@@ -844,3 +844,20 @@ article.group:hover img {
 @media (prefers-reduced-motion: reduce) {
   .account-timeline-current { animation: none; }
 }
+
+
+/* READABLE TYPE SCALE — customer and dashboard interfaces */
+@layer utilities {
+  .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\] {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+  .text-xs {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+  .text-sm {
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+  }
+}
