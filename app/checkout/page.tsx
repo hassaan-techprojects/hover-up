@@ -178,21 +178,21 @@ export default function CheckoutPage() {
                   <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${paymentMethod === "COD" ? "border-[#171717] bg-[#faf9f7]" : "border-[#e9e4dc]"}`}>
                     <input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} className="mt-1 h-4 w-4 accent-[#171717]" />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">Cash on Delivery (COD)</span>
+                      <span className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="text-sm font-semibold">Cash on Delivery (COD)</span>
+                        <img src="/brands/cod.png" alt="Cash on Delivery" className="h-9 w-auto max-w-[112px] object-contain" />
+                      </span>
                       <span className="mt-1 block text-xs leading-5 text-[#777]">Pay when your order is delivered. Our team will confirm the order before dispatch.</span>
                     </span>
                   </label>
                   <div className="flex items-start gap-3 rounded-xl border border-dashed border-[#e9e4dc] bg-[#faf9f7] p-4 opacity-75">
                     <input type="radio" name="paymentMethod" value="ONLINE" disabled checked={paymentMethod === "ONLINE"} className="mt-1 h-4 w-4 accent-[#171717]" />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold">Online payment</span>
-                      <span className="mt-1 block text-xs leading-5 text-[#777]">Razorpay · UPI · Google Pay · PhonePe</span>
-                      <span className="mt-2 inline-flex flex-wrap gap-2 text-[10px] font-semibold text-[#5f554a]">
-                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">Razorpay</span>
-                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">Google Pay</span>
-                        <span className="rounded border border-[#e4ded5] bg-white px-2 py-1">PhonePe</span>
+                      <span className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="text-sm font-semibold">Razorpay online payment</span>
+                        <img src="/brands/razorpay.png" alt="Razorpay" className="h-9 w-auto max-w-[112px] object-contain" />
                       </span>
-                      <span className="mt-2 block text-[10px] text-[#9a8064]">Online payments will be enabled after the Razorpay checkout and verification are configured.</span>
+                      <span className="mt-1 block text-xs leading-5 text-[#777]">Razorpay checkout is not active yet. Only Cash on Delivery can currently be selected.</span>
                     </span>
                   </div>
                 </div>
