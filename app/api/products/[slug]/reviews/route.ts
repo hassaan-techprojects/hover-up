@@ -11,7 +11,7 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || session.user.role !== "CUSTOMER") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Sign in to submit a product review." }, { status: 401 });
     }
 
@@ -34,8 +34,8 @@ export async function POST(
 
     const endpoint = process.env.AWS_ENDPOINT_URL_S3?.replace(/\/+$/, "");
     const bucket = process.env.NEON_STORAGE_BUCKET;
-    if (!endpoint || !bucket) {
-      return NextResponse.json({ error: "Review photo storage is not configured." }, { status: 503 });
+    if (images.length > 0 && (!endpoint || !bucket)) {
+      return NextResponse.json({ error: "Review photo storage is not configured. Submit your review without photos or contact support." }, { status: 503 });
     }
 
     for (const image of images) {
@@ -45,11 +45,22 @@ export async function POST(
     }
 
     const [customer, product] = await Promise.all([
-      prisma.customer.findUnique({ where: { userId: session.user.id }, select: { id: true } }),
+      prisma.customer.findFirst({
+        where: {
+          OR: [
+            { userId: session.user.id },
+            ...(session.user.email ? [{ email: session.user.email.trim().toLowerCase(), userId: null }] : []),
+          ],
+        },
+        select: { id: true, userId: true },
+      }),
       prisma.product.findFirst({ where: { slug, status: "ACTIVE", isActive: true }, select: { id: true } }),
     ]);
-    if (!customer) return NextResponse.json({ error: "Customer account not found." }, { status: 404 });
+    if (!customer) return NextResponse.json({ error: "This login is not linked to a customer profile. Please use your customer account." }, { status: 403 });
     if (!product) return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    if (!customer.userId) {
+      await prisma.customer.update({ where: { id: customer.id }, data: { userId: session.user.id } });
+    }
 
     const review = await prisma.$transaction(async (tx) => {
       const saved = await tx.review.upsert({
