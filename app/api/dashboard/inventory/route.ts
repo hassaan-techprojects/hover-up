@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     const auth = await getDashboardAdmin();
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const body = await request.json() as { inventoryId?: string; quantity?: number; note?: string };
-    if (!body.inventoryId || !Number.isInteger(body.quantity) || Number(body.quantity) < 0) {
+    if (!body.inventoryId || !Number.isInteger(Number(body.quantity)) || Number(body.quantity) < 0) {
       return NextResponse.json({ error: "Enter a valid stock quantity." }, { status: 400 });
     }
     const current = await prisma.inventory.findUnique({ where: { id: body.inventoryId }, select: { id: true, quantity: true, reserved: true } });
