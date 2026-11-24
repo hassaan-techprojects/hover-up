@@ -1193,7 +1193,7 @@ export default function ProductDetailClient({
                 <div className="mt-5 whitespace-pre-line text-sm leading-8 text-[#666]">
                   {product.description ||
                     product.shortDescription ||
-                    buildDefaultProductDescription(product.name)}
+                    buildDefaultProductDescription(product.name).replace(/^## /gm, "")}
                 </div>
 
                 {product.sku && (
