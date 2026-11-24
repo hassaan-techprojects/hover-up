@@ -85,6 +85,8 @@ function displaySizeLabel(value: string) {
 export default function AccountOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -103,7 +105,9 @@ export default function AccountOrdersPage() {
         if (response.ok) {
           setSignedIn(true);
           setOrders(data.orders || []);
-          setCustomerName(data.customer?.firstName || "");
+          setCustomerName([data.customer?.firstName, data.customer?.lastName].filter(Boolean).join(" ") || "Customer");
+          setCustomerEmail(data.customer?.email || "");
+          setCustomerPhone(data.customer?.phone || "");
         }
       })
       .catch(() => {})
@@ -155,6 +159,21 @@ export default function AccountOrdersPage() {
           )}
 
           {error && <p role="alert" className="mt-5 rounded-xl border border-[#ead8cb] bg-[#fff8f2] px-4 py-3 text-sm text-[#945a3a]">{error}</p>}
+
+          {signedIn && <section className="mt-8 grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+            <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-6">
+              <p className="text-[10px] font-semibold tracking-[0.18em] text-[#a18c75]">MY PROFILE</p>
+              <p className="mt-3 text-xl font-semibold text-[#24211d]">{customerName}</p>
+              <p className="mt-2 text-xs text-[#777]">{customerEmail}</p>
+              <p className="mt-1 text-xs text-[#777]">{customerPhone || "Phone number not added"}</p>
+              <Link href="/account" className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-[#8b7054] underline">Account settings <ArrowRight size={12} /></Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Total orders</p><p className="mt-3 text-2xl font-semibold text-[#24211d]">{orders.length}</p></div>
+              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Delivered</p><p className="mt-3 text-2xl font-semibold text-[#47724b]">{orders.filter(order => order.status === "DELIVERED").length}</p></div>
+              <div className="col-span-2 rounded-2xl border border-[#e9e4dc] bg-[#f7f3ed] p-5"><p className="text-[10px] text-[#8b7864]">Total order value</p><p className="mt-2 text-2xl font-semibold text-[#24211d]">{money(orders.reduce((sum, order) => sum + Number(order.totalAmount), 0))}</p><p className="mt-1 text-[10px] text-[#8b7864]">Across your visible order history</p></div>
+            </div>
+          </section>}
 
           {loading ? <div className="mt-8 h-36 animate-pulse rounded-2xl bg-[#efede9]" /> : orders.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white px-6 py-14 text-center">
