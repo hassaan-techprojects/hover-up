@@ -20,8 +20,7 @@ export default function StorefrontFooter() {
         <div className="mx-auto grid max-w-[1440px] gap-10 lg:grid-cols-[1.35fr_0.75fr_0.8fr] lg:gap-16">
           <section>
             <Link href="/" aria-label="Hover Up home" className="inline-flex items-center gap-2">
-              <img src="/hu.png" alt="" className="h-10 w-auto object-contain brightness-0 invert" />
-              <span className="text-2xl font-extrabold tracking-[-0.07em]">HOVER UP</span>
+              <img src="/hu.png" alt="Hover Up" className="h-12 w-auto max-w-[190px] object-contain" />
             </Link>
             <p className="mt-5 max-w-md text-sm leading-7 text-white/65">
               Discover thoughtfully selected styles, everyday essentials and statement pieces. Shop the latest collection at Hover Up.
