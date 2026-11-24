@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, Truck, X } from "lucide-react";
+import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, X } from "lucide-react";
 
 type OrderItem = {
   id: string;
