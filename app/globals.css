@@ -861,3 +861,18 @@ article.group:hover img {
     line-height: 1.6 !important;
   }
 }
+
+
+/* HOVER UP CUSTOMER READABILITY — keep storefront copy comfortably large. */
+main :is(p, li, label, input, select, textarea, button, a, dt, dd, summary, small, span) {
+  font-size: max(1rem, 1em);
+  line-height: 1.6;
+}
+
+main :is(h1, h2, h3, h4) {
+  color: #111111;
+}
+
+main :is(input, select, textarea) {
+  min-height: 48px;
+}
