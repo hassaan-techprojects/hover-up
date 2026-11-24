@@ -160,6 +160,7 @@ export async function POST(request: Request) {
           attributes: { include: { attributeValue: true } },
           variants: { where: { isActive: true }, include: { inventory: true } },
           inventories: { where: { variantId: null } },
+          images: { orderBy: { sortOrder: "asc" } },
         },
       });
 
@@ -208,19 +209,6 @@ export async function POST(request: Request) {
           );
         }
 
-        if (product.variants.length === 0 && product.inventories.length > 0) {
-          const availableProductStock = product.inventories.reduce(
-            (sum, inventory) => sum + Math.max(0, inventory.quantity - inventory.reserved),
-            0
-          );
-          if (availableProductStock < item.packSize) {
-            return responseError(
-              `Only ${availableProductStock} item(s) are available for ${product.name}.`,
-              409
-            );
-          }
-        }
-
         if (
           productColors.length > 0 &&
           !productColors.some((color) => color.value.toLowerCase() === (item.color || "").toLowerCase())
@@ -245,12 +233,6 @@ export async function POST(request: Request) {
           });
           if (!colorVariant) {
             return responseError(`The selected color is unavailable for ${product.name}.`, 409);
-          }
-          const stock = colorVariant.inventory
-            ? Math.max(0, colorVariant.inventory.quantity - colorVariant.inventory.reserved)
-            : Math.max(0, colorVariant.stock);
-          if (stock < item.packSize) {
-            return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
           }
         }
 
@@ -280,15 +262,6 @@ export async function POST(request: Request) {
                 `The selected variant for size ${allocation.size} does not match your options.`
               );
             }
-            const stock = variant.inventory
-              ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
-              : Math.max(0, variant.stock);
-            if (stock < allocation.quantity) {
-              return responseError(
-                `Only ${stock} item(s) are available in size ${allocation.size}.`,
-                409
-              );
-            }
           }
         }
 
@@ -310,6 +283,7 @@ export async function POST(request: Request) {
             backImageUrl: item.backImageUrl || null,
             textOnlyDesign: Boolean(item.textOnlyDesign),
             customizationNotes: (item.customizationNotes || "").trim().slice(0, 1000),
+            productImageUrl: product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url ?? null,
           },
         });
         subtotal += packPrice;
@@ -340,15 +314,6 @@ export async function POST(request: Request) {
         }
 
         const unitPrice = Number(variant?.price ?? product.price);
-        const stock = variant
-          ? variant.inventory
-            ? Math.max(0, variant.inventory.quantity - variant.inventory.reserved)
-            : Math.max(0, variant.stock)
-          : product.inventories?.[0]?.quantity ?? 0;
-        if ((variant || product.inventories.length > 0) && stock < item.quantity) {
-          return responseError(`Only ${stock} item(s) are available for ${product.name}.`, 409);
-        }
-
         orderLines.push({
           productId: product.id,
           variantId: variant?.id ?? null,
@@ -358,7 +323,10 @@ export async function POST(request: Request) {
           quantity: item.quantity,
           unitPrice,
           totalPrice: unitPrice * item.quantity,
-          customization: { size: selectedSize },
+          customization: {
+            size: selectedSize,
+            productImageUrl: product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url ?? null,
+          },
         });
         subtotal += unitPrice * item.quantity;
       }
@@ -380,13 +348,8 @@ export async function POST(request: Request) {
       country: address.country?.trim() || "India",
     };
 
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (body.paymentMethod === "ONLINE" && (!keyId || !keySecret)) {
-      return responseError(
-        "Online payment is not configured yet. Please choose Cash on Delivery or contact the store.",
-        503
-      );
+    if (body.paymentMethod !== "COD") {
+      return responseError("Online payment will be available later. You can place your order now and arrange payment after confirmation.");
     }
 
     const orderNumber = `HU-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${randomUUID()
@@ -500,56 +463,15 @@ export async function POST(request: Request) {
           metadata: {
             orderNumber: createdOrder.orderNumber,
             customerId: savedCustomer.id,
-            paymentMethod: body.paymentMethod,
+            paymentMethod: "COD",
+            hasCustomerAccount: Boolean(savedCustomer.userId),
+            customerAccountUserId: savedCustomer.userId,
             status: "PENDING",
           },
         },
       });
       return createdOrder;
     });
-
-    if (body.paymentMethod === "ONLINE") {
-      const razorpayResponse = await fetch("https://api.razorpay.com/v1/orders", {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(subtotal * 100),
-          currency: "INR",
-          receipt: order.orderNumber,
-          notes: { hoverUpOrderId: order.id },
-        }),
-      });
-      const razorpayOrder = await razorpayResponse.json();
-      if (!razorpayResponse.ok) {
-        console.error("Razorpay order creation failed:", razorpayOrder);
-        return responseError(
-          "Unable to start online payment. Your order is saved as pending; contact the store before retrying.",
-          502
-        );
-      }
-
-      await prisma.payment.update({
-        where: { orderId: order.id },
-        data: { transactionId: razorpayOrder.id, gateway: "RAZORPAY" },
-      });
-
-      return NextResponse.json(
-        {
-          order,
-          payment: {
-            provider: "RAZORPAY",
-            keyId,
-            orderId: razorpayOrder.id,
-            amount: razorpayOrder.amount,
-            currency: razorpayOrder.currency,
-          },
-        },
-        { status: 201 }
-      );
-    }
 
     return NextResponse.json({ order, payment: { provider: "COD" } }, { status: 201 });
   } catch (error) {
