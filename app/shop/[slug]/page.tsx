@@ -723,16 +723,8 @@ function ProductDetailContent({
       })
       .filter((item) => item.quantity > 0);
 
-    const unavailableAllocation = allocations.find((item) => {
-      if (!item.variant) return false;
-      return product.stockTracked && getAvailableStock(item.variant) < item.quantity;
-    });
-
-    if (unavailableAllocation) {
-      setCartMessage(`Not enough stock available for size ${unavailableAllocation.size}.`);
-      return;
-    }
-
+    // Buy Now is an order request for admin review. Inventory is checked
+    // before fulfilment, not while the customer configures a custom pack.
     for (const file of [frontImageFile, backImageFile].filter((file): file is File => Boolean(file))) {
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
         setCartMessage("Upload JPG, PNG, or WEBP images only.");
