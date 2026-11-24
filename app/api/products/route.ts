@@ -3,9 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // The homepage only needs product identity, gallery images and colour
-    // attributes. Avoid loading categories, variants and inventory records
-    // for every product on the homepage.
+    // Keep the public product payload lean while including the price required
+    // by both storefront cards and the wishlist.
     const products = await prisma.product.findMany({
       where: {
         status: "ACTIVE",
@@ -15,6 +14,7 @@ export async function GET() {
         id: true,
         name: true,
         slug: true,
+        price: true,
         images: {
           select: {
             id: true,
