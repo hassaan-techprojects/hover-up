@@ -1428,18 +1428,6 @@ function ProductDetailContent({
               </div>
             )}
 
-            {/* STOCK */}
-
-            <div className="mt-8 flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full bg-[#63876b]"
-              />
-
-              <span className="text-sm tracking-wide text-[#666]">
-                Available to order
-              </span>
-            </div>
-
             {/* ACTION BUTTONS */}
 
             <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_1fr]">
