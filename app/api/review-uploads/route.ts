@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { getServerSession } from "next-auth";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getPublicObjectUrl, s3, storageBucket } from "@/lib/storage";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -15,8 +16,24 @@ const ALLOWED_TYPES: Record<string, string> = {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id || session.user.role !== "CUSTOMER") {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Sign in to upload review photos." }, { status: 401 });
+    }
+
+    const customer = await prisma.customer.findFirst({
+      where: {
+        OR: [
+          { userId: session.user.id },
+          ...(session.user.email ? [{ email: session.user.email.trim().toLowerCase(), userId: null }] : []),
+        ],
+      },
+      select: { id: true, userId: true },
+    });
+    if (!customer) {
+      return NextResponse.json({ error: "This login is not linked to a customer profile. Please use your customer account." }, { status: 403 });
+    }
+    if (!customer.userId) {
+      await prisma.customer.update({ where: { id: customer.id }, data: { userId: session.user.id } });
     }
 
     const formData = await request.formData();
