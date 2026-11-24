@@ -42,10 +42,18 @@ export async function GET(request: Request) {
       take: search ? 500 : 200,
     });
 
+    const orderIds = orders.map((order) => order.id);
+    const history = orderIds.length ? await prisma.activityLog.findMany({
+      where: { entity: "ORDER", entityId: { in: orderIds }, action: "ORDER_STATUS_UPDATED" },
+      orderBy: { createdAt: "asc" },
+      select: { entityId: true, description: true, metadata: true, createdAt: true },
+    }) : [];
+
     return NextResponse.json({
       orders: orders.map((order) => ({
         ...order,
         customer: { ...order.customer, hasAccount: Boolean(order.customer.userId) },
+        statusHistory: history.filter((entry) => entry.entityId === order.id),
       })),
       canManage: session.user.role === "ADMIN",
     });
