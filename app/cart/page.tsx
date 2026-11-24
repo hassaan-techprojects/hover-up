@@ -26,6 +26,18 @@ type CartEntry = {
 
 const CART_STORAGE_KEY = "hover-up-cart";
 
+function displaySizeLabel(value: string) {
+  const labels: Record<string, string> = {
+    "41": "S",
+    "43": "M",
+    "45": "L",
+    "47": "XL",
+    "49": "2XL",
+    "XXL": "2XL",
+  };
+  return labels[value.toUpperCase()] ?? value;
+}
+
 function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -79,7 +91,7 @@ export default function CartPage() {
     <>
       <StorefrontHeader />
       <main className="min-h-[65vh] bg-[#faf9f7] px-5 py-12 text-[#171717] md:px-10 md:py-16">
-        <div className="mx-auto max-w-[1180px]">
+        <div className="mx-auto max-w-[1440px]">
           <div className="mb-9 flex items-end justify-between gap-4">
             <div>
               <p className="text-[10px] tracking-[0.2em] text-[#a18c75]">YOUR SELECTION</p>
@@ -108,8 +120,8 @@ export default function CartPage() {
                 {items.map((item, index) => (
                   <article key={`${item.productId}-${index}`} className="rounded-2xl border border-[#e9e4dc] bg-white p-4 sm:p-5">
                     <div className="flex gap-4">
-                      <Link href={`/shop/${item.slug}`} className="h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-[#f2f0ec] sm:h-36 sm:w-32">
-                        {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xs text-[#aaa]">No image</div>}
+                      <Link href={`/shop/${item.slug}`} className="h-36 w-32 shrink-0 overflow-hidden rounded-xl bg-[#f2f0ec] sm:h-44 sm:w-40">
+                        {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-contain object-center p-2" /> : <div className="flex h-full items-center justify-center text-xs text-[#aaa]">No image</div>}
                       </Link>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
@@ -128,7 +140,7 @@ export default function CartPage() {
                             <p className="text-[10px] font-semibold tracking-[0.13em] text-[#8b7864]">PACK OF {item.packSize}</p>
                             <div className="mt-2 flex flex-wrap gap-2">
                               {(item.sizeBreakdown ?? []).filter((size) => size.quantity > 0).map((size) => (
-                                <span key={size.size} className="rounded-full bg-[#f5f1eb] px-3 py-1.5 text-[11px] text-[#5f554a]">{size.size}: {size.quantity}</span>
+                                <span key={size.size} className="rounded-full bg-[#f5f1eb] px-3 py-1.5 text-[11px] text-[#5f554a]">{displaySizeLabel(size.size)}: {size.quantity}</span>
                               ))}
                             </div>
                           </div>
