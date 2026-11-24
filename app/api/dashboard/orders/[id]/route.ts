@@ -58,7 +58,7 @@ export async function PATCH(
           },
         },
         include: {
-          customer: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+          customer: { select: { id: true, userId: true, firstName: true, lastName: true, email: true, phone: true } },
           items: true,
           payment: true,
           shipment: true,
