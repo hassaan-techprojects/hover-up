@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Mail, Package, Phone, RefreshCw, Search, ShoppingBag, Users } from "lucide-react";
+import { ArrowUpRight, Mail, Package, Phone, RefreshCw, Search, ShoppingBag, Users, Trash2 } from "lucide-react";
 
 type CustomerOrder = {
   id: string;
@@ -46,7 +46,7 @@ export default function DashboardCustomersPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);\n  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadCustomers = useCallback(async (search = "") => {
     setLoading(true);
@@ -67,6 +67,29 @@ export default function DashboardCustomersPage() {
   }, []);
 
   useEffect(() => { void loadCustomers(query); }, [loadCustomers, query]);
+
+  async function deleteCustomer(customer: Customer) {
+    const confirmed = window.confirm(
+      customer.totalOrders > 0
+        ? `Delete ${customer.fullName}? Their personal details and account will be removed, but their ${customer.totalOrders} order(s) will remain for records.`
+        : `Permanently delete ${customer.fullName}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(customer.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/dashboard/customers/${customer.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to delete customer.");
+      await loadCustomers(query);
+      if (expanded === customer.id) setExpanded(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete customer.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   const visibleCustomers = useMemo(() => customers, [customers]);
 
@@ -123,7 +146,10 @@ export default function DashboardCustomersPage() {
                   <div><p className="text-[10px] text-[#999]">Orders</p><p className="mt-1 text-sm font-semibold text-[#24211d]">{customer.totalOrders}</p></div>
                   <div><p className="text-[10px] text-[#999]">Paid total</p><p className="mt-1 text-sm font-semibold text-[#24211d]">{money(customer.totalSpent)}</p></div>
                 </div>
-                <button type="button" onClick={() => setExpanded(isExpanded ? null : customer.id)} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#e7e1d8] px-3 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide orders" : "View orders"} <Package size={13} /></button>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setExpanded(isExpanded ? null : customer.id)} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#e7e1d8] px-3 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide orders" : "View orders"} <Package size={13} /></button>
+                  <button type="button" onClick={() => void deleteCustomer(customer)} disabled={deletingId === customer.id} title="Delete customer" aria-label={`Delete ${customer.fullName}`} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 size={15} /></button>
+                </div>
               </div>
               {isExpanded && <div className="border-t border-[#eee9e2] bg-[#fcfbf9] p-4">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">CUSTOMER ORDER HISTORY</p><Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#8b7054] underline">Open orders <ArrowUpRight size={12} /></Link></div>
