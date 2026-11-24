@@ -388,7 +388,7 @@ export default function HomePage() {
                   )}
                 </div>
 
-                <h3 className="mt-4 w-full text-xs font-bold tracking-wide text-[#111111] transition-colors duration-300 group-hover:text-[#b99a76] md:text-sm">
+                <h3 className="mt-4 w-full text-lg font-extrabold tracking-wide text-[#111111] transition-colors duration-300 group-hover:text-[#b99a76]">
                   {category.name}
                 </h3>
               </Link>
