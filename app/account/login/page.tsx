@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
@@ -24,7 +24,10 @@ export default function AccountLoginPage() {
       setError("The email or password is incorrect.");
       return;
     }
-    router.push("/account/orders");
+    const session = await getSession();
+    const role = session?.user?.role;
+
+    router.replace(role === "ADMIN" || role === "ANALYST" ? "/dashboard" : "/account/orders");
     router.refresh();
   }
 
