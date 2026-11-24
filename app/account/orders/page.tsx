@@ -55,12 +55,12 @@ function OrderTimeline({ order }: { order: Order }) {
     {stages.map((stage, index) => {
       const done = currentIndex >= index;
       const event = [...events].reverse().find(item => item.status === stage);
-      const timestamp = event?.createdAt || (done ? (index === currentIndex ? order.updatedAt || order.createdAt : order.createdAt) : null);
+      const timestamp = event?.createdAt || (done && index === 0 ? order.createdAt : done && index === currentIndex ? order.updatedAt || order.createdAt : null);
       const isCurrent = currentIndex === index;
       return <li key={stage} className="relative flex min-h-[62px] gap-3">
         {index < stages.length - 1 && <span className={`absolute left-[11px] top-6 h-[calc(100%-2px)] w-px ${currentIndex > index ? "bg-[#b99a76]" : "bg-[#e9e4dc]"}`} />}
         <span className={`relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[9px] ${done ? "border-[#a98b68] bg-[#a98b68] text-white" : "border-[#ded8cf] bg-white text-[#b5aca0]"} ${isCurrent ? "account-timeline-current" : ""}`}>{done ? "✓" : index + 1}</span>
-        <div className="min-w-0 pb-4"><p className={`text-xs font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : titleCaseStatus(stage)}</p>{timestamp ? <p className="mt-1 text-[10px] text-[#999]">{new Date(timestamp).toLocaleString("en-IN")}{!event && index < currentIndex ? " · Earlier milestone" : ""}</p> : <p className="mt-1 text-[10px] text-[#b5aea5]">Awaiting update</p>}</div>
+        <div className="min-w-0 pb-4"><p className={`text-xs font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : titleCaseStatus(stage)}</p><p className="mt-0.5 text-[10px] text-[#8e877e]">{stage === "PENDING" ? "Your order has been placed" : stage === "CONFIRMED" ? "Our team has received your order" : stage === "PROCESSING" ? "Your order is being prepared" : stage === "SHIPPED" ? "Your order is on its way" : "Your order has been delivered"}</p>{timestamp ? <p className="mt-1 text-[10px] text-[#999]">{new Date(timestamp).toLocaleString("en-IN")}</p> : done ? <p className="mt-1 text-[10px] text-[#999]">Earlier milestone · exact time not recorded</p> : <p className="mt-1 text-[10px] text-[#b5aea5]">Awaiting update</p>}</div>
       </li>;
     })}
   </ol>;
