@@ -48,7 +48,7 @@ export default function AccountPage() {
 
           <nav aria-label="Customer account" className="mt-7 flex flex-wrap gap-2 border-b border-[#e7e1d8] pb-3">
             <Link href="/account" aria-current="page" className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-semibold text-white">Account</Link>
-            <Link href="/account/orders" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:text-[#5d4936]">Order Tracker</Link>
+            <Link href="/account/orders" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:text-[#5d4936]">My Orders</Link>
           </nav>
 
           {loading ? (
