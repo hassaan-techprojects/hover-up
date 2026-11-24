@@ -86,7 +86,12 @@ export async function PATCH(
       return order;
     });
 
-    return NextResponse.json({ order: updated });
+    return NextResponse.json({
+      order: {
+        ...updated,
+        customer: { ...updated.customer, hasAccount: Boolean(updated.customer.userId) },
+      },
+    });
   } catch (error) {
     console.error("Update order status API error:", error);
     return NextResponse.json({ error: "Unable to update this order." }, { status: 500 });
