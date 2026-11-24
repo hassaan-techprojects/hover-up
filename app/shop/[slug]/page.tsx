@@ -961,7 +961,7 @@ function ProductDetailContent({
 
               {/* MAIN IMAGE */}
 
-              <div className="group relative aspect-[4/5] overflow-hidden bg-[#f7f6f3]">
+              <div className="group relative aspect-[4/5] w-full overflow-hidden bg-[#f7f6f3] lg:aspect-[5/6]">
                 {selectedImageUrl ? (
                   <button
                     onClick={() => setViewerOpen(true)}
@@ -1281,7 +1281,7 @@ function ProductDetailContent({
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
                       <div>
                         <p className={`inline-flex min-h-8 items-center rounded-sm border px-3 text-xs font-medium ${sizeQuantity > 0 ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] bg-white text-[#171717]"}`}>
-                          {size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol} ({size.value})
+                          {size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol || size.value}
                         </p>
                       </div>
 
