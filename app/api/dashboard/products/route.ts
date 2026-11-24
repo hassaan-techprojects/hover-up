@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
 import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 import {
   s3,
   storageBucket,
@@ -213,7 +214,8 @@ export async function POST(request: NextRequest) {
     // Product information
     const name = String(formData.get("name") || "").trim();
     const slug = String(formData.get("slug") || "").trim();
-    const description = String(formData.get("description") || "");
+    const submittedDescription = String(formData.get("description") || "").trim();
+    const description = submittedDescription || buildDefaultProductDescription(name);
     const sku = String(formData.get("sku") || "").trim();
 
     const regularPrice = parseAmount(
