@@ -268,7 +268,8 @@ function ProductDetailContent({
 
   const [quantity, setQuantity] = useState(1);
   const [selectedPack, setSelectedPack] = useState(2);
-  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({ "41": 1, "43": 1 });
+  // Customers decide the complete size mix themselves for every pack.
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
   const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
   const [backImageFile, setBackImageFile] = useState<File | null>(null);
   const [textOnlyDesign, setTextOnlyDesign] = useState(false);
@@ -1243,13 +1244,9 @@ function ProductDetailContent({
                     type="button"
                     onClick={() => {
                       setSelectedPack(packSize);
-                      const allocation: Record<string, number> = {};
-                      const values = ["41", "43", "45", "47", "49"];
-                      for (let index = 0; index < packSize; index += 1) {
-                        const size = values[index % values.length];
-                        allocation[size] = (allocation[size] ?? 0) + 1;
-                      }
-                      setSizeQuantities(allocation);
+                      // Start with no preselected sizes. The customer can
+                      // allocate the pack across any combination of sizes.
+                      setSizeQuantities({});
                       setCartMessage("");
                     }}
                     className={`border px-3 py-3 text-left transition ${
