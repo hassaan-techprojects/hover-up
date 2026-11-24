@@ -642,3 +642,192 @@ button {
     transform: none;
   }
 }
+
+/* HOVER UP — STOREFRONT & DASHBOARD RESPONSIVE REFINEMENT */
+:root {
+  --hu-ink: #111111;
+  --hu-paper: #f8f6f2;
+  --hu-sand: #b99a76;
+  --hu-border: #e8e3dc;
+  --hu-muted: #625b53;
+}
+
+body {
+  overflow-x: clip;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+}
+
+main, section, article, aside {
+  min-width: 0;
+}
+
+a, button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--hu-sand);
+  outline-offset: 3px;
+}
+
+/* Product copy stays crisp, confident and comfortably readable. */
+.product-description,
+.product-description p,
+.product-description li,
+[class*="description"] p {
+  color: #39342f;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.85;
+  letter-spacing: 0.005em;
+}
+
+.product-description h2,
+.product-description h3,
+[class*="description"] h2,
+[class*="description"] h3 {
+  color: #171411;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+/* Storefront cards: subtle lift, stable image framing and readable product names. */
+.group article, article.group {
+  min-width: 0;
+}
+
+.product-card img,
+article img {
+  transition: transform 420ms cubic-bezier(.2,.75,.25,1);
+}
+
+.product-card:hover img,
+article.group:hover img {
+  transform: scale(1.035);
+}
+
+.category-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  padding: 4px 2px 12px;
+}
+
+.category-list > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+.watch-video-grid,
+.watch-feature-strip,
+.brand-marquee {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Dashboard surfaces adapt without changing their underlying behavior. */
+.dashboard-card,
+[class*="dashboard"] .rounded-xl,
+[class*="dashboard"] .rounded-2xl {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-shell,
+  [data-dashboard-shell] {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Reserve room for the fixed storefront navigation and device safe area. */
+  body:has(nav.fixed.bottom-0) {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+
+  .category-image-frame {
+    width: 116px;
+    height: 116px;
+    min-width: 116px;
+    min-height: 116px;
+    padding: 10px;
+  }
+
+  .watch-video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .watch-video-card {
+    border-radius: 10px;
+  }
+
+  .watch-feature-strip {
+    padding: 18px 15px;
+  }
+
+  /* Keep dense dashboard data readable and prevent grid children from forcing overflow. */
+  .dashboard-grid,
+  [data-dashboard-grid] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  table {
+    max-width: 100%;
+  }
+
+  input, select, textarea {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .category-image-frame {
+    width: 132px;
+    height: 132px;
+    min-width: 132px;
+    min-height: 132px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .product-card,
+  article.group,
+  .watch-video-card,
+  .dashboard-card {
+    transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+  }
+
+  .product-card:hover,
+  article.group:hover,
+  .dashboard-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .animate-pulse {
+    animation-duration: 1.35s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
