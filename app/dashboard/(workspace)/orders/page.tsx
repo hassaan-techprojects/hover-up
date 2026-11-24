@@ -221,7 +221,7 @@ export default function DashboardOrdersPage() {
                                   <p className="text-xs font-semibold">{formatPrice(item.totalPrice)}</p>
                                 </div>
                                 <p className="mt-2 text-[10px] text-[#777]">Quantity: {item.quantity}</p>
-                                {custom.packSize && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Selected pack: {String(custom.packSize)} pieces · Total quantity: {item.quantity}</p>}
+                                {typeof custom.packSize === "number" && custom.packSize > 0 && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Selected pack: {String(custom.packSize)} pieces · Total quantity: {item.quantity}</p>}
                                 {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
                                 {typeof custom.color === "string" && custom.color && <p className="mt-2 text-[10px] text-[#777]">Selected colour: {custom.color}</p>}
                                 <p className="mt-2 text-[10px] text-[#777]">Unit price: {formatPrice(item.unitPrice)} · Line total: {formatPrice(item.totalPrice)}</p>
@@ -241,7 +241,7 @@ export default function DashboardOrdersPage() {
                         <div className="mt-3 rounded-lg border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]">
                           <p className="font-semibold text-[#171717]">{String(address.fullName || "")}</p>
                           <p>{String(address.addressLine1 || "")}</p>
-                          {address.addressLine2 && <p>{String(address.addressLine2)}</p>}
+                          {typeof address.addressLine2 === "string" && address.addressLine2 && <p>{String(address.addressLine2)}</p>}
                           <p>{String(address.city || "")}, {String(address.state || "")} {String(address.postalCode || "")}</p>
                           <p>{String(address.country || "India")}</p>
                           <p className="mt-2">Contact: {String(address.phone || "")}</p>
