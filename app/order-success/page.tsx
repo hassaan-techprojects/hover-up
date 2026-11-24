@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { CheckCircle2, PackageCheck } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
@@ -8,6 +9,7 @@ export default async function OrderSuccessPage({
 }: {
   searchParams: Promise<{ order?: string }>;
 }) {
+  await connection();
   const { order } = await searchParams;
 
   return (
