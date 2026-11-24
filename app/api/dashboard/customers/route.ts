@@ -58,6 +58,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       customers: mapped,
+      canDelete: session.user.role === "ADMIN",
       stats: {
         totalCustomers: mapped.length,
         registeredCustomers: mapped.filter((customer) => customer.hasAccount).length,
