@@ -39,7 +39,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "We couldn't find an order with that order number." }, { status: 404 });
       }
 
-      return NextResponse.json({ order });
+      const statusHistory = await prisma.activityLog.findMany({
+        where: { entity: "ORDER", entityId: order.id, action: "ORDER_STATUS_UPDATED" },
+        orderBy: { createdAt: "asc" },
+        select: { description: true, metadata: true, createdAt: true },
+      });
+      return NextResponse.json({ order: { ...order, statusHistory } });
     }
 
     const candidates = await prisma.order.findMany({
@@ -59,7 +64,11 @@ export async function POST(request: Request) {
       const address = order.shippingAddress as Record<string, unknown> | null;
       const savedEmail = String(address?.email || order.customer.email || "").trim().toLowerCase();
       const savedPhone = String(address?.phone || order.customer.phone || "");
-      return savedEmail === email && normalizePhone(savedPhone) === normalizedInputPhone;
+      const savedDigits = normalizePhone(savedPhone);
+      const inputDigits = normalizedInputPhone;
+      const phoneMatches = savedDigits === inputDigits ||
+        (savedDigits.length >= 10 && inputDigits.length >= 10 && savedDigits.slice(-10) === inputDigits.slice(-10));
+      return savedEmail === email && phoneMatches;
     });
 
     if (matches.length === 0) {
