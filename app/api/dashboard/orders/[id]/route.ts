@@ -148,6 +148,9 @@ export async function DELETE(
       select: { id: true, orderNumber: true, paymentStatus: true, totalAmount: true },
     });
     if (!current) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+    if (current.paymentStatus === "PAID" || current.paymentStatus === "PARTIALLY_REFUNDED" || current.paymentStatus === "REFUNDED") {
+      return NextResponse.json({ error: "Orders with completed or refunded payments cannot be deleted. Keep the financial record and update the order status instead." }, { status: 409 });
+    }
 
     await prisma.$transaction(async (tx) => {
       await tx.activityLog.create({
