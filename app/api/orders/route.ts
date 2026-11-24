@@ -226,41 +226,31 @@ export async function POST(request: Request) {
           return responseError("One of the uploaded logo files is invalid.");
         }
 
-        if (product.variants.length > 0 && !hasSizeVariants) {
-          const colorVariant = product.variants.find((variant) => {
-            const values = getJsonValues(variant.attributes).map((value) => value.toLowerCase());
-            return !item.color || values.includes(item.color.toLowerCase());
-          });
-          if (!colorVariant) {
-            return responseError(`The selected color is unavailable for ${product.name}.`, 409);
-          }
-        }
-
+        // Variant stock/availability does not block an order request.
+        // Admin confirms the selected colour and size mix before fulfilment.
         const activeAllocations = item.sizeBreakdown.filter((size) => size.quantity > 0);
         for (const allocation of activeAllocations) {
           const sizeTerm = productSizes.find((size) => sizeMatches(size, allocation.size));
+          const canonicalSize = CANONICAL_SIZE_BY_VALUE[allocation.size.trim()];
           const validStandardSize =
             productSizes.length === 0 &&
-            STANDARD_SIZES.includes(allocation.size.toUpperCase() as (typeof STANDARD_SIZES)[number]);
+            (STANDARD_SIZES.includes(allocation.size.toUpperCase() as (typeof STANDARD_SIZES)[number]) ||
+              Boolean(canonicalSize));
           if (!sizeTerm && !validStandardSize) {
             return responseError(`Size ${allocation.size} is not available for ${product.name}.`);
           }
 
-          if (product.variants.length > 0 && hasSizeVariants) {
+          if (product.variants.length > 0 && hasSizeVariants && sizeTerm) {
             const variant = product.variants.find((entry) => entry.id === allocation.variantId);
-            if (!variant || !sizeTerm) {
-              return responseError(
-                `The selected size ${allocation.size} is unavailable for ${product.name}.`,
-                409
-              );
-            }
-            const values = getJsonValues(variant.attributes).map((value) => value.toUpperCase());
-            const matchesSize = getSizeAliases(sizeTerm).some((alias) => values.includes(alias));
-            const matchesColor = !item.color || values.includes(item.color.toUpperCase());
-            if (!matchesSize || !matchesColor) {
-              return responseError(
-                `The selected variant for size ${allocation.size} does not match your options.`
-              );
+            if (variant) {
+              const values = getJsonValues(variant.attributes).map((value) => value.toUpperCase());
+              const matchesSize = getSizeAliases(sizeTerm).some((alias) => values.includes(alias));
+              const matchesColor = !item.color || values.includes(item.color.toUpperCase());
+              if (!matchesSize || !matchesColor) {
+                return responseError(
+                  `The selected variant for size ${allocation.size} does not match your options.`
+                );
+              }
             }
           }
         }
