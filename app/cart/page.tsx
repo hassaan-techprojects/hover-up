@@ -53,6 +53,7 @@ export default function CartPage() {
   function save(next: CartEntry[]) {
     setItems(next);
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(next));
+    window.dispatchEvent(new Event("hover-up-cart-updated"));
   }
 
   function removeItem(index: number) {
