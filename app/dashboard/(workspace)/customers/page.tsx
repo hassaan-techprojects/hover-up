@@ -48,6 +48,7 @@ export default function DashboardCustomersPage() {
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [canDelete, setCanDelete] = useState(false);
 
   const loadCustomers = useCallback(async (search = "") => {
     setLoading(true);
@@ -59,6 +60,7 @@ export default function DashboardCustomersPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to load customers.");
       setCustomers(data.customers ?? []);
+      setCanDelete(data.canDelete === true);
       setStats(data.stats ?? { totalCustomers: 0, registeredCustomers: 0, repeatCustomers: 0, paidRevenue: 0 });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load customers.");
@@ -149,7 +151,7 @@ export default function DashboardCustomersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={() => setExpanded(isExpanded ? null : customer.id)} className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#e7e1d8] px-3 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide orders" : "View orders"} <Package size={13} /></button>
-                  <button type="button" onClick={() => void deleteCustomer(customer)} disabled={deletingId === customer.id} title="Delete customer" aria-label={`Delete ${customer.fullName}`} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 size={15} /></button>
+                  {canDelete && <button type="button" onClick={() => void deleteCustomer(customer)} disabled={deletingId === customer.id} title="Delete customer" aria-label={`Delete ${customer.fullName}`} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 size={15} /></button>}
                 </div>
               </div>
               {isExpanded && <div className="border-t border-[#eee9e2] bg-[#fcfbf9] p-4">
