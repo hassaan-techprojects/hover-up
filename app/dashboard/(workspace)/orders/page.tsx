@@ -30,6 +30,8 @@ type Order = {
   items: OrderItem[];
   payment: { method: string; status: string; gateway: string | null } | null;
   shipment: { status: string; carrier: string | null; trackingNumber: string | null } | null;
+  statusHistory?: { description: string; metadata: unknown; createdAt: string }[];
+  updatedAt?: string;
 };
 
 const statuses = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
@@ -49,6 +51,29 @@ function statusClass(status: string) {
   if (status === "SHIPPED" || status === "PROCESSING") return "bg-[#edf2f8] text-[#4f6c8c]";
   if (status === "CONFIRMED") return "bg-[#f3eee5] text-[#8b704e]";
   return "bg-[#f4f1ec] text-[#81766a]";
+}
+
+function OrderProgress({ order }: { order: Order }) {
+  const stages = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+  const currentIndex = stages.indexOf(order.status);
+  const events = (order.statusHistory ?? []).map((entry) => {
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata as Record<string, unknown> : {};
+    return { status: String(metadata.status || ""), createdAt: entry.createdAt };
+  });
+  if (order.status === "CANCELLED" || order.status === "REFUNDED") {
+    const event = events.find((item) => item.status === order.status);
+    return <div className="rounded-lg border border-[#f0d8d5] bg-[#fff8f7] p-3 text-xs text-[#a34d4d]">{order.status === "CANCELLED" ? "Order cancelled" : "Order refunded"} · {new Date(event?.createdAt || order.updatedAt || order.createdAt).toLocaleString("en-IN")}</div>;
+  }
+  return <ol className="mt-3 space-y-0">{stages.map((stage, index) => {
+    const done = currentIndex >= index;
+    const event = [...events].reverse().find((item) => item.status === stage);
+    const time = event?.createdAt || (done ? (index === currentIndex ? order.updatedAt || order.createdAt : order.createdAt) : null);
+    return <li key={stage} className="relative flex min-h-[48px] gap-3">
+      {index < stages.length - 1 && <span className={`absolute left-[9px] top-5 h-[calc(100%-1px)] w-px ${currentIndex > index ? "bg-[#b99a76]" : "bg-[#e9e4dc]"}`} />}
+      <span className={`relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[8px] ${done ? "border-[#a98b68] bg-[#a98b68] text-white" : "border-[#ded8cf] bg-white text-[#aaa]"} ${index === currentIndex ? "account-timeline-current" : ""}`}>{done ? "✓" : index + 1}</span>
+      <div className="pb-3"><p className={`text-[11px] font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : statusLabel(stage)}</p><p className="mt-0.5 text-[10px] text-[#999]">{time ? new Date(time).toLocaleString("en-IN") : "Awaiting update"}</p></div>
+    </li>;
+  })}</ol>;
 }
 
 function displaySizeLabel(value: string) {
@@ -272,9 +297,9 @@ export default function DashboardOrdersPage() {
                           <p className="mt-3 text-[10px] text-[#8b7864]">Payment collection: pending — arrange with customer after order review</p>
                         </div>
                         <div className="mt-3 rounded-lg border border-[#eee8df] bg-white p-4">
-                          <p className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">SHIPPING STATUS</p>
-                          <p className="mt-2 flex items-center gap-2 text-xs text-[#655c52]"><Truck size={14} /> {order.shipment ? statusLabel(order.shipment.status) : "Not shipped yet"}</p>
-                          {order.shipment?.carrier && <p className="mt-1 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}
+                          <p className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ORDER PROGRESS</p>
+                          <OrderProgress order={order} />
+                          {order.shipment?.carrier && <p className="mt-2 border-t border-[#eee8df] pt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}
                           {order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}
                         </div>
                       </div>
