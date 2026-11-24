@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const email = body.email?.trim().toLowerCase() || "";
     const phone = body.phone?.trim() || "";
 
-    if (!orderNumber && !(email && phone)) {
+    if (!orderNumber && (!email || !phone || normalizePhone(phone).length < 7)) {
       return NextResponse.json(
         { error: "Enter an order number, or enter both your checkout email and phone number." },
         { status: 400 }
@@ -45,7 +45,15 @@ export async function POST(request: Request) {
         orderBy: { createdAt: "asc" },
         select: { description: true, metadata: true, createdAt: true },
       });
-      return NextResponse.json({ order: { ...order, statusHistory } });
+      // An order reference alone can reveal the order journey, but not the customer's private address or contact details.
+      return NextResponse.json({
+        order: {
+          ...order,
+          customer: { firstName: "", lastName: "", email: "", phone: "" },
+          shippingAddress: {},
+          statusHistory,
+        },
+      });
     }
 
     const candidates = await prisma.order.findMany({
