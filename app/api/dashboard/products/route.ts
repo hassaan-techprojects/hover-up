@@ -628,6 +628,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      await tx.activityLog.create({
+        data: {
+          userId: auth.user.id,
+          action: "PRODUCT_CREATED",
+          entity: "PRODUCT",
+          entityId: createdProduct.id,
+          description: "Created product " + createdProduct.name,
+          metadata: { sku: createdProduct.sku, status },
+        },
+      });
+
       return createdProduct;
     });
 
