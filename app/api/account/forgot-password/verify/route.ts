@@ -5,7 +5,7 @@ import { createResetToken, findActiveChallenge, hashOtp, hashResetToken, MAX_OTP
 export async function POST(request: Request) {
   try {
     const body = await request.json() as { email?: string; code?: string };
-    const email = body.email?.trim().toLowerCase(), code = body.code?.trim();
+    const email = body.email?.trim().toLowerCase(), code = body.code?.trim() ?? "";
     if (!email || !/^\d{6}$/.test(code || "")) return NextResponse.json({ error: "Enter the 6-digit verification code." }, { status: 400 });
     const challenge = await findActiveChallenge(email, "PASSWORD_RESET");
     if (!challenge) return NextResponse.json({ error: "This code has expired. Request a new verification code." }, { status: 400 });
