@@ -1,76 +1,89 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUp, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { ArrowUp, MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
+
+function FacebookMark() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[19px] w-[19px]" fill="currentColor"><path d="M13.5 21v-8.2h2.8l.42-3.2H13.5V7.56c0-.93.26-1.56 1.6-1.56h1.7V3.14C16.5 3.05 15.48 3 14.3 3c-2.48 0-4.18 1.51-4.18 4.29V9.6H7.3v3.2h2.82V21h3.38Z"/></svg>;
+}
+
+function InstagramMark() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[19px] w-[19px]" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.6" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>;
+}
 
 export default function StorefrontFooter() {
   return (
     <>
-      <footer className="bg-[#111111] px-6 py-14 text-white md:px-10">
-        <div className="mx-auto grid max-w-[1500px] gap-10 sm:grid-cols-2 md:grid-cols-4">
-          <div>
-            <h2 className="text-3xl font-black tracking-tighter">HOVER UP.</h2>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-neutral-400">
-              Your style. Your statement. Discover Hover Up.
+      <footer className="border-t border-[#e8e3dc] bg-[#111111] px-5 pb-7 pt-12 text-white sm:px-8 md:px-10 md:pt-16">
+        <div className="mx-auto grid max-w-[1440px] gap-10 lg:grid-cols-[1.35fr_0.75fr_0.8fr] lg:gap-16">
+          <section>
+            <Link href="/" aria-label="Hover Up home" className="inline-flex items-center gap-2">
+              <img src="/hu.png" alt="" className="h-10 w-auto object-contain brightness-0 invert" />
+              <span className="text-2xl font-extrabold tracking-[-0.07em]">HOVER UP</span>
+            </Link>
+            <p className="mt-5 max-w-md text-sm leading-7 text-white/65">
+              Discover thoughtfully selected styles, everyday essentials and statement pieces. Shop the latest collection at Hover Up.
             </p>
             <div className="mt-6 flex items-center gap-3" aria-label="Social media">
-              <span title="Facebook link will be added soon" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/80"><Facebook size={17} /></span>
-              <span title="Instagram link will be added soon" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/80"><Instagram size={17} /></span>
-              <span title="WhatsApp contact will be added soon" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/80"><MessageCircle size={17} /></span>
+              <span title="Facebook profile will be added soon" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:border-[#b99a76] hover:text-[#d4b998]"><FacebookMark /></span>
+              <span title="Instagram profile will be added soon" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:border-[#b99a76] hover:text-[#d4b998]"><InstagramMark /></span>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <h3 className="text-xs font-extrabold tracking-widest">SHOP</h3>
-            <div className="mt-5 space-y-3 text-sm font-medium text-neutral-400">
-              <p><Link className="transition hover:text-white" href="/shop">All Products</Link></p>
-              <p><Link className="transition hover:text-white" href="/categories">Categories</Link></p>
-              <p><Link className="transition hover:text-white" href="/wishlist">Wishlist</Link></p>
-              <p><Link className="transition hover:text-white" href="/collections">Collections</Link></p>
+          <section>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4b998]">Explore</h3>
+            <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 text-sm text-white/65">
+              <Link className="transition hover:text-white" href="/shop">Shop all</Link>
+              <Link className="transition hover:text-white" href="/categories">Categories</Link>
+              <Link className="transition hover:text-white" href="/collections">Collections</Link>
+              <Link className="transition hover:text-white" href="/about">About us</Link>
+              <Link className="transition hover:text-white" href="/contact">Contact</Link>
+              <Link className="transition hover:text-white" href="/faq">FAQs</Link>
+              <Link className="transition hover:text-white" href="/policies/shipping">Shipping policy</Link>
+              <Link className="transition hover:text-white" href="/policies/returns">Returns</Link>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <h3 className="text-xs font-extrabold tracking-widest">CUSTOMER CARE</h3>
-            <div className="mt-5 space-y-3 text-sm font-medium text-neutral-400">
-              <p><Link className="transition hover:text-white" href="/contact">Contact Us</Link></p>
-              <p><Link className="transition hover:text-white" href="/faq">FAQs</Link></p>
-              <p><Link className="transition hover:text-white" href="/policies/shipping">Shipping Policy</Link></p>
-              <p><Link className="transition hover:text-white" href="/policies/returns">Returns</Link></p>
+          <section>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d4b998]">Contact information</h3>
+            <div className="mt-5 space-y-4 text-sm text-white/70">
+              <p className="flex items-start gap-3"><Phone size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>+91 00000 00000 <span className="block pt-1 text-xs text-white/40">Temporary sample number</span></span></p>
+              <p className="flex items-start gap-3"><Mail size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Contact details will be updated soon</span></p>
+              <p className="flex items-start gap-3"><Clock size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Customer support: 24/7</span></p>
+              <p className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Hover Up, Chennai, Tamil Nadu, India <span className="block pt-1 text-xs text-white/40">Temporary sample location</span></span></p>
             </div>
-          </div>
-
-          <div>
-            <h3 className="text-xs font-extrabold tracking-widest">ACCOUNT</h3>
-            <div className="mt-5 space-y-3 text-sm font-medium text-neutral-400">
-              <p><Link className="transition hover:text-white" href="/account">My Account</Link></p>
-              <p><Link className="transition hover:text-white" href="/account/orders">My Orders</Link></p>
-            </div>
-          </div>
+            <button type="button" disabled title="WhatsApp contact will be connected soon" className="mt-6 inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-full bg-[#25D366] px-5 text-xs font-bold text-white opacity-90 shadow-lg">
+              <MessageCircle size={17}/> WhatsApp us <span className="font-medium opacity-80">· Coming soon</span>
+            </button>
+          </section>
         </div>
 
-        <div className="mx-auto mt-12 max-w-[1500px] border-t border-white/15 pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <span className="text-xs text-neutral-500">© 2026 Hover Up. All rights reserved.</span>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex min-h-10 items-center justify-center gap-2 self-start border border-white/25 px-4 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:border-[#b99a76] hover:text-[#b99a76] sm:self-auto">GO TO TOP <ArrowUp size={14} /></button>
+        <div className="mx-auto mt-12 max-w-[1440px] border-t border-white/15 pt-6">
+          <nav aria-label="Legal links" className="flex flex-wrap gap-x-8 gap-y-3 text-xs text-white/55">
+            <Link href="/about" className="hover:text-white">About us</Link>
+            <Link href="/policies/returns" className="hover:text-white">Return policy</Link>
+            <Link href="/policies/terms" className="hover:text-white">Terms &amp; conditions</Link>
+            <Link href="/policies/privacy" className="hover:text-white">Privacy policy</Link>
+            <Link href="/policies/shipping" className="hover:text-white">Shipping policy</Link>
+          </nav>
+
+          <div className="mt-6 flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">Secure and flexible payments</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {["Cash on Delivery", "Razorpay", "UPI", "Google Pay", "PhonePe", "Visa", "Mastercard"].map((item) => <span key={item} className="rounded-md border border-white/15 bg-white px-3 py-2 text-[10px] font-bold text-[#222]">{item}</span>)}
+              </div>
+            </div>
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-3 rounded-sm bg-white px-7 text-xs font-bold uppercase tracking-[0.12em] text-[#111] shadow-sm transition hover:bg-[#d4b998] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d4b998]">
+              <ArrowUp size={17}/> Go to top
+            </button>
           </div>
-          <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-white/10 pt-5" aria-label="Available payment methods">
-            <span className="mr-2 text-[10px] font-semibold tracking-[0.14em] text-neutral-500">PAYMENT METHODS</span>
-            {["Cash on Delivery", "Razorpay", "UPI", "Google Pay", "PhonePe", "Visa", "Mastercard"].map((method) => (
-              <span key={method} className="rounded-md border border-white/15 bg-white/[0.06] px-2.5 py-1.5 text-[10px] font-semibold text-neutral-300">{method}</span>
-            ))}
-          </div>
+          <p className="mt-7 text-[11px] text-white/40">© {new Date().getFullYear()} Hover Up. All rights reserved.</p>
         </div>
       </footer>
 
-      <button
-        type="button"
-        disabled
-        aria-label="WhatsApp support coming soon"
-        title="WhatsApp contact will be added soon"
-        className="fixed bottom-5 right-5 z-[80] flex h-14 w-14 cursor-not-allowed items-center justify-center rounded-full bg-[#25D366] text-white opacity-90 shadow-[0_8px_30px_rgba(0,0,0,0.22)]"
-      >
-        <MessageCircle size={27} strokeWidth={2.2} />
+      <button type="button" disabled aria-label="WhatsApp support coming soon" title="WhatsApp contact will be connected soon" className="fixed bottom-5 right-5 z-[80] flex h-14 w-14 cursor-not-allowed items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105">
+        <MessageCircle size={27} strokeWidth={2.2}/>
       </button>
     </>
   );
