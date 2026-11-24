@@ -113,11 +113,9 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {discount > 0 && (
-          <span className="absolute left-3 top-3 bg-black px-3 py-1.5 text-[10px] font-semibold tracking-wider text-white">
-            {discount}% OFF
-          </span>
-        )}
+        <span className="absolute left-3 top-3 bg-black px-3 py-2 text-sm font-extrabold tracking-wide text-white">
+          PACK OF 2
+        </span>
 
         <button
           onClick={() => setWishlisted(!wishlisted)}
@@ -172,7 +170,7 @@ function ProductCard({ product }: { product: Product }) {
 
       <div className="px-1 pt-4">
         {product.categories.length > 0 && (
-          <p className="mb-1.5 text-[10px] uppercase tracking-[0.18em] text-[#888]">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-[#625b53]">
             {product.categories
               .map((item) => item.category.name)
               .join(" / ")}
@@ -180,33 +178,23 @@ function ProductCard({ product }: { product: Product }) {
         )}
 
         <Link href={`/shop/${product.slug}`}>
-          <h3 className="line-clamp-2 text-[14px] font-semibold tracking-wide text-[#171717] transition hover:text-[#987b5c]">
+          <h3 className="line-clamp-2 text-lg font-extrabold leading-7 tracking-normal text-[#171717] transition hover:text-[#987b5c]">
             {product.name}
           </h3>
         </Link>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-[#171717]">
+          <span className="text-lg font-extrabold text-[#171717]">
             {formatPrice(price)}
           </span>
 
-          {discount > 0 && (
-            <>
-              <span className="text-xs text-[#999] line-through">
-                {formatPrice(comparePrice)}
-              </span>
-              <span className="text-[10px] font-semibold text-[#a16e42]">
-                {discount}% OFF
-              </span>
-            </>
-          )}
         </div>
 
         <Link
           href={`/shop/${product.slug}`}
-          className="mt-3 flex items-center justify-center gap-2 border border-[#222] px-3 py-2.5 text-[10px] font-semibold tracking-[0.15em] transition hover:bg-[#171717] hover:text-white"
+          className="mt-3 flex min-h-12 items-center justify-center gap-2 border border-[#222] px-3 py-3 text-sm font-extrabold tracking-[0.1em] transition hover:bg-[#171717] hover:text-white"
         >
-          <ShoppingBag size={14} />
+          <ShoppingBag size={18} />
           VIEW PRODUCT
         </Link>
       </div>
@@ -307,7 +295,7 @@ export default function ShopPage() {
 
       {/* Shop Hero */}
       <section className="border-b border-[#eee] px-5 py-8 text-center sm:py-10">
-        <h1 className="mb-1 font-serif text-xl font-bold tracking-[0.16em] text-[#765238] sm:text-2xl">
+        <h1 className="mb-1 font-serif text-3xl font-extrabold tracking-[0.12em] text-black sm:text-4xl">
           HOVER UP COLLECTIONS
         </h1>
 
@@ -316,7 +304,7 @@ export default function ShopPage() {
       {/* Products */}
       <section className="mx-auto max-w-[1600px] px-5 py-8 sm:px-8 lg:px-12">
         <div className="flex flex-col gap-4 border-b border-[#eee] pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs tracking-wide text-[#777]">
+          <p className="text-base font-semibold tracking-wide text-[#555]">
             {loading
               ? "Loading products..."
               : `${filteredProducts.length} PRODUCTS`}
@@ -329,13 +317,13 @@ export default function ShopPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search products"
-                className="w-full bg-transparent text-xs outline-none"
+                className="w-full bg-transparent text-base outline-none placeholder:text-base"
               />
             </div>
 
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
-              className="flex h-10 items-center gap-2 border border-[#e5e5e5] px-4 text-xs"
+              className="flex h-12 items-center gap-2 border border-[#e5e5e5] px-4 text-base font-bold"
             >
               <SlidersHorizontal size={15} />
               FILTERS
@@ -346,7 +334,7 @@ export default function ShopPage() {
               <select
                 value={sort}
                 onChange={(event) => setSort(event.target.value)}
-                className="bg-transparent text-xs outline-none"
+                className="bg-transparent text-base font-semibold outline-none"
               >
                 <option value="newest">Newest</option>
                 <option value="price-low">Price: Low to High</option>

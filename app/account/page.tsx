@@ -48,7 +48,8 @@ export default function AccountPage() {
 
           <nav aria-label="Customer account" className="mt-7 flex flex-wrap gap-2 border-b border-[#e7e1d8] pb-3">
             <Link href="/account" aria-current="page" className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-semibold text-white">Account</Link>
-            <Link href="/account/orders" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:text-[#5d4936]">Order Tracker</Link>
+            <Link href="/account/orders" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-base font-bold text-[#5f574e] transition hover:border-[#b99a76] hover:text-[#5d4936]">My Orders</Link>
+            <Link href="/account/track-order" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-base font-bold text-[#5f574e] transition hover:border-[#b99a76] hover:text-[#5d4936]">Track Order</Link>
           </nav>
 
           {loading ? (
@@ -65,7 +66,8 @@ export default function AccountPage() {
                 <div><dt className="text-sm font-medium text-[#8b8176]">Contact number</dt><dd className="mt-1 text-base font-semibold">{profile?.phone || "Not provided"}</dd></div>
               </dl>
               <div className="flex flex-wrap gap-3 border-t border-[#eee9e2] pt-6">
-                <Link href="/account/orders" className="inline-flex min-h-12 items-center rounded-xl bg-[#171717] px-5 text-sm font-semibold text-white transition hover:bg-[#b99a76] hover:text-[#171717]">View Order Tracker</Link>
+                <Link href="/account/orders" className="inline-flex min-h-12 items-center rounded-xl bg-[#171717] px-5 text-base font-bold text-white transition hover:bg-[#b99a76] hover:text-[#171717]">My Orders</Link>
+                <Link href="/account/track-order" className="inline-flex min-h-12 items-center rounded-xl border border-[#e5ded4] px-5 text-base font-bold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2]">Track Order</Link>
                 <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[#e5ded4] px-5 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2]"><LogOut size={17} /> Log out</button>
               </div>
             </section>
