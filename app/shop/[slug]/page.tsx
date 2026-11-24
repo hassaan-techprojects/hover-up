@@ -1419,13 +1419,12 @@ function ProductDetailContent({
 
             {/* VARIANT DETAILS */}
 
-            {selectedVariant && (
+            {(product.sku || selectedVariant) && (
               <div className="mt-5 flex flex-wrap items-center gap-3 text-sm tracking-wide text-[#888]">
-                {selectedVariant.sku && (
-                  <span>SKU: <strong className="font-bold text-[#333]">{selectedVariant.sku}</strong></span>
+                {product.sku && (
+                  <span>SKU: <strong className="font-bold text-[#333]">{product.sku}</strong></span>
                 )}
-
-                <span>{selectedVariant.name}</span>
+                {selectedVariant?.name && <span>{selectedVariant.name}</span>}
               </div>
             )}
 
