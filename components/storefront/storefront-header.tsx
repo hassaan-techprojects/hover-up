@@ -50,8 +50,28 @@ function AnnouncementContent() {
 export default function StorefrontHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    const syncCartCount = () => {
+      try {
+        const stored = localStorage.getItem("hover-up-cart");
+        const items = stored ? JSON.parse(stored) as unknown[] : [];
+        setCartCount(Array.isArray(items) ? items.length : 0);
+      } catch {
+        setCartCount(0);
+      }
+    };
+    syncCartCount();
+    window.addEventListener("storage", syncCartCount);
+    window.addEventListener("hover-up-cart-updated", syncCartCount);
+    return () => {
+      window.removeEventListener("storage", syncCartCount);
+      window.removeEventListener("hover-up-cart-updated", syncCartCount);
+    };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -135,8 +155,9 @@ export default function StorefrontHeader() {
               <Heart size={21} strokeWidth={2} />
             </Link>
 
-            <Link href="/cart" aria-label="Shopping cart" className="hover-icon">
+            <Link href="/cart" aria-label={`Shopping cart, ${cartCount} item(s)`} className="hover-icon relative">
               <ShoppingCart size={21} strokeWidth={2} />
+              {cartCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#b99a76] px-1 text-[10px] font-bold text-white">{cartCount > 99 ? "99+" : cartCount}</span>}
             </Link>
 
             <Link href="/account" aria-label="Account" className="hover-icon">
@@ -157,9 +178,10 @@ export default function StorefrontHeader() {
             <Link
               href="/cart"
               aria-label="Shopping cart"
-              className="hover-icon"
+              className="hover-icon relative"
             >
               <ShoppingCart size={22} strokeWidth={2} />
+              {cartCount > 0 && <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#b99a76] px-1 text-[10px] font-bold text-white">{cartCount > 99 ? "99+" : cartCount}</span>}
             </Link>
           </div>
         </div>
