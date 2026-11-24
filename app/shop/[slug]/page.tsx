@@ -189,10 +189,12 @@ function renderProductDescription(description: string) {
           ? "mb-3 mt-8 text-lg font-semibold tracking-tight text-[#171717]"
           : "mb-2 mt-6 text-base font-semibold text-[#171717]";
 
+      const HeadingTag = level <= 2 ? "h2" : "h3";
+
       return (
-        <h3 key={index} className={className}>
+        <HeadingTag key={index} className={className}>
           {renderInlineDescription(heading[2])}
-        </h3>
+        </HeadingTag>
       );
     }
 
