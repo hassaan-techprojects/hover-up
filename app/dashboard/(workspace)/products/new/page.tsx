@@ -324,7 +324,7 @@ export default function AddProductPage() {
 
     buildCombinations(0, {});
 
-    const baseSku = sku.trim() || `HU-${crypto.randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+    const baseSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
     setSku(baseSku);
 
     const generated: Variation[] = combinations.map((combination) => {
@@ -427,7 +427,7 @@ export default function AddProductPage() {
       formData.append("name", name.trim());
       formData.append("slug", slug.trim());
       formData.append("description", description);
-      const productSku = sku.trim() || `HU-${crypto.randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+      const productSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
       setSku(productSku);
       formData.append("sku", productSku);
       formData.append("price", salePrice || regularPrice);
