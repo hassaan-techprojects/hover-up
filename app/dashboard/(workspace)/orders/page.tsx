@@ -67,11 +67,11 @@ function OrderProgress({ order }: { order: Order }) {
   return <ol className="mt-3 space-y-0">{stages.map((stage, index) => {
     const done = currentIndex >= index;
     const event = [...events].reverse().find((item) => item.status === stage);
-    const time = event?.createdAt || (done ? (index === currentIndex ? order.updatedAt || order.createdAt : order.createdAt) : null);
+    const time = event?.createdAt || (done && index === 0 ? order.createdAt : done && index === currentIndex ? order.updatedAt || order.createdAt : null);
     return <li key={stage} className="relative flex min-h-[48px] gap-3">
       {index < stages.length - 1 && <span className={`absolute left-[9px] top-5 h-[calc(100%-1px)] w-px ${currentIndex > index ? "bg-[#b99a76]" : "bg-[#e9e4dc]"}`} />}
       <span className={`relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[8px] ${done ? "border-[#a98b68] bg-[#a98b68] text-white" : "border-[#ded8cf] bg-white text-[#aaa]"} ${index === currentIndex ? "account-timeline-current" : ""}`}>{done ? "✓" : index + 1}</span>
-      <div className="pb-3"><p className={`text-[11px] font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : statusLabel(stage)}</p><p className="mt-0.5 text-[10px] text-[#999]">{time ? new Date(time).toLocaleString("en-IN") : "Awaiting update"}</p></div>
+      <div className="pb-3"><p className={`text-[11px] font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : statusLabel(stage)}</p><p className="mt-0.5 text-[10px] text-[#8e877e]">{stage === "PENDING" ? "Order placed" : stage === "CONFIRMED" ? "Order received by the team" : stage === "PROCESSING" ? "Order is being prepared" : stage === "SHIPPED" ? "Order handed to delivery" : "Order delivered"}</p><p className="mt-0.5 text-[10px] text-[#999]">{time ? new Date(time).toLocaleString("en-IN") : done ? "Earlier milestone · exact time not recorded" : "Awaiting update"}</p></div>
     </li>;
   })}</ol>;
 }
