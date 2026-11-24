@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, Truck } from "lucide-react";
+import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, Truck, X } from "lucide-react";
 
 type OrderItem = {
   id: string;
@@ -60,6 +60,7 @@ export default function DashboardOrdersPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [canManage, setCanManage] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const loadOrders = useCallback(async (search = "") => {
     setLoading(true);
@@ -225,9 +226,9 @@ export default function DashboardOrdersPage() {
                                 {typeof custom.color === "string" && custom.color && <p className="mt-2 text-[10px] text-[#777]">Selected colour: {custom.color}</p>}
                                 <p className="mt-2 text-[10px] text-[#777]">Unit price: {formatPrice(item.unitPrice)} · Line total: {formatPrice(item.totalPrice)}</p>
                                 {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — create artwork from customer instructions</p>}
-                                <div className="mt-3 flex flex-wrap gap-3">
-                                  {typeof custom.frontImageUrl === "string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[10px] text-[#8b7054] underline"><img src={custom.frontImageUrl} alt="Front artwork" className="h-14 w-14 rounded-md border border-[#eee8df] object-contain" />Front artwork <ExternalLink size={10} /></a>}
-                                  {typeof custom.backImageUrl === "string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[10px] text-[#8b7054] underline"><img src={custom.backImageUrl} alt="Back artwork" className="h-14 w-14 rounded-md border border-[#eee8df] object-contain" />Back artwork <ExternalLink size={10} /></a>}
+                                <div className="mt-3 flex flex-wrap gap-4">
+                                  {typeof custom.frontImageUrl === "string" && <button type="button" onClick={() => setPreviewImage(custom.frontImageUrl as string)} className="flex items-center gap-3 text-left"><img src={custom.frontImageUrl} alt="Front artwork" className="h-20 w-20 rounded-lg border border-[#eee8df] bg-white object-contain p-1" /><span className="text-[11px] font-medium text-[#8b7054]">Front artwork<br /><span className="text-[10px] text-[#999]">Click to enlarge</span></span></button>}
+                                  {typeof custom.backImageUrl === "string" && <button type="button" onClick={() => setPreviewImage(custom.backImageUrl as string)} className="flex items-center gap-3 text-left"><img src={custom.backImageUrl} alt="Back artwork" className="h-20 w-20 rounded-lg border border-[#eee8df] bg-white object-contain p-1" /><span className="text-[11px] font-medium text-[#8b7054]">Back artwork<br /><span className="text-[10px] text-[#999]">Click to enlarge</span></span></button>}
                                 </div>
                                 {typeof custom.customizationNotes === "string" && custom.customizationNotes && <p className="mt-3 rounded-lg bg-[#faf8f5] p-2 text-[11px] leading-5 text-[#655c52]">Notes: {custom.customizationNotes}</p>}
                               </div>
@@ -273,6 +274,7 @@ export default function DashboardOrdersPage() {
           </div>
         )}
       </section>
+      {previewImage && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-5" role="dialog" aria-modal="true" aria-label="Customer artwork preview" onClick={() => setPreviewImage(null)}><button type="button" aria-label="Close preview" onClick={() => setPreviewImage(null)} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full bg-white text-black"><X size={22} /></button><img src={previewImage} alt="Customer uploaded artwork enlarged" onClick={(event) => event.stopPropagation()} className="max-h-[85vh] max-w-[90vw] object-contain" /></div>}
     </div>
   );
 }
