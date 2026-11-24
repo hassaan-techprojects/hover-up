@@ -600,14 +600,14 @@ export default function ProductDetailClient({
             Product Not Found
           </h1>
 
-          <p className="mt-3 max-w-md text-sm text-[#777]">
+          <p className="mt-3 max-w-md text-base text-[#777]">
             {error ||
               "The product you are looking for may have been removed or is unavailable."}
           </p>
 
           <Link
             href="/shop"
-            className="mt-8 inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
+            className="mt-8 inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-sm tracking-[0.16em] text-white transition hover:bg-[#444]"
           >
             <ArrowLeft size={15} />
             BACK TO SHOP
@@ -627,7 +627,7 @@ export default function ProductDetailClient({
         {/* BREADCRUMB */}
 
         <div className="mx-auto max-w-[1500px] px-5 pt-7 md:px-10">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] tracking-[0.12em] text-[#888]">
+          <div className="flex flex-wrap items-center gap-2 text-xs tracking-[0.12em] text-[#888]">
             <Link href="/" className="transition hover:text-black">
               HOME
             </Link>
@@ -1001,7 +1001,7 @@ export default function ProductDetailClient({
             {selectedVariant && (
               <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] tracking-wide text-[#888]">
                 {selectedVariant.sku && (
-                  <span>SKU: {selectedVariant.sku}</span>
+                  <span>SKU: <strong className="font-bold text-[#333]">{selectedVariant.sku}</strong></span>
                 )}
 
                 <span>{selectedVariant.name}</span>
