@@ -116,7 +116,7 @@ export default function DashboardOrdersPage() {
     return matchesFilter && matchesQuery;
   }), [orders, filter, query]);
 
-  const totalRevenue = orders.filter((order) => order.paymentStatus === "PAID" || order.payment?.method === "COD" && order.status !== "CANCELLED")
+  const totalRevenue = orders.filter((order) => order.paymentStatus === "PAID")
     .reduce((sum, order) => sum + Number(order.totalAmount), 0);
 
   return (
