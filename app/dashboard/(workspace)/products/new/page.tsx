@@ -176,7 +176,7 @@ export default function AddProductPage() {
 
   function handleNameChange(value: string) {
     setName(value);
-    if (!descriptionEdited) setDescription(buildDefaultProductDescription(value));
+    if (!descriptionEdited) setDescription(buildDefaultProductDescription());
 
     if (!slugEdited) {
       setSlug(createSlug(value));
