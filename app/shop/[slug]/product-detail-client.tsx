@@ -166,17 +166,17 @@ function getVariantAttributeValues(attributes: unknown): string[] {
 
 function renderProductDescription(description: string) {
   const blocks = description
-    .replace(/\\r\\n/g, "\\n")
-    .split(/\\n\\s*\\n/)
+    .replace(/\r\n/g, "\n")
+    .split(/\n\s*\n/)
     .map((block) => block.trim())
     .filter(Boolean);
 
   return blocks.map((block, index) => {
-    const heading = block.match(/^(#{1,6})\\s+(.+)$/);
+    const heading = block.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       return <h2 key={index} className="mb-3 mt-8 text-lg font-semibold tracking-tight text-[#171717]">{heading[2]}</h2>;
     }
-    return <p key={index} className="mb-4 text-sm leading-8 text-[#626262]">{block.replace(/\\n/g, " ")}</p>;
+    return <p key={index} className="mb-4 text-sm leading-8 text-[#626262]">{block.replace(/\n/g, " ")}</p>;
   });
 }
 
