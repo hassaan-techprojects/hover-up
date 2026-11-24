@@ -84,7 +84,7 @@ export default function StorefrontFooter() {
         </div>
       </footer>
 
-      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" title="Chat with Hover Up on WhatsApp" className="fixed bottom-20 right-5 z-[80] flex h-14 w-14 items-center justify-center rounded-full md:bottom-5" bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105 hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
+      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" title="Chat with Hover Up on WhatsApp" className="fixed bottom-20 right-5 z-[80] flex h-14 w-14 items-center justify-center rounded-full md:bottom-5 bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105 hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
         <MessageCircle size={27} strokeWidth={2.2}/>
       </a>
     </>
