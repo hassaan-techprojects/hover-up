@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 import {
   ArrowLeft,
   Save,
@@ -174,6 +175,7 @@ export default function AddProductPage() {
 
   function handleNameChange(value: string) {
     setName(value);
+    setDescription(buildDefaultProductDescription(value));
 
     if (!slugEdited) {
       setSlug(createSlug(value));
@@ -677,7 +679,7 @@ export default function AddProductPage() {
                         setDescription(event.target.value)
                       }
                       rows={9}
-                      placeholder="Write your product description..."
+                      placeholder="A ready-to-edit product description is generated when you enter a product name."
                       className="w-full resize-y p-4 text-sm leading-7 text-[#333] outline-none placeholder:text-gray-400"
                     />
                   </div>
