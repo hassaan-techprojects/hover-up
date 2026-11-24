@@ -35,6 +35,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
       await tx.review.deleteMany({ where: { customerId: id } });
 
       if (hasOrderHistory) {
+        // Keep order rows for accounting, but remove personal details from their address snapshots.
+        await tx.order.updateMany({
+          where: { customerId: id },
+          data: {
+            shippingAddress: { recipient: "Deleted Customer", addressLine1: "Removed", addressLine2: "", city: "Removed", state: "Removed", postalCode: "", country: "" },
+            billingAddress: { recipient: "Deleted Customer", addressLine1: "Removed", addressLine2: "", city: "Removed", state: "Removed", postalCode: "", country: "" },
+          },
+        });
         // Order.customerId is intentionally retained so financial and fulfilment
         // history remains valid. Replace identifying customer fields instead.
         await tx.customer.update({
