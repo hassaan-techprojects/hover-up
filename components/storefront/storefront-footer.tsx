@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUp, MapPin, Phone, Plus, Minus } from "lucide-react";
 
@@ -18,7 +18,7 @@ function WhatsAppMark({ size = 20 }: { size?: number }) {
   return <svg viewBox="0 0 32 32" aria-hidden="true" width={size} height={size} fill="none"><path fill="currentColor" d="M16 3.2A12.5 12.5 0 0 0 5.2 22.1L3.5 28.5l6.6-1.7A12.5 12.5 0 1 0 16 3.2Z"/><path fill="#25D366" d="M16 5.5a10.2 10.2 0 0 0-8.7 15.5l.4.6-1 3.6 3.7-1 .6.3A10.2 10.2 0 1 0 16 5.5Z"/><path fill="#fff" d="M21.7 18.7c-.3-.2-1.8-.9-2.1-1s-.5-.2-.7.2-.8 1-.9 1.1-.3.2-.6.1a8.4 8.4 0 0 1-2.5-1.5 9.4 9.4 0 0 1-1.7-2.1c-.2-.3 0-.5.1-.6l.5-.6.3-.5c.1-.2 0-.4 0-.6l-.9-2.1c-.2-.5-.5-.4-.7-.4h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4c.2.2 2.4 3.7 5.8 5 .8.3 1.4.5 1.9.6.8.2 1.5.2 2 .1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.4Z"/></svg>;
 }
 
-function Accordion({ title, open, onToggle, children }: { title: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+function Accordion({ title, open, onToggle, children }: { title: string; open: boolean; onToggle: () => void; children: ReactNode }) {
   return (
     <section className="border-b border-white/15 py-4">
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center justify-between text-left text-base font-semibold text-white">
