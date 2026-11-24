@@ -46,7 +46,7 @@
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "@types/nodemailer": "^6.4.21"
+    "@types/nodemailer": "^8.0.2"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
