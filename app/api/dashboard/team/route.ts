@@ -61,3 +61,62 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unable to update team member." }, { status: 500 });
   }
 }
+
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await getDashboardAdmin();
+    if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+    const body = await request.json() as { userId?: string };
+    if (!body.userId || typeof body.userId !== "string") {
+      return NextResponse.json({ error: "A valid team member is required." }, { status: 400 });
+    }
+
+    if (body.userId === auth.user.id) {
+      return NextResponse.json({ error: "You cannot remove your own account." }, { status: 400 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const target = await tx.user.findUnique({
+        where: { id: body.userId },
+        select: { id: true, email: true, role: true, isActive: true },
+      });
+
+      if (!target || target.role === "CUSTOMER") {
+        throw new Error("TEAM_MEMBER_NOT_FOUND");
+      }
+
+      if (target.role === "ADMIN" && target.isActive) {
+        const activeAdmins = await tx.user.count({ where: { role: "ADMIN", isActive: true } });
+        if (activeAdmins <= 1) {
+          throw new Error("LAST_ACTIVE_ADMIN");
+        }
+      }
+
+      await tx.activityLog.create({
+        data: {
+          userId: auth.user.id,
+          action: "TEAM_MEMBER_DELETED",
+          entity: "USER",
+          entityId: target.id,
+          description: "Removed team member " + target.email,
+          metadata: { email: target.email, role: target.role },
+        },
+      });
+
+      await tx.user.delete({ where: { id: target.id } });
+    });
+
+    return NextResponse.json({ success: true, userId: body.userId });
+  } catch (error) {
+    if (error instanceof Error && error.message === "TEAM_MEMBER_NOT_FOUND") {
+      return NextResponse.json({ error: "Team member not found." }, { status: 404 });
+    }
+    if (error instanceof Error && error.message === "LAST_ACTIVE_ADMIN") {
+      return NextResponse.json({ error: "At least one active administrator must remain." }, { status: 409 });
+    }
+    console.error("Dashboard team DELETE error:", error);
+    return NextResponse.json({ error: "Unable to remove team member." }, { status: 500 });
+  }
+}
