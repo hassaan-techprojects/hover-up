@@ -79,7 +79,7 @@ export default function ProductReviewForm({ slug }: { slug: string }) {
         <div className="flex items-center gap-1">
           {Array.from({ length: 5 }).map((_, index) => (
             <button key={index} type="button" onClick={() => setRating(index + 1)} aria-label={`Rate ${index + 1} stars`} className="rounded p-1 transition hover:scale-110">
-              <Star size={21} fill={index < rating ? "#b99a76" : "none"} className={index < rating ? "text-[#b99a76]" : "text-[#cfc9c0]"} />
+              <Star size={26} fill={index < rating ? "#D4AF37" : "none"} className="text-[#D4AF37]" />
             </button>
           ))}
           <span className="ml-2 text-xs text-[#888]">{rating} / 5</span>

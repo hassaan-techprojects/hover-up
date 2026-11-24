@@ -164,6 +164,22 @@ function getVariantAttributeValues(attributes: unknown): string[] {
   return values;
 }
 
+function renderProductDescription(description: string) {
+  const blocks = description
+    .replace(/\r\n/g, "\n")
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => {
+    const heading = block.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      return <h2 key={index} className="mb-3 mt-8 text-lg font-semibold tracking-tight text-[#171717]">{heading[2]}</h2>;
+    }
+    return <p key={index} className="mb-4 text-sm leading-8 text-[#626262]">{block.replace(/\n/g, " ")}</p>;
+  });
+}
+
 export default function ProductDetailClient({
   slug,
 }: {
@@ -817,17 +833,13 @@ export default function ProductDetailClient({
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star
                       key={index}
-                      size={13}
+                      size={20}
                       fill={
                         index < Math.round(product.averageRating)
-                          ? "#171717"
+                          ? "#D4AF37"
                           : "none"
                       }
-                      className={
-                        index < Math.round(product.averageRating)
-                          ? "text-[#171717]"
-                          : "text-[#ccc]"
-                      }
+                      className="text-[#D4AF37]"
                     />
                   ))}
                 </div>
@@ -1189,10 +1201,8 @@ export default function ProductDetailClient({
                   Product Description
                 </h2>
 
-                <div className="mt-5 whitespace-pre-line text-sm leading-8 text-[#666]">
-                  {product.description ||
-                    product.shortDescription ||
-                    buildDefaultProductDescription(product.name).replace(/^## /gm, "")}
+                <div className="mt-5">
+                  {renderProductDescription(buildDefaultProductDescription())}
                 </div>
 
                 {product.sku && (
@@ -1219,17 +1229,13 @@ export default function ProductDetailClient({
                             (_, index) => (
                               <Star
                                 key={index}
-                                size={13}
+                                size={18}
                                 fill={
                                   index < review.rating
-                                    ? "#171717"
+                                    ? "#D4AF37"
                                     : "none"
                                 }
-                                className={
-                                  index < review.rating
-                                    ? "text-[#171717]"
-                                    : "text-[#ccc]"
-                                }
+                                className="text-[#D4AF37]"
                               />
                             )
                           )}
