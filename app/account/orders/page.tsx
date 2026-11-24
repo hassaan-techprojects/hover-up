@@ -17,6 +17,8 @@ type Order = {
   items: { id: string; productName: string; quantity: number; totalPrice: string | number; customization?: Record<string, unknown> | null }[];
   payment: { method: string; status: string } | null;
   shipment: { status: string; trackingNumber: string | null; carrier: string | null } | null;
+  statusHistory?: { description: string; metadata: unknown; createdAt: string }[];
+  updatedAt?: string;
 };
 
 function money(value: number | string) {
@@ -31,6 +33,41 @@ function pill(value: string) {
   if (value === "CANCELLED" || value === "REFUNDED") return "bg-[#faeeee] text-[#a34d4d]";
   if (value === "SHIPPED" || value === "PROCESSING") return "bg-[#edf2f8] text-[#4f6c8c]";
   return "bg-[#f4f1ec] text-[#81766a]";
+}
+
+function OrderTimeline({ order }: { order: Order }) {
+  const stages = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+  const currentIndex = stages.indexOf(order.status);
+  const history = order.statusHistory ?? [];
+  const events = history.map((entry) => {
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata as Record<string, unknown> : {};
+    return { status: String(metadata.status || ""), createdAt: entry.createdAt };
+  });
+  const cancelled = order.status === "CANCELLED" || order.status === "REFUNDED";
+
+  if (cancelled) {
+    return <div className="rounded-xl border border-[#f0d8d5] bg-[#fff8f7] p-4">
+      <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f8e5e3] text-[#a34d4d]">×</span><div><p className="text-xs font-semibold text-[#a34d4d]">{order.status === "CANCELLED" ? "Order cancelled" : "Order refunded"}</p><p className="mt-1 text-[10px] text-[#987b77]">{events.find(event => event.status === order.status) ? new Date(events.find(event => event.status === order.status)!.createdAt).toLocaleString("en-IN") : new Date(order.updatedAt || order.createdAt).toLocaleString("en-IN")}</p></div></div>
+    </div>;
+  }
+
+  return <ol className="relative space-y-0">
+    {stages.map((stage, index) => {
+      const done = currentIndex >= index;
+      const event = [...events].reverse().find(item => item.status === stage);
+      const timestamp = event?.createdAt || (done ? (index === currentIndex ? order.updatedAt || order.createdAt : order.createdAt) : null);
+      const isCurrent = currentIndex === index;
+      return <li key={stage} className="relative flex min-h-[62px] gap-3">
+        {index < stages.length - 1 && <span className={`absolute left-[11px] top-6 h-[calc(100%-2px)] w-px ${currentIndex > index ? "bg-[#b99a76]" : "bg-[#e9e4dc]"}`} />}
+        <span className={`relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[9px] ${done ? "border-[#a98b68] bg-[#a98b68] text-white" : "border-[#ded8cf] bg-white text-[#b5aca0]"} ${isCurrent ? "account-timeline-current" : ""}`}>{done ? "✓" : index + 1}</span>
+        <div className="min-w-0 pb-4"><p className={`text-xs font-semibold ${done ? "text-[#3d352d]" : "text-[#aaa39a]"}`}>{stage === "CONFIRMED" ? "Received" : titleCaseStatus(stage)}</p>{timestamp ? <p className="mt-1 text-[10px] text-[#999]">{new Date(timestamp).toLocaleString("en-IN")}{!event && index < currentIndex ? " · Earlier milestone" : ""}</p> : <p className="mt-1 text-[10px] text-[#b5aea5]">Awaiting update</p>}</div>
+      </li>;
+    })}
+  </ol>;
+}
+
+function titleCaseStatus(value: string) {
+  return value.charAt(0) + value.slice(1).toLowerCase().replaceAll("_", " ");
 }
 
 function displaySizeLabel(value: string) {
@@ -87,8 +124,9 @@ export default function AccountOrdersPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Order not found.");
-      setOrders([data.order]);
-      setExpandedOrder(data.order.id);
+      const foundOrders = data.orders || (data.order ? [data.order] : []);
+      setOrders(foundOrders);
+      setExpandedOrder(foundOrders[0]?.id ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to find your order.");
     } finally {
@@ -103,15 +141,15 @@ export default function AccountOrdersPage() {
         <div className="mx-auto max-w-[1050px]">
           <p className="text-[10px] font-semibold tracking-[0.2em] text-[#a18c75]">YOUR HOVER UP ACCOUNT</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div><h1 className="text-3xl font-semibold sm:text-4xl">{signedIn ? `Hello, ${customerName}` : "Track your order"}</h1><p className="mt-2 text-sm text-[#888]">{signedIn ? "Your order history and delivery updates." : "Find a guest order using the order number and contact details used at checkout."}</p></div>
+            <div><h1 className="text-3xl font-semibold sm:text-4xl">{signedIn ? `Hello, ${customerName}` : "Track your order"}</h1><p className="mt-2 text-sm text-[#888]">{signedIn ? "Your order history and delivery updates." : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
             {!signedIn && <Link href="/account/login" className="text-xs font-semibold text-[#8b7054] underline">Sign in to your account</Link>}
           </div>
 
           {!signedIn && (
             <form onSubmit={lookup} className="mt-8 grid gap-4 rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:grid-cols-3 sm:p-6">
-              <label className="text-xs font-medium text-[#5f574e]">Order number *<input required value={orderNumber} onChange={e=>setOrderNumber(e.target.value)} placeholder="HU-20261123-ABC123" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
-              <label className="text-xs font-medium text-[#5f574e]">Email address *<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
-              <label className="text-xs font-medium text-[#5f574e]">Contact number *<input required type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone used at checkout" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
+              <label className="text-xs font-medium text-[#5f574e]">Order number<input value={orderNumber} onChange={e=>setOrderNumber(e.target.value)} placeholder="Enter order number" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
+              <label className="text-xs font-medium text-[#5f574e]">Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
+              <label className="text-xs font-medium text-[#5f574e]">Contact number<input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone used at checkout" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
               <div className="sm:col-span-3"><button disabled={lookupLoading} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#171717] px-5 text-xs font-semibold tracking-wide text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Search size={14} /> {lookupLoading ? "SEARCHING..." : "FIND ORDER"}</button></div>
             </form>
           )}
@@ -151,7 +189,7 @@ export default function AccountOrdersPage() {
                           {typeof custom.customizationNotes==="string" && custom.customizationNotes && <p className="mt-2 text-[11px] leading-5 text-[#777]">Customization: {custom.customizationNotes}</p>}
                         </div>;
                       })}</div></div>
-                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY ADDRESS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]"><p className="font-semibold text-[#171717]">{String(order.shippingAddress.fullName || "")}</p><p>{String(order.shippingAddress.addressLine1 || "")}</p><p>{String(order.shippingAddress.addressLine2 || "")}</p><p>{String(order.shippingAddress.city || "")}, {String(order.shippingAddress.state || "")} {String(order.shippingAddress.postalCode || "")}</p><p>{String(order.shippingAddress.country || "India")}</p></div><h2 className="mt-4 text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY STATUS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4"><p className="flex items-center gap-2 text-xs font-semibold"><Truck size={14} className="text-[#a18c75]" /> {label(order.status)}</p><p className="mt-2 text-[11px] text-[#888]">Payment: {label(order.paymentStatus)} · {order.payment?.method || "—"}</p>{order.shipment?.carrier && <p className="mt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}{order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}</div></div>
+                      <div><h2 className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">DELIVERY ADDRESS</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4 text-xs leading-6 text-[#6d655c]"><p className="font-semibold text-[#171717]">{String(order.shippingAddress.fullName || "")}</p><p>{String(order.shippingAddress.addressLine1 || "")}</p><p>{String(order.shippingAddress.addressLine2 || "")}</p><p>{String(order.shippingAddress.city || "")}, {String(order.shippingAddress.state || "")} {String(order.shippingAddress.postalCode || "")}</p><p>{String(order.shippingAddress.country || "India")}</p></div><h2 className="mt-4 text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ORDER JOURNEY</h2><div className="mt-3 rounded-xl border border-[#eee8df] bg-white p-4"><OrderTimeline order={order} /><div className="mt-2 border-t border-[#eee8df] pt-3"><p className="text-[11px] text-[#888]">Payment: {label(order.paymentStatus)} · {order.payment?.method || "—"}</p>{order.shipment?.carrier && <p className="mt-2 text-[11px] text-[#888]">Carrier: {order.shipment.carrier}</p>}{order.shipment?.trackingNumber && <p className="mt-1 text-[11px] text-[#888]">Tracking: {order.shipment.trackingNumber}</p>}</div></div></div>
                     </div>
                   )}
                 </article>
