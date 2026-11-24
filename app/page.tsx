@@ -270,7 +270,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-white pb-20 font-sans text-[#111111] md:pb-0">
+    <main className="min-h-screen bg-white pb-0 font-sans text-[#111111]">
       <StorefrontHeader />
 
       {/* Homepage Banner Slider */}
