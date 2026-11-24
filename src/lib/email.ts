@@ -1,28 +1,43 @@
 import nodemailer from "nodemailer";
 
 function getTransporter() {
-  const user = process.env.GMAIL_USER;
+  const user = process.env.GMAIL_USER?.trim();
   const appPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
+
   if (!user || !appPassword) {
     throw new Error("Gmail SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD.");
   }
 
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass: appPassword },
-  });
+  return {
+    user,
+    transporter: nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass: appPassword },
+    }),
+  };
 }
 
-export async function sendOtpEmail({ to, code, purpose }: { to: string; code: string; purpose: "SIGNUP" | "PASSWORD_RESET" }) {
-  const from = process.env.GMAIL_FROM || process.env.GMAIL_USER;
+export async function sendOtpEmail({
+  to,
+  code,
+  purpose,
+}: {
+  to: string;
+  code: string;
+  purpose: "SIGNUP" | "PASSWORD_RESET";
+}) {
+  const { user, transporter } = getTransporter();
+  // GMAIL_FROM is a display name (for example: Hover Up), not an email
+  // address. Gmail authenticates and sends from GMAIL_USER.
+  const senderName = process.env.GMAIL_FROM?.trim() || "Hover Up";
   const isSignup = purpose === "SIGNUP";
   const title = isSignup ? "Verify your Hover Up account" : "Reset your Hover Up password";
   const intro = isSignup
     ? "Use this one-time password to verify your email address and finish creating your Hover Up account."
     : "Use this one-time password to verify your identity and continue resetting your Hover Up password.";
 
-  await getTransporter().sendMail({
-    from: { name: "Hover Up", address: from! },
+  await transporter.sendMail({
+    from: { name: senderName, address: user },
     to,
     subject: title,
     text: `Your Hover Up verification code is ${code}. It expires in 10 minutes. If you did not request this, you can safely ignore this email.`,
