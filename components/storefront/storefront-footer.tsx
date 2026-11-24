@@ -78,7 +78,7 @@ export default function StorefrontFooter() {
               <ArrowUp size={17}/> Go to top
             </button>
           </div>
-          <p className="mt-7 text-[11px] text-white/40">© {new Date().getFullYear()} Hover Up. All rights reserved.</p>
+          <p className="mt-7 text-[11px] text-white/40">© 2026 Hover Up. All rights reserved.</p>
         </div>
       </footer>
 
