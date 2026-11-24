@@ -13,6 +13,8 @@ const shipmentStatus = {
   REFUNDED: "RETURNED",
 } as const;
 
+const progression = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"] as const;
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -25,8 +27,8 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json() as { status?: keyof typeof shipmentStatus };
-    const allowed = Object.keys(shipmentStatus);
-    if (!body.status || !allowed.includes(body.status)) {
+    const nextStatus = body.status;
+    if (!nextStatus || !Object.prototype.hasOwnProperty.call(shipmentStatus, nextStatus)) {
       return NextResponse.json({ error: "Choose a valid order status." }, { status: 400 });
     }
 
@@ -36,8 +38,30 @@ export async function PATCH(
     });
     if (!current) return NextResponse.json({ error: "Order not found." }, { status: 404 });
 
+    if (current.status === "CANCELLED" || current.status === "DELIVERED") {
+      return NextResponse.json({ error: "This order is already closed and its status cannot be changed." }, { status: 409 });
+    }
+
+    if (nextStatus !== "CANCELLED" && nextStatus !== "REFUNDED") {
+      const currentIndex = progression.indexOf(current.status as (typeof progression)[number]);
+      const nextIndex = progression.indexOf(nextStatus as (typeof progression)[number]);
+      if (nextIndex < 0 || nextIndex < currentIndex) {
+        return NextResponse.json({ error: "Order status can only move forward. Use Cancelled if the order will not be fulfilled." }, { status: 409 });
+      }
+    }
+
     const now = new Date();
-    const nextStatus = body.status;
+    const statusesToRecord: string[] = [];
+    if (nextStatus === "CANCELLED" || nextStatus === "REFUNDED") {
+      statusesToRecord.push(nextStatus);
+    } else {
+      const currentIndex = progression.indexOf(current.status as (typeof progression)[number]);
+      const nextIndex = progression.indexOf(nextStatus as (typeof progression)[number]);
+      for (let index = currentIndex + 1; index <= nextIndex; index += 1) {
+        statusesToRecord.push(progression[index]);
+      }
+    }
+
     const shipmentUpdate = {
       status: shipmentStatus[nextStatus],
       ...(nextStatus === "SHIPPED" ? { shippedAt: now } : {}),
@@ -72,24 +96,34 @@ export async function PATCH(
         });
       }
 
-      await tx.activityLog.create({
-        data: {
-          userId: session.user.id,
-          action: "ORDER_STATUS_UPDATED",
-          entity: "ORDER",
-          entityId: id,
-          description: `Order ${current.orderNumber} status changed from ${current.status} to ${nextStatus}.`,
-          metadata: { previousStatus: current.status, status: nextStatus },
-        },
-      });
+      for (const status of statusesToRecord) {
+        await tx.activityLog.create({
+          data: {
+            userId: session.user.id,
+            action: "ORDER_STATUS_UPDATED",
+            entity: "ORDER",
+            entityId: id,
+            description: `Order ${current.orderNumber} status changed to ${status}.`,
+            metadata: { previousStatus: current.status, status, recordedTogether: statusesToRecord.length > 1 },
+            createdAt: now,
+          },
+        });
+      }
 
       return order;
+    });
+
+    const statusHistory = await prisma.activityLog.findMany({
+      where: { entity: "ORDER", entityId: id, action: "ORDER_STATUS_UPDATED" },
+      orderBy: { createdAt: "asc" },
+      select: { description: true, metadata: true, createdAt: true },
     });
 
     return NextResponse.json({
       order: {
         ...updated,
         customer: { ...updated.customer, hasAccount: Boolean(updated.customer.userId) },
+        statusHistory,
       },
     });
   } catch (error) {
