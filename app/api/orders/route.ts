@@ -163,7 +163,8 @@ export async function POST(request: Request) {
     let subtotal = 0;
 
     for (const item of items) {
-      if (!item.productId || !Number.isInteger(item.quantity) || item.quantity < 1) {
+      const requestedQuantity = item.packSize ?? item.quantity;
+      if (!item.productId || !Number.isInteger(requestedQuantity) || requestedQuantity < 1) {
         return responseError("One of the items in your bag is invalid.");
       }
 
@@ -197,9 +198,11 @@ export async function POST(request: Request) {
           return responseError(`The selected pack size for ${product.name} is invalid.`);
         }
 
-        const packPrice = getPackPrice(product.packPricing, item.packSize) ?? PACK_PRICES[item.packSize] ?? null;
-        if (packPrice === null || item.quantity !== item.packSize) {
-          return responseError(`The selected pack for ${product.name} is not configured or is invalid.`);
+        // The selected pack size is the authoritative quantity. Do not reject
+        // a valid pack because an older cart entry contains a stale quantity.
+        const packPrice = PACK_PRICES[item.packSize] ?? null;
+        if (packPrice === null) {
+          return responseError(`Pack of ${item.packSize} is not available for ${product.name}. Please select one of the displayed pack options.`);
         }
         if (!Array.isArray(item.sizeBreakdown) || item.sizeBreakdown.length === 0) {
           return responseError(`Select sizes for ${product.name} before checkout.`);
