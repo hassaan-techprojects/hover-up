@@ -142,7 +142,7 @@ export default function DashboardOrdersPage() {
     const matchesFilter = filter === "ALL" || order.status === filter;
     const search = query.trim().toLowerCase();
     const address = order.shippingAddress;
-    const phoneSearch = search.replace(/\\D/g, "");
+    const phoneSearch = search.replace(/\D/g, "");
     const searchable = [
       order.id,
       order.orderNumber,
@@ -154,7 +154,7 @@ export default function DashboardOrdersPage() {
       String(address.email || ""),
       String(address.phone || ""),
     ].join(" ").toLowerCase();
-    const phoneValues = [order.customer.phone || "", String(address.phone || "")].map(value => value.replace(/\\D/g, ""));
+    const phoneValues = [order.customer.phone || "", String(address.phone || "")].map(value => value.replace(/\D/g, ""));
     const matchesQuery = !search || searchable.includes(search) || (phoneSearch.length >= 5 && phoneValues.some(value => value.includes(phoneSearch)));
     return matchesFilter && matchesQuery;
   }), [orders, filter, query]);
