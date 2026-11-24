@@ -25,6 +25,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 
 type ProductImage = {
   id: string;
@@ -1192,7 +1193,7 @@ export default function ProductDetailClient({
                 <div className="mt-5 whitespace-pre-line text-sm leading-8 text-[#666]">
                   {product.description ||
                     product.shortDescription ||
-                    "Product details will be updated soon."}
+                    buildDefaultProductDescription(product.name)}
                 </div>
 
                 {product.sku && (
