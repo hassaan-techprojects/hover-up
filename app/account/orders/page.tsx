@@ -129,7 +129,7 @@ export default function AccountOrdersPage() {
                         return <div key={item.id} className="rounded-xl border border-[#eee8df] bg-white p-3">
                           <div className="flex justify-between gap-3"><p className="text-xs font-semibold">{item.productName}</p><p className="text-xs font-semibold">{money(item.totalPrice)}</p></div>
                           <p className="mt-1 text-[10px] text-[#999]">Quantity: {item.quantity}</p>
-                          {custom.packSize && <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
+                          {typeof custom.packSize === "number" && custom.packSize > 0 && <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
                           {sizes.length>0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map(size=><span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
                           {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Text-only design requested</p>}
                           <div className="mt-3 flex flex-wrap gap-3">
