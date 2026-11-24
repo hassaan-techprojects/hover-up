@@ -133,11 +133,11 @@ export default function StorefrontHeader() {
             <img
               src="/hu.png"
               alt="HOVER UP Logo"
-              className="h-12 w-auto object-contain sm:h-14"
+              className="h-14 w-auto object-contain sm:h-16"
             />
 
-            <span className="whitespace-nowrap text-lg font-black tracking-tight text-black sm:text-xl">
-              HOVER UP
+            <span className="whitespace-nowrap text-lg font-black tracking-tight text-black sm:text-2xl">
+              HOVER UP<span className="text-[#b99a76]">.</span>
             </span>
           </Link>
 
@@ -319,11 +319,11 @@ export default function StorefrontHeader() {
                 <img
                   src="/hu.png"
                   alt="HOVER UP Logo"
-                  className="h-11 w-auto object-contain"
+                  className="h-12 w-auto object-contain"
                 />
 
-                <span className="whitespace-nowrap text-lg font-black tracking-tight text-black">
-                  HOVER UP
+                <span className="whitespace-nowrap text-xl font-black tracking-tight text-black">
+                  HOVER UP<span className="text-[#b99a76]">.</span>
                 </span>
               </Link>
 
