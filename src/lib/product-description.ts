@@ -26,6 +26,6 @@ Custom apparel builds identity and brings people together. Branded t-shirts and 
 
 Our garments are made from comfortable, breathable fabric that suits everyday wear. We print with care so that your logo and colours look sharp and stay clear over time. To keep your prints looking fresh after repeated washes, follow the care instructions provided with your apparel.`;
 
-export function buildDefaultProductDescription(_productName?: string) {
+export function buildDefaultProductDescription() {
   return DEFAULT_APPAREL_DESCRIPTION;
 }
