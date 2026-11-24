@@ -20,9 +20,12 @@ type Order = {
   status: string;
   paymentStatus: string;
   subtotal: string | number;
+  discountAmount: string | number;
+  shippingAmount: string | number;
+  taxAmount: string | number;
   totalAmount: string | number;
   createdAt: string;
-  customer: { id: string; firstName: string; lastName: string | null; email: string; phone: string | null };
+  customer: { id: string; userId: string | null; hasAccount: boolean; firstName: string; lastName: string | null; email: string; phone: string | null };
   shippingAddress: Record<string, unknown>;
   items: OrderItem[];
   payment: { method: string; status: string; gateway: string | null } | null;
@@ -176,6 +179,8 @@ export default function DashboardOrdersPage() {
                       <p className="text-xs font-bold text-[#171717]">{order.orderNumber}</p>
                       <p className="mt-1 text-[10px] text-[#999]">{new Date(order.createdAt).toLocaleString("en-IN")}</p>
                       <p className="mt-2 text-[10px] text-[#82766a]">Customer ID: {order.customer.id}</p>
+                      <p className="mt-1 text-[10px] text-[#82766a]">Account: {order.customer.hasAccount ? "Registered customer" : "Guest checkout"}</p>
+                      {order.customer.userId && <p className="mt-1 text-[10px] text-[#82766a]">Account User ID: {order.customer.userId}</p>}
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-[#34302b]">{order.customer.firstName} {order.customer.lastName || ""}</p>
@@ -209,14 +214,20 @@ export default function DashboardOrdersPage() {
                             const sizes = Array.isArray(custom.sizeBreakdown) ? custom.sizeBreakdown as { size: string; quantity: number }[] : [];
                             return (
                               <div key={item.id} className="rounded-lg border border-[#eee8df] bg-white p-3">
-                                <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold">{item.productName}</p><p className="mt-1 text-[10px] text-[#999]">{item.variantName || item.sku || "Standard"}</p></div><p className="text-xs font-semibold">{formatPrice(item.totalPrice)}</p></div>
+                                <div className="flex items-start gap-3">
+                                  {typeof custom.productImageUrl === "string" && <a href={custom.productImageUrl} target="_blank" rel="noreferrer" className="h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-[#eee8df] bg-[#f7f5f1]"><img src={custom.productImageUrl} alt={item.productName} className="h-full w-full object-contain" /></a>}
+                                  <div className="min-w-0 flex-1"><p className="text-xs font-semibold">{item.productName}</p><p className="mt-1 text-[10px] text-[#999]">{item.variantName || item.sku || "Standard"}</p><p className="mt-1 text-[10px] text-[#777]">SKU: {item.sku || "—"}</p></div>
+                                  <p className="text-xs font-semibold">{formatPrice(item.totalPrice)}</p>
+                                </div>
                                 <p className="mt-2 text-[10px] text-[#777]">Quantity: {item.quantity}</p>
-                                {custom.packSize && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Pack of {String(custom.packSize)}</p>}
+                                {custom.packSize && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Selected pack: {String(custom.packSize)} pieces · Total quantity: {item.quantity}</p>}
                                 {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
+                                {typeof custom.color === "string" && custom.color && <p className="mt-2 text-[10px] text-[#777]">Selected colour: {custom.color}</p>}
+                                <p className="mt-2 text-[10px] text-[#777]">Unit price: {formatPrice(item.unitPrice)} · Line total: {formatPrice(item.totalPrice)}</p>
                                 {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — create artwork from customer instructions</p>}
                                 <div className="mt-3 flex flex-wrap gap-3">
-                                  {typeof custom.frontImageUrl === "string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] text-[#8b7054] underline">Front logo <ExternalLink size={10} /></a>}
-                                  {typeof custom.backImageUrl === "string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] text-[#8b7054] underline">Back logo <ExternalLink size={10} /></a>}
+                                  {typeof custom.frontImageUrl === "string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[10px] text-[#8b7054] underline"><img src={custom.frontImageUrl} alt="Front artwork" className="h-14 w-14 rounded-md border border-[#eee8df] object-contain" />Front artwork <ExternalLink size={10} /></a>}
+                                  {typeof custom.backImageUrl === "string" && <a href={custom.backImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[10px] text-[#8b7054] underline"><img src={custom.backImageUrl} alt="Back artwork" className="h-14 w-14 rounded-md border border-[#eee8df] object-contain" />Back artwork <ExternalLink size={10} /></a>}
                                 </div>
                                 {typeof custom.customizationNotes === "string" && custom.customizationNotes && <p className="mt-3 rounded-lg bg-[#faf8f5] p-2 text-[11px] leading-5 text-[#655c52]">Notes: {custom.customizationNotes}</p>}
                               </div>
@@ -235,6 +246,17 @@ export default function DashboardOrdersPage() {
                           <p className="mt-2">Contact: {String(address.phone || "")}</p>
                           <p>WhatsApp: {String(address.whatsappPhone || "Not provided")}</p>
                           <p>Email: {String(address.email || order.customer.email)}</p>
+                        </div>
+                        <div className="mt-3 rounded-lg border border-[#eee8df] bg-white p-4 text-xs text-[#6d655c]">
+                          <p className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">ORDER TOTALS</p>
+                          <div className="mt-3 space-y-2">
+                            <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(order.subtotal)}</span></div>
+                            <div className="flex justify-between"><span>Discount</span><span>{formatPrice(order.discountAmount)}</span></div>
+                            <div className="flex justify-between"><span>Shipping</span><span>{formatPrice(order.shippingAmount)}</span></div>
+                            <div className="flex justify-between"><span>Tax</span><span>{formatPrice(order.taxAmount)}</span></div>
+                            <div className="flex justify-between border-t border-[#eee8df] pt-2 font-semibold text-[#171717]"><span>Grand total</span><span>{formatPrice(order.totalAmount)}</span></div>
+                          </div>
+                          <p className="mt-3 text-[10px] text-[#8b7864]">Payment collection: pending — arrange with customer after order review</p>
                         </div>
                         <div className="mt-3 rounded-lg border border-[#eee8df] bg-white p-4">
                           <p className="text-[10px] font-semibold tracking-[0.15em] text-[#8b7864]">SHIPPING STATUS</p>
