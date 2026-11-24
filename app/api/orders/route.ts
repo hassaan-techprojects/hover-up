@@ -443,10 +443,10 @@ export async function POST(request: Request) {
           },
           payment: {
             create: {
-              method: body.paymentMethod === "COD" ? "COD" : "UPI",
+              method: "COD",
               status: "PENDING",
               amount: subtotal,
-              gateway: body.paymentMethod === "ONLINE" ? "RAZORPAY" : null,
+              gateway: null,
             },
           },
         },
