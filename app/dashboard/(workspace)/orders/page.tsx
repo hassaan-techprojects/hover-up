@@ -222,7 +222,7 @@ export default function DashboardOrdersPage() {
                                 </div>
                                 <p className="mt-2 text-[10px] text-[#777]">Quantity: {item.quantity}</p>
                                 {custom.packSize != null ? <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Selected pack: {String(custom.packSize)} pieces · Total quantity: {item.quantity}</p> : null}
-                                {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
+                                {sizes.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map((size) => <span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{displaySizeLabel(size.size)}: {size.quantity}</span>)}</div>}
                                 {typeof custom.color === "string" && custom.color && <p className="mt-2 text-[10px] text-[#777]">Selected colour: {custom.color}</p>}
                                 <p className="mt-2 text-[10px] text-[#777]">Unit price: {formatPrice(item.unitPrice)} · Line total: {formatPrice(item.totalPrice)}</p>
                                 {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">TEXT-ONLY DESIGN — create artwork from customer instructions</p>}
