@@ -1287,7 +1287,9 @@ function ProductDetailContent({
                   const stock = variant ? getAvailableStock(variant) : Number.POSITIVE_INFINITY;
                   const unavailable = false;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
-                  const atStockLimit = product?.stockTracked === true && (variant ? sizeQuantity >= stock : !hasVariants && selectedSizeTotal >= availableStock);
+                  // Let customers configure the full pack even when inventory is low.
+                  // The add-to-cart validation below remains the final stock guard.
+                  const atStockLimit = false;
 
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
@@ -1324,12 +1326,7 @@ function ProductDetailContent({
                               );
                               const currentSizeQuantity = current[size.value] ?? 0;
 
-                              if (
-                                currentTotal >= selectedPack ||
-                                (product?.stockTracked === true && !hasVariants && currentTotal >= availableStock) ||
-                                unavailable ||
-                                (product?.stockTracked === true && Boolean(variant) && currentSizeQuantity >= stock)
-                              ) {
+                              if (currentTotal >= selectedPack || unavailable) {
                                 return current;
                               }
 
