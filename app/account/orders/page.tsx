@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Package, Search, CheckCircle2, Image as ImageIcon, X } from "lucide-react";
+import { ArrowRight, Package, CheckCircle2, Image as ImageIcon, X } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
 
@@ -88,11 +88,6 @@ export default function AccountOrdersPage() {
   const [customerEmail, setCustomerEmail] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [orderNumber, setOrderNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [lookupLoading, setLookupLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
 
@@ -115,29 +110,6 @@ export default function AccountOrdersPage() {
     return () => { active = false; };
   }, []);
 
-  async function lookup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLookupLoading(true);
-    setError("");
-    setOrders([]);
-    try {
-      const response = await fetch("/api/orders/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderNumber, email, phone }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Order not found.");
-      const foundOrders = data.orders || (data.order ? [data.order] : []);
-      setOrders(foundOrders);
-      setExpandedOrder(foundOrders[0]?.id ?? null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to find your order.");
-    } finally {
-      setLookupLoading(false);
-    }
-  }
-
   return (
     <>
       <StorefrontHeader />
@@ -156,15 +128,12 @@ export default function AccountOrdersPage() {
           </nav>
 
           {!signedIn && (
-            <form onSubmit={lookup} className="mt-8 grid gap-4 rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:grid-cols-3 sm:p-6">
-              <label className="text-xs font-medium text-[#5f574e]">Order number<input value={orderNumber} onChange={e=>setOrderNumber(e.target.value)} placeholder="Enter order number" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
-              <label className="text-xs font-medium text-[#5f574e]">Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
-              <label className="text-xs font-medium text-[#5f574e]">Contact number<input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Phone used at checkout" className="mt-2 h-11 w-full rounded-xl border border-[#e7e2da] px-3 text-sm outline-none focus:border-[#b99a76]" /></label>
-              <div className="sm:col-span-3"><button disabled={lookupLoading} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#171717] px-5 text-xs font-semibold tracking-wide text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50"><Search size={14} /> {lookupLoading ? "SEARCHING..." : "FIND ORDER"}</button></div>
-            </form>
+            <div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white p-6 sm:p-7">
+              <p className="text-base font-semibold text-[#333]">Looking for an order placed without signing in?</p>
+              <p className="mt-2 text-base text-[#625b53]">Use the separate Track Order page to find your purchase with your order number and checkout details.</p>
+              <Link href="/account/track-order" className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-[#171717] px-6 text-base font-bold text-white transition hover:bg-[#b99a76] hover:text-black">Track an Order</Link>
+            </div>
           )}
-
-          {error && <p role="alert" className="mt-5 rounded-xl border border-[#ead8cb] bg-[#fff8f2] px-4 py-3 text-sm text-[#945a3a]">{error}</p>}
 
           {loading ? <div className="mt-8 h-36 animate-pulse rounded-2xl bg-[#efede9]" /> : orders.length === 0 ? (
             <div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white px-6 py-14 text-center">
