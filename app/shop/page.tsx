@@ -307,9 +307,9 @@ export default function ShopPage() {
 
       {/* Shop Hero */}
       <section className="border-b border-[#eee] px-5 py-8 text-center sm:py-10">
-        <p className="mb-1 font-serif text-xl font-bold tracking-[0.16em] text-[#765238] sm:text-2xl">
+        <h1 className="mb-1 font-serif text-xl font-bold tracking-[0.16em] text-[#765238] sm:text-2xl">
           HOVER UP COLLECTIONS
-        </p>
+        </h1>
 
       </section>
 
