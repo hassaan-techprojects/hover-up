@@ -52,7 +52,7 @@ export default function StorefrontFooter() {
               <p className="flex items-start gap-3"><Phone size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <a href="tel:+919363254591" className="transition hover:text-white">+91 93632 54591</a></p>
               <p className="flex items-start gap-3"><Mail size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Contact details will be updated soon</span></p>
               <p className="flex items-start gap-3"><Clock size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Customer support: 24/7</span></p>
-              <p className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Hover Up, Chennai, Tamil Nadu, India <span className="block pt-1 text-xs text-white/40">Temporary sample location</span></span></p>
+              <p className="flex items-start gap-3"><MapPin size={16} className="mt-0.5 shrink-0 text-[#d4b998]"/> <span>Masjid St, Noorullahpet, Muslimpur, Basheerabad, Vaniyambadi, Tamil Nadu 635751</span></p>
             </div>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#25D366] px-5 text-xs font-bold text-white shadow-lg transition hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
               <MessageCircle size={17}/> Chat on WhatsApp
@@ -84,7 +84,7 @@ export default function StorefrontFooter() {
         </div>
       </footer>
 
-      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" title="Chat with Hover Up on WhatsApp" className="fixed bottom-5 right-5 z-[80] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105 hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
+      <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="Chat with Hover Up on WhatsApp" title="Chat with Hover Up on WhatsApp" className="fixed bottom-20 right-5 z-[80] flex h-14 w-14 md:bottom-5" items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(0,0,0,0.22)] transition hover:scale-105 hover:bg-[#1fb95a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#25D366]">
         <MessageCircle size={27} strokeWidth={2.2}/>
       </a>
     </>
