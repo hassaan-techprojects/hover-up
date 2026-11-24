@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Minus, Save, Trash2, Package, RefreshCw } from "lucide-react";
 
 const SIZE_KEYS = ["S", "M", "L", "XL", "XXL"] as const;
@@ -24,11 +24,15 @@ function Summary({ sizes, packSize }: { sizes: Sizes; packSize: number }) {
   const total = SIZE_KEYS.reduce((sum, size) => sum + sizes[size], 0);
   const packs = Math.floor(total / packSize);
   const loose = total % packSize;
-  return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-    <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Total pieces</p><p className="mt-1 text-xl font-semibold tabular-nums">{total.toLocaleString("en-IN")}</p></div>
-    <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Pack total</p><p className="mt-1 text-xl font-semibold tabular-nums">{packs.toLocaleString("en-IN")} <span className="text-xs font-medium text-[#82786d]">packs of {packSize}</span></p></div>
-    <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Loose pieces</p><p className="mt-1 text-xl font-semibold tabular-nums">{loose.toLocaleString("en-IN")}</p></div>
-    <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Size breakdown</p><p className="mt-1 text-sm font-semibold tabular-nums">S {sizes.S} · M {sizes.M} · L {sizes.L} · XL {sizes.XL} · XXL {sizes.XXL}</p></div>
+  return <div className="space-y-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Total pieces</p><p className="mt-1 text-xl font-semibold tabular-nums">{total.toLocaleString("en-IN")}</p></div>
+      <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Complete packs</p><p className="mt-1 text-xl font-semibold tabular-nums">{packs.toLocaleString("en-IN")} <span className="text-xs font-medium text-[#82786d]">× {packSize}</span></p></div>
+      <div className="rounded-xl bg-[#f7f4ef] p-3"><p className="text-[11px] text-[#82786d]">Loose pieces</p><p className="mt-1 text-xl font-semibold tabular-nums">{loose.toLocaleString("en-IN")}</p></div>
+    </div>
+    <div className="grid grid-cols-5 gap-2">
+      {SIZE_KEYS.map(size => <div key={size} className="rounded-lg border border-[#eae4dc] px-2 py-2 text-center"><p className="text-[10px] font-semibold text-[#82786d]">{size} total</p><p className="mt-1 text-sm font-semibold tabular-nums">{sizes[size].toLocaleString("en-IN")}</p></div>)}
+    </div>
   </div>;
 }
 
@@ -75,7 +79,7 @@ export default function StockPlanner() {
 
   const totalPieces = useMemo(() => SIZE_KEYS.reduce((sum, key) => sum + sizes[key], 0), [sizes]);
 
-  async function createSheet(event: React.FormEvent<HTMLFormElement>) {
+  async function createSheet(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim()) { setError("Enter a name for this stock sheet."); return; }
     setCreating(true);
@@ -142,7 +146,7 @@ export default function StockPlanner() {
 
   return <div className="space-y-7">
     <header className="flex flex-wrap items-start justify-between gap-3">
-      <div><p className="text-xs font-semibold tracking-[0.2em] text-[#a18c75]">ADMIN ONLY · INTERNAL TOOL</p><h2 className="mt-2 text-3xl font-semibold">Stock Calculator</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#777]">A private stock-counting workspace for rough calculations. These numbers are separate from website inventory, product availability and customer orders.</p></div>
+      <div><p className="text-xs font-semibold tracking-[0.2em] text-[#a18c75]">ADMIN ONLY · INTERNAL TOOL</p><h2 className="mt-2 text-3xl font-semibold">Inventory</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[#777]">A private stock-counting workspace for rough calculations. These numbers are separate from website inventory, product availability and customer orders.</p></div>
       <div className="flex items-center gap-2 rounded-full border border-[#eae4dc] bg-white px-3 py-2 text-xs font-medium text-[#756b60]"><Package size={14}/> Internal stock notes</div>
     </header>
 
