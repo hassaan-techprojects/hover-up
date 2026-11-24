@@ -62,7 +62,7 @@ export default function TrackOrderPage() {
         <div className="mx-auto max-w-[900px]">
           <p className="text-base font-extrabold tracking-[0.14em] text-[#8b7054]">HOVER UP ORDER SUPPORT</p>
           <h1 className="mt-2 text-4xl font-extrabold sm:text-5xl">Track Order</h1>
-          <p className="mt-3 text-lg leading-8 text-[#625b53]">Enter the order number and the email address or phone number used at checkout to see the latest order status.</p>
+          <p className="mt-3 text-lg leading-8 text-[#625b53]">Enter your order number to track it directly. If you do not have the order number, leave that field empty and enter both checkout email and phone number.</p>
 
           <nav aria-label="Customer account" className="mt-7 flex flex-wrap gap-2 border-b border-[#e7e1d8] pb-3">
             <Link href="/account" className="rounded-xl border border-[#e8e3dc] bg-white px-5 py-3 text-base font-bold text-[#5f574e]">Account</Link>
@@ -72,7 +72,7 @@ export default function TrackOrderPage() {
 
           <form onSubmit={findOrder} className="mt-8 grid gap-5 rounded-2xl border border-[#e9e4dc] bg-white p-6 sm:grid-cols-2 sm:p-8">
             <label className="text-base font-bold text-[#333] sm:col-span-2">Order number
-              <input required value={orderNumber} onChange={event => setOrderNumber(event.target.value)} placeholder="Enter your order number" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
+              <input required value={orderNumber} onChange={event => setOrderNumber(event.target.value)} placeholder="Enter your order number (optional)" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
             </label>
             <label className="text-base font-bold text-[#333]">Email address
               <input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="Email used at checkout" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
@@ -80,7 +80,7 @@ export default function TrackOrderPage() {
             <label className="text-base font-bold text-[#333]">Contact number
               <input type="tel" value={phone} onChange={event => setPhone(event.target.value)} placeholder="Phone used at checkout" className="mt-2 w-full rounded-xl border border-[#e7e2da] px-4 py-3 text-base outline-none focus:border-[#b99a76]" />
             </label>
-            <p className="text-sm leading-6 text-[#777] sm:col-span-2">Provide at least one checkout contact detail so we can verify the order.</p>
+            <p className="text-sm leading-6 text-[#777] sm:col-span-2">Order number alone is enough. Without it, both checkout email and phone number are required.</p>
             <div className="sm:col-span-2">
               <button disabled={loading} className="inline-flex min-h-12 items-center gap-3 rounded-xl bg-black px-7 text-base font-extrabold text-white transition hover:bg-[#b99a76] hover:text-black disabled:opacity-60">
                 <Search size={19} /> {loading ? "SEARCHING..." : "FIND MY ORDER"}
