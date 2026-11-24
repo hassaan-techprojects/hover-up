@@ -79,6 +79,7 @@ export default function AddProductPage() {
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [description, setDescription] = useState("");
+  const [descriptionEdited, setDescriptionEdited] = useState(false);
   const [sku, setSku] = useState("");
   const [regularPrice, setRegularPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
@@ -175,7 +176,7 @@ export default function AddProductPage() {
 
   function handleNameChange(value: string) {
     setName(value);
-    setDescription(buildDefaultProductDescription(value));
+    if (!descriptionEdited) setDescription(buildDefaultProductDescription(value));
 
     if (!slugEdited) {
       setSlug(createSlug(value));
@@ -675,9 +676,10 @@ export default function AddProductPage() {
 
                     <textarea
                       value={description}
-                      onChange={(event) =>
-                        setDescription(event.target.value)
-                      }
+                      onChange={(event) => {
+                        setDescriptionEdited(true);
+                        setDescription(event.target.value);
+                      }}
                       rows={9}
                       placeholder="A ready-to-edit product description is generated when you enter a product name."
                       className="w-full resize-y p-4 text-sm leading-7 text-[#333] outline-none placeholder:text-gray-400"
