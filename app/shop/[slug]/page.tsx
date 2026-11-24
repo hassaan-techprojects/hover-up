@@ -34,7 +34,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
-import { buildDefaultProductDescription } from "@/lib/product-description";
+import { buildDefaultProductDescription } from "../../../src/lib/product-description";
 import ProductReviewForm from "@/components/storefront/product-review-form";
 
 type ProductImage = {
