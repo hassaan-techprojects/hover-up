@@ -216,7 +216,15 @@ export async function POST(request: NextRequest) {
     const slug = String(formData.get("slug") || "").trim();
     const submittedDescription = String(formData.get("description") || "").trim();
     const description = submittedDescription || buildDefaultProductDescription(name);
-    const sku = String(formData.get("sku") || "").trim();
+    let sku = String(formData.get("sku") || "").trim();
+    if (!sku) {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const candidate = `HU-${randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+        const existing = await prisma.product.findUnique({ where: { sku: candidate }, select: { id: true } });
+        if (!existing) { sku = candidate; break; }
+      }
+      if (!sku) throw new Error("Unable to generate a unique product SKU. Please try again.");
+    }
 
     const regularPrice = parseAmount(
       String(formData.get("comparePrice") || formData.get("price") || ""),
