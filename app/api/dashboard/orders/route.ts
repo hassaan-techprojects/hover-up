@@ -11,11 +11,16 @@ export async function GET(request: Request) {
     }
 
     const search = new URL(request.url).searchParams.get("search")?.trim() || "";
+    const phoneDigits = search.replace(/\\D/g, "");
     const orders = await prisma.order.findMany({
       ...(search ? {
         where: {
           OR: [
             { orderNumber: { contains: search, mode: "insensitive" } },
+            { id: { contains: search, mode: "insensitive" } },
+            { shippingAddress: { path: ["email"], string_contains: search } },
+            { shippingAddress: { path: ["phone"], string_contains: search } },
+            ...(phoneDigits ? [{ customer: { is: { phone: { contains: phoneDigits } } } }] : []),
             {
               customer: {
                 is: {
