@@ -324,6 +324,9 @@ export default function AddProductPage() {
 
     buildCombinations(0, {});
 
+    const baseSku = sku.trim() || `HU-${crypto.randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+    setSku(baseSku);
+
     const generated: Variation[] = combinations.map((combination) => {
       const combinationName = Object.values(combination)
         .map((term) => term.value)
@@ -332,11 +335,10 @@ export default function AddProductPage() {
       return {
         id: createId(),
         attributes: combination,
-        sku: sku
-          ? `${sku}-${Object.values(combination)
+        sku: `${baseSku}-${Object.values(combination)
               .map((term) => term.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
-              .join("-")}`
-          : "",
+              .join("-")}`,
+
         regularPrice,
         salePrice,
         stock,
