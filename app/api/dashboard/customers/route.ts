@@ -37,7 +37,6 @@ export async function GET(request: Request) {
         },
       },
       orderBy: { updatedAt: "desc" },
-      take: search ? 300 : 500,
     });
 
     const mapped = customers.map((customer) => ({
