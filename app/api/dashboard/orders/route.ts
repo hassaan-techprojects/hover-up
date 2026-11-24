@@ -12,6 +12,7 @@ export async function GET(request: Request) {
 
     const search = new URL(request.url).searchParams.get("search")?.trim() || "";
     const phoneDigits = search.replace(/\D/g, "");
+    const phoneSearchTail = phoneDigits.length >= 4 ? phoneDigits.slice(-4) : "";
     const orders = await prisma.order.findMany({
       ...(search ? {
         where: {
@@ -20,7 +21,10 @@ export async function GET(request: Request) {
             { id: { contains: search, mode: "insensitive" } },
             { shippingAddress: { path: ["email"], string_contains: search } },
             { shippingAddress: { path: ["phone"], string_contains: search } },
-            ...(phoneDigits ? [{ customer: { is: { phone: { contains: phoneDigits } } } }] : []),
+            ...(phoneSearchTail ? [
+              { shippingAddress: { path: ["phone"], string_contains: phoneSearchTail } },
+              { customer: { is: { phone: { contains: phoneSearchTail } } } },
+            ] : []),
             {
               customer: {
                 is: {
