@@ -20,7 +20,7 @@ export default function DashboardShell({
   }, [menuOpen]);
 
   return (
-    <div className="min-h-screen bg-[#f8f6f2]">
+    <div data-dashboard-shell className="min-h-screen bg-[#f8f6f2]">
       <DashboardSidebar
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
@@ -29,7 +29,7 @@ export default function DashboardShell({
       <div className="min-h-screen lg:pl-[270px]">
         <DashboardHeader onMenuClick={() => setMenuOpen(true)} />
 
-        <main className="mx-auto w-full max-w-[1600px] p-4 sm:p-6 lg:p-9">
+        <main className="mx-auto w-full max-w-[1600px] min-w-0 p-3 sm:p-5 lg:p-9">
           {children}
         </main>
       </div>
