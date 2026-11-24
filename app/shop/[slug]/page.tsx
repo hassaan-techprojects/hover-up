@@ -1565,13 +1565,7 @@ function ProductDetailContent({
                 </h2>
 
                 <div className="mt-5">
-                  {product.description
-                    ? renderProductDescription(product.description)
-                    : (
-                      <p className="text-[14px] leading-8 text-[#626262]">
-                        {product.shortDescription || buildDefaultProductDescription(product.name)}
-                      </p>
-                    )}
+                  {renderProductDescription(product.description || product.shortDescription || buildDefaultProductDescription(product.name))}
                 </div>
 
                 {product.sku && (
