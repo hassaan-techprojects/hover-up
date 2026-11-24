@@ -34,14 +34,8 @@ type HomeProduct = {
   id: string;
   name: string;
   slug: string;
-  price: number | string;
-  comparePrice: number | string | null;
   images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[];
 };
-
-function formatHomePrice(value: number | string) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value));
-}
 
 type Brand = {
   name: string;
