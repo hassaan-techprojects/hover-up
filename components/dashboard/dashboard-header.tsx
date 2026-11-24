@@ -2,14 +2,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import {
   Menu,
   Search,
   Bell,
   ChevronRight,
-  LogOut,
 } from "lucide-react";
 
 type DashboardHeaderProps = {
@@ -89,7 +87,6 @@ function DashboardHeaderContent({
           <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#b99a76]" />
         </button>
 
-        <button type="button" onClick={() => void signOut({ callbackUrl: "/" })} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#eae6df] px-3 text-[10px] font-semibold text-[#51483f] transition hover:border-[#b99a76] hover:text-[#8b7054]" aria-label="Log out of dashboard"><LogOut size={15} /><span className="hidden sm:inline">LOG OUT</span></button>
 
         <div className="ml-1 flex items-center gap-2.5 border-l border-[#eae6df] pl-3 sm:pl-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e0d5] text-xs font-semibold text-[#493b2d]">
