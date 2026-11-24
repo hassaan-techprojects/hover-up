@@ -15,6 +15,7 @@ type TrackedOrder = {
   createdAt: string;
   payment?: { method: string } | null;
   shipment?: { trackingNumber: string | null; carrier: string | null } | null;
+  statusHistory?: { metadata: unknown; createdAt: string }[];
 };
 
 const stages = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
@@ -54,6 +55,10 @@ export default function TrackOrderPage() {
 
   const currentIndex = order ? stages.indexOf(order.status) : -1;
   const cancelled = order?.status === "CANCELLED" || order?.status === "REFUNDED";
+  const statusEvents = (order?.statusHistory ?? []).map(entry => {
+    const metadata = entry.metadata && typeof entry.metadata === "object" ? entry.metadata as Record<string, unknown> : {};
+    return { status: String(metadata.status || ""), createdAt: entry.createdAt };
+  });
 
   return (
     <>
@@ -112,7 +117,7 @@ export default function TrackOrderPage() {
                         const done = currentIndex >= index;
                         return <li key={stage} className="flex items-start gap-3">
                           <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold ${done ? "border-[#a98b68] bg-[#a98b68] text-white" : "border-[#ded8cf] text-[#a9a095]"}`}>{done ? <CheckCircle2 size={18}/> : index + 1}</span>
-                          <div><p className={`text-base font-bold ${done ? "text-black" : "text-[#888]"}`}>{title(stage)}</p><p className="mt-1 text-sm text-[#777]">{["Your order has been placed","Our team has received your order","Your order is being prepared","Your order is on its way","Your order has been delivered"][index]}</p></div>
+                          <div><p className={`text-base font-bold ${done ? "text-black" : "text-[#888]"}`}>{title(stage)}</p><p className="mt-1 text-sm text-[#777]">{["Your order has been placed","Our team has received your order","Your order is being prepared","Your order is on its way","Your order has been delivered"][index]}</p>{statusEvents.find(event => event.status === stage) && <p className="mt-1 text-sm font-semibold text-[#8b7054]">{new Date(statusEvents.find(event => event.status === stage)!.createdAt).toLocaleString("en-IN")}</p>}</div>
                         </li>;
                       })}
                     </ol>
