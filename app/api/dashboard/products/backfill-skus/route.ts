@@ -12,7 +12,7 @@ export async function POST() {
     for (const product of products) {
       let sku = "";
       for (let attempt = 0; attempt < 10; attempt += 1) {
-        const candidate = "HU-" + randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase();
+        const candidate = "HU-" + parseInt(randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5);
         const exists = await prisma.product.findUnique({ where: { sku: candidate }, select: { id: true } });
         if (!exists) { sku = candidate; break; }
       }
