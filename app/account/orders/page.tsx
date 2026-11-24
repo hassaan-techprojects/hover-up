@@ -170,7 +170,8 @@ export default function AccountOrdersPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Total orders</p><p className="mt-3 text-2xl font-semibold text-[#24211d]">{orders.length}</p></div>
-              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Delivered</p><p className="mt-3 text-2xl font-semibold text-[#47724b]">{orders.filter(order => order.status === "DELIVERED").length}</p></div>            </div>
+              <div className="rounded-2xl border border-[#e9e4dc] bg-white p-5"><p className="text-[10px] text-[#999]">Delivered</p><p className="mt-3 text-2xl font-semibold text-[#47724b]">{orders.filter(order => order.status === "DELIVERED").length}</p></div>
+            </div>
           </section>}
 
           {loading ? <div className="mt-8 h-36 animate-pulse rounded-2xl bg-[#efede9]" /> : orders.length === 0 ? (
