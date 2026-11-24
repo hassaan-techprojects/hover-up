@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     if (!challenge) return NextResponse.json({ error: "This code has expired. Request a new verification code." }, { status: 400 });
     if (challenge.attempts >= MAX_OTP_ATTEMPTS) return NextResponse.json({ error: "Too many incorrect attempts. Request a new code." }, { status: 429 });
     if (!verifyOtpHash(challenge.codeHash, hashOtp(email, "SIGNUP", code))) {
-      await registerOtpAttempt(challenge.id, challenge.attempts);
+      await registerOtpAttempt(challenge.id);
       return NextResponse.json({ error: "The verification code is incorrect." }, { status: 400 });
     }
     const payload = challenge.payload as { firstName: string; lastName: string; phone: string; passwordHash: string } | null;
