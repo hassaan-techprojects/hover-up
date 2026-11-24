@@ -34,6 +34,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 import ProductReviewForm from "@/components/storefront/product-review-form";
 
 type ProductImage = {
@@ -1568,7 +1569,7 @@ function ProductDetailContent({
                     ? renderProductDescription(product.description)
                     : (
                       <p className="text-[14px] leading-8 text-[#626262]">
-                        {product.shortDescription || "Product details will be updated soon."}
+                        {product.shortDescription || buildDefaultProductDescription(product.name)}
                       </p>
                     )}
                 </div>
