@@ -164,6 +164,22 @@ function getVariantAttributeValues(attributes: unknown): string[] {
   return values;
 }
 
+function renderProductDescription(description: string) {
+  const blocks = description
+    .replace(/\\r\\n/g, "\\n")
+    .split(/\\n\\s*\\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => {
+    const heading = block.match(/^(#{1,6})\\s+(.+)$/);
+    if (heading) {
+      return <h2 key={index} className="mb-3 mt-8 text-lg font-semibold tracking-tight text-[#171717]">{heading[2]}</h2>;
+    }
+    return <p key={index} className="mb-4 text-sm leading-8 text-[#626262]">{block.replace(/\\n/g, " ")}</p>;
+  });
+}
+
 export default function ProductDetailClient({
   slug,
 }: {
@@ -1185,8 +1201,8 @@ export default function ProductDetailClient({
                   Product Description
                 </h2>
 
-                <div className="mt-5 whitespace-pre-line text-sm leading-8 text-[#666]">
-                  {buildDefaultProductDescription()}
+                <div className="mt-5">
+                  {renderProductDescription(buildDefaultProductDescription())}
                 </div>
 
                 {product.sku && (
