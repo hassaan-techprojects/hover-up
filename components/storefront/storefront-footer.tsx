@@ -1,5 +1,8 @@
 
+"use client";
+
 import Link from "next/link";
+import { ArrowUp } from "lucide-react";
 
 export default function StorefrontFooter() {
   return (
@@ -114,8 +117,9 @@ export default function StorefrontFooter() {
       </div>
 
       {/* Copyright */}
-      <div className="mx-auto mt-12 max-w-[1500px] border-t border-white/15 pt-6 text-xs text-neutral-500">
-        © 2026 Hover Up. All rights reserved.
+      <div className="mx-auto mt-12 flex max-w-[1500px] flex-col gap-4 border-t border-white/15 pt-6 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
+        <span>© 2026 Hover Up. All rights reserved.</span>
+        <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="inline-flex min-h-10 items-center justify-center gap-2 self-start border border-white/25 px-4 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:border-[#b99a76] hover:text-[#b99a76] sm:self-auto">GO TO TOP <ArrowUp size={14} /></button>
       </div>
     </footer>
   );
