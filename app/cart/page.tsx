@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
 
@@ -37,6 +37,7 @@ function formatPrice(value: number) {
 export default function CartPage() {
   const [items, setItems] = useState<CartEntry[]>([]);
   const [ready, setReady] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -141,9 +142,9 @@ export default function CartPage() {
                       </div>
                     </div>
                     {(item.frontImageUrl || item.backImageUrl) && (
-                      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#f0ede8] pt-4">
-                        {item.frontImageUrl && <a href={item.frontImageUrl} target="_blank" rel="noreferrer" className="text-xs text-[#8b7054] underline">View front logo</a>}
-                        {item.backImageUrl && <a href={item.backImageUrl} target="_blank" rel="noreferrer" className="text-xs text-[#8b7054] underline">View back logo</a>}
+                      <div className="mt-4 grid grid-cols-2 gap-4 border-t border-[#f0ede8] pt-4">
+                        {item.frontImageUrl && <button type="button" onClick={() => setPreviewImage(item.frontImageUrl!)} className="flex items-center gap-3 text-left"><img src={item.frontImageUrl} alt="Front logo artwork" className="h-20 w-20 rounded-lg border border-[#e9e4dc] bg-white object-contain p-1" /><span className="text-xs font-medium text-[#6f5a43]">Front logo<br /><span className="text-[10px] text-[#999]">Tap to enlarge</span></span></button>}
+                        {item.backImageUrl && <button type="button" onClick={() => setPreviewImage(item.backImageUrl!)} className="flex items-center gap-3 text-left"><img src={item.backImageUrl} alt="Back logo artwork" className="h-20 w-20 rounded-lg border border-[#e9e4dc] bg-white object-contain p-1" /><span className="text-xs font-medium text-[#6f5a43]">Back logo<br /><span className="text-[10px] text-[#999]">Tap to enlarge</span></span></button>}
                       </div>
                     )}
                     {item.customizationNotes && <p className="mt-3 rounded-lg bg-[#faf8f5] p-3 text-xs leading-5 text-[#6c6258]"><span className="font-semibold">Customization:</span> {item.customizationNotes}</p>}
@@ -165,6 +166,7 @@ export default function CartPage() {
           )}
         </div>
       </main>
+      {previewImage && <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 p-5" role="dialog" aria-modal="true" aria-label="Artwork preview" onClick={() => setPreviewImage(null)}><button type="button" aria-label="Close preview" onClick={() => setPreviewImage(null)} className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full bg-white text-black"><X size={22} /></button><img src={previewImage} alt="Uploaded artwork enlarged" onClick={(event) => event.stopPropagation()} className="max-h-[85vh] max-w-[90vw] object-contain" /></div>}
       <StorefrontFooter />
     </>
   );
