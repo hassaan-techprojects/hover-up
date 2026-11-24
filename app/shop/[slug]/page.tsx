@@ -1436,7 +1436,7 @@ function ProductDetailContent({
               />
 
               <span className="text-[11px] tracking-wide text-[#666]">
-                "Available to order"
+                Available to order
               </span>
             </div>
 

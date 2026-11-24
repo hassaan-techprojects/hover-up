@@ -51,7 +51,7 @@ export default function DashboardPage() {
             Welcome back.
           </h2>
           <p className="mt-2 text-sm text-[#817b72]">
-            Here's what's happening with your store today.
+            Here&apos;s what&apos;s happening with your store today.
           </p>
         </div>
 
