@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         },
       } : {}),
       include: {
-        customer: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        customer: { select: { id: true, userId: true, firstName: true, lastName: true, email: true, phone: true } },
         items: true,
         payment: true,
         shipment: true,
@@ -42,7 +42,13 @@ export async function GET(request: Request) {
       take: search ? 500 : 200,
     });
 
-    return NextResponse.json({ orders, canManage: session.user.role === "ADMIN" });
+    return NextResponse.json({
+      orders: orders.map((order) => ({
+        ...order,
+        customer: { ...order.customer, hasAccount: Boolean(order.customer.userId) },
+      })),
+      canManage: session.user.role === "ADMIN",
+    });
   } catch (error) {
     console.error("Dashboard orders API error:", error);
     return NextResponse.json({ error: "Unable to load orders." }, { status: 500 });
