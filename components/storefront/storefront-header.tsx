@@ -412,6 +412,24 @@ export default function StorefrontHeader() {
                 </Link>
 
                 <Link
+                  href="/account/orders"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 text-base font-bold text-black transition-colors hover:text-[#b99a76]"
+                >
+                  <ShoppingBag size={19} strokeWidth={2} />
+                  My Orders
+                </Link>
+
+                <Link
+                  href="/account/track-order"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 text-base font-bold text-black transition-colors hover:text-[#b99a76]"
+                >
+                  <Search size={19} strokeWidth={2} />
+                  Track Order
+                </Link>
+
+                <Link
                   href="/wishlist"
                   onClick={closeMenu}
                   className="flex items-center gap-3 text-sm font-bold text-black transition-colors hover:text-[#b99a76]"
