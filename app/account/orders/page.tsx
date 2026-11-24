@@ -145,13 +145,13 @@ export default function AccountOrdersPage() {
         <div className="mx-auto max-w-[1050px]">
           <p className="text-sm font-semibold tracking-[0.14em] text-[#8b7054]">YOUR HOVER UP ACCOUNT</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div><h1 className="text-3xl font-semibold sm:text-4xl">Order Tracker</h1><p className="mt-2 text-base text-[#777]">{signedIn ? `Welcome back, ${customerName}. Follow your orders and delivery updates here.` : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
+            <div><h1 className="text-3xl font-semibold sm:text-4xl">My Orders</h1><p className="mt-2 text-base text-[#777]">{signedIn ? `Welcome back, ${customerName}. Follow your orders and delivery updates here.` : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
             {!signedIn && <Link href="/account/login" className="text-xs font-semibold text-[#8b7054] underline">Sign in to your account</Link>}
           </div>
 
           <nav aria-label="Customer account" className="mt-7 flex flex-wrap gap-2 border-b border-[#e7e1d8] pb-3">
             <Link href="/account" className="rounded-xl border border-[#b99a76] bg-[#b99a76]/10 px-5 py-3 text-sm font-semibold text-[#5d4936]">Account</Link>
-            <Link href="/account/orders" aria-current="page" className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-semibold text-white">Order Tracker</Link>
+            <Link href="/account/orders" aria-current="page" className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-semibold text-white">My Orders</Link>
           </nav>
 
           {!signedIn && (
