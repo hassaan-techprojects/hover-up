@@ -425,7 +425,9 @@ export default function AddProductPage() {
       formData.append("name", name.trim());
       formData.append("slug", slug.trim());
       formData.append("description", description);
-      formData.append("sku", sku.trim());
+      const productSku = sku.trim() || `HU-${crypto.randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+      setSku(productSku);
+      formData.append("sku", productSku);
       formData.append("price", salePrice || regularPrice);
       formData.append("comparePrice", salePrice ? regularPrice : "");
       formData.append("stock", stock);
@@ -867,7 +869,7 @@ export default function AddProductPage() {
                 <input
                   value={sku}
                   onChange={(event) => setSku(event.target.value)}
-                  placeholder="Example: HU-TSHIRT-001"
+                  placeholder="Auto-generated SKU, e.g. HU-57T80"
                   className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
                 />
                 <p className="mt-2 text-xs text-gray-400">
