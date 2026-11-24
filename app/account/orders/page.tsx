@@ -117,7 +117,7 @@ export default function AccountOrdersPage() {
         <div className="mx-auto max-w-[1050px]">
           <p className="text-sm font-semibold tracking-[0.14em] text-[#8b7054]">YOUR HOVER UP ACCOUNT</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div><h1 className="text-3xl font-semibold sm:text-4xl">My Orders</h1><p className="mt-2 text-base text-[#777]">{signedIn ? `Welcome back, ${customerName}. Follow your orders and delivery updates here.` : "Look up with your order number alone, or use the email and phone number entered at checkout."}</p></div>
+            <div><h1 className="text-3xl font-semibold sm:text-4xl">My Orders</h1><p className="mt-2 text-base text-[#777]">{signedIn ? `Welcome back, ${customerName}. Follow your orders and delivery updates here.` : "Sign in to view your order bills, or use Track Order to look up a guest purchase."}</p></div>
             {!signedIn && <Link href="/account/login" className="text-xs font-semibold text-[#8b7054] underline">Sign in to your account</Link>}
           </div>
 
@@ -139,7 +139,7 @@ export default function AccountOrdersPage() {
             <div className="mt-8 rounded-2xl border border-[#e9e4dc] bg-white px-6 py-14 text-center">
               <Package size={30} className="mx-auto text-[#b99a76]" />
               <p className="mt-4 text-sm font-semibold">{signedIn ? "No orders yet" : "No order displayed yet"}</p>
-              <p className="mt-2 text-xs text-[#999]">{signedIn ? "Your future purchases will appear here." : "Enter your order details above to track a purchase."}</p>
+              <p className="mt-2 text-xs text-[#999]">{signedIn ? "Your future purchases will appear here." : "Sign in to see your order bills, or open Track Order to look up a guest purchase."}</p>
               {signedIn && <Link href="/shop" className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-[#8b7054] underline">Explore products <ArrowRight size={13} /></Link>}
             </div>
           ) : (
