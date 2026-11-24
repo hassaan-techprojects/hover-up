@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch("/api/account/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email.trim().toLowerCase() }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Unable to request a verification code.");
-      setStage("verify"); setNotice(data.message || "If an account exists for that email, a verification code has been sent.");
+      setStage("verify"); setNotice(data.message || "A password reset OTP has been sent to your registered email address.");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to request a verification code."); }
     finally { setLoading(false); }
   }
@@ -59,8 +59,8 @@ export default function ForgotPasswordPage() {
 
   const titles: Record<Stage, string> = { email: "Forgot your password?", verify: "Verify your email", password: "Create a new password", done: "Password updated" };
   const descriptions: Record<Stage, string> = {
-    email: "Enter the email address linked to your Hover Up account. We'll send you a verification code.",
-    verify: `Enter the 6-digit code sent to ${email.trim().toLowerCase()}.`,
+    email: "Enter the Gmail address registered with your Hover Up account. We'll send an OTP only if the account exists.",
+    verify: `A password reset OTP has been sent to ${email.trim().toLowerCase()}. Enter the 6-digit code to continue.`,
     password: "Your email is verified. Choose a new password for your account.",
     done: "Your password has been changed successfully. You can now sign in with your new password.",
   };
