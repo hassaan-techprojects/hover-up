@@ -292,7 +292,7 @@ export default function HomePage() {
                 <img
                   src={banner.image}
                   alt={`Hover Up promotional banner ${index + 1}`}
-                  className="block h-[420px] w-full object-cover md:h-auto md:object-contain"
+                  className="block h-auto w-full object-contain"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
@@ -342,7 +342,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-[1500px] overflow-hidden py-16 md:py-20">
         <div className="mb-10 flex items-end justify-between px-6 md:px-10">
           <div>
-            <p className="text-[10px] font-extrabold tracking-[0.25em] text-[#a18c75]">
+            <p className="text-xs font-extrabold tracking-[0.25em] text-[#a18c75]">
               EXPLORE
             </p>
 
@@ -405,7 +405,7 @@ export default function HomePage() {
       {/* Featured Products */}
       <section className="bg-white px-6 py-12 md:bg-[#f8f6f2] md:px-10 md:py-20">
         <div className="mx-auto max-w-[1500px]">
-          <p className="text-[10px] font-extrabold tracking-[0.25em] text-[#a18c75]">
+          <p className="text-xs font-extrabold tracking-[0.25em] text-[#a18c75]">
             THE COLLECTION
           </p>
 
@@ -430,16 +430,14 @@ export default function HomePage() {
             <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
               {products.slice(0, 8).map((product) => {
                 const image = product.images?.find((item) => item.isPrimary) || product.images?.[0];
-                const comparePrice = Number(product.comparePrice || 0);
-                const price = Number(product.price);
                 return (
                   <article key={product.id} className="min-w-0">
                     <Link href={`/shop/${product.slug}`} className="block aspect-[3/4] overflow-hidden bg-white">
                       {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-xs text-[#999]">NO IMAGE</div>}
                     </Link>
-                    <Link href={`/shop/${product.slug}`}><h3 className="mt-3 line-clamp-2 text-xs font-semibold leading-5 text-[#171717] sm:text-sm">{product.name}</h3></Link>
-                    <div className="mt-2 flex flex-wrap items-center gap-2"><span className="text-sm font-semibold">{formatHomePrice(price)}</span>{comparePrice > price && <span className="text-xs text-[#999] line-through">{formatHomePrice(comparePrice)}</span>}</div>
-                    <Link href={`/shop/${product.slug}`} className="mt-3 flex min-h-10 items-center justify-center border border-[#222] bg-white px-3 text-[10px] font-semibold tracking-[0.12em] transition hover:bg-[#171717] hover:text-white">VIEW PRODUCT</Link>
+                    <Link href={`/shop/${product.slug}`}><h3 className="mt-3 line-clamp-2 text-sm font-semibold leading-6 text-[#171717] sm:text-base">{product.name}</h3></Link>
+                    
+                    <Link href={`/shop/${product.slug}`} className="mt-3 flex min-h-11 items-center justify-center border border-[#222] bg-white px-3 text-xs font-semibold tracking-[0.12em] transition hover:bg-[#171717] hover:text-white">VIEW PRODUCT</Link>
                   </article>
                 );
               })}
@@ -455,7 +453,7 @@ export default function HomePage() {
       {/* Brands We Worked With */}
       <section className="overflow-hidden bg-white py-16 md:py-20">
         <div className="mb-9 px-6 text-center md:mb-10">
-          <p className="text-[10px] font-extrabold tracking-[0.3em] text-[#a18c75]">
+          <p className="text-xs font-extrabold tracking-[0.3em] text-[#a18c75]">
             OUR NETWORK
           </p>
 
@@ -687,28 +685,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-
-      {/* Shop CTA */}
-      <section className="px-6 py-20 text-center">
-        <p className="text-[10px] font-extrabold tracking-[0.3em] text-[#a18c75]">
-          HOVER UP
-        </p>
-
-        <h2 className="font-editorial mt-4 text-3xl font-bold text-black">
-          Style starts with you.
-        </h2>
-
-        <p className="mt-4 text-sm font-medium text-neutral-500">
-          Discover the collection and find your next favourite look.
-        </p>
-
-        <Link
-          href="/shop"
-          className="mt-7 inline-block bg-black px-9 py-4 text-xs font-extrabold tracking-widest text-white transition-all duration-300 hover:bg-[#b99a76]"
-        >
-          SHOP NOW
-        </Link>
-      </section>
 
       <StorefrontFooter />
     </main>
