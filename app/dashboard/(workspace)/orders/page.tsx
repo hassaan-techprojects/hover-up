@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, X } from "lucide-react";
+import { ArrowDownToLine, ExternalLink, PackageCheck, RefreshCw, Search, Trash2, X } from "lucide-react";
 
 type OrderItem = {
   id: string;
@@ -95,6 +95,7 @@ export default function DashboardOrdersPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [canManage, setCanManage] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -135,6 +136,24 @@ export default function DashboardOrdersPage() {
       setError(err instanceof Error ? err.message : "Unable to update order.");
     } finally {
       setUpdating(null);
+    }
+  }
+
+  async function deleteOrder(order: Order) {
+    const confirmed = window.confirm(`Permanently delete order ${order.orderNumber}? This also removes its order items, payment record and shipment record. This action cannot be undone.`);
+    if (!confirmed) return;
+    setDeleting(order.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/dashboard/orders/${order.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to delete order.");
+      setOrders((current) => current.filter((entry) => entry.id !== order.id));
+      if (expanded === order.id) setExpanded(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete order.");
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -240,6 +259,11 @@ export default function DashboardOrdersPage() {
                     </div>
                     <div className="flex flex-wrap gap-2 xl:justify-end">
                       <button type="button" onClick={() => setExpanded(isExpanded ? null : order.id)} className="rounded-lg border border-[#e7e1d8] px-3 py-2 text-[10px] font-semibold text-[#6b6054] hover:border-[#b99a76]">{isExpanded ? "Hide details" : "View details"}</button>
+                      {canManage && (
+                        <button type="button" onClick={() => void deleteOrder(order)} disabled={deleting === order.id || updating === order.id} className="inline-flex items-center gap-1.5 rounded-lg border border-[#f0d8d5] px-3 py-2 text-[10px] font-semibold text-[#a34d4d] transition hover:bg-[#fff5f3] disabled:opacity-50" aria-label={`Delete order ${order.orderNumber}`}>
+                          <Trash2 size={13} /> {deleting === order.id ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
                       {canManage && (
                         <select aria-label={`Update status for ${order.orderNumber}`} disabled={updating === order.id} value={order.status} onChange={(event) => void updateStatus(order.id, event.target.value)} className="max-w-[150px] rounded-lg border border-[#e7e1d8] bg-white px-2 py-2 text-[10px] outline-none focus:border-[#b99a76] disabled:opacity-50">
                           {statuses.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}

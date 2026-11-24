@@ -556,6 +556,24 @@ model InventoryMovement {
   @@index([inventoryId, createdAt])
 }
 
+
+
+// ─── ADMIN STOCK PLANNING (INTERNAL ONLY) ────────
+
+model StockPlanningSheet {
+  id          String   @id @default(cuid())
+  name        String
+  packSize    Int      @default(2)
+  sizes       Json
+  totalAmount Decimal? @db.Decimal(12, 2)
+  notes       String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
 // ─── SHIPPING ───────────────────────────────────
 
 model Shipment {

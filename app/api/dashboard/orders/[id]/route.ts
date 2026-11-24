@@ -131,3 +131,44 @@ export async function PATCH(
     return NextResponse.json({ error: "Unable to update this order." }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Only administrators can delete orders." }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const current = await prisma.order.findUnique({
+      where: { id },
+      select: { id: true, orderNumber: true, paymentStatus: true, totalAmount: true },
+    });
+    if (!current) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+    if (current.paymentStatus === "PAID" || current.paymentStatus === "PARTIALLY_REFUNDED" || current.paymentStatus === "REFUNDED") {
+      return NextResponse.json({ error: "Orders with completed or refunded payments cannot be deleted. Keep the financial record and update the order status instead." }, { status: 409 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "ORDER_DELETED",
+          entity: "ORDER",
+          entityId: current.id,
+          description: `Order ${current.orderNumber} was permanently deleted by an administrator.`,
+          metadata: { orderNumber: current.orderNumber, paymentStatus: current.paymentStatus, totalAmount: current.totalAmount.toString() },
+        },
+      });
+      await tx.order.delete({ where: { id: current.id } });
+    });
+
+    return NextResponse.json({ success: true, orderId: current.id });
+  } catch (error) {
+    console.error("Delete dashboard order API error:", error);
+    return NextResponse.json({ error: "Unable to delete this order." }, { status: 500 });
+  }
+}
