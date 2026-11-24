@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
     let sku = String(formData.get("sku") || "").trim();
     if (!sku) {
       for (let attempt = 0; attempt < 8; attempt += 1) {
-        const candidate = `HU-${randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
+        const candidate = `HU-${parseInt(randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
         const existing = await prisma.product.findUnique({ where: { sku: candidate }, select: { id: true } });
         if (!existing) { sku = candidate; break; }
       }
