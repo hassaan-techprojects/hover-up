@@ -16,6 +16,11 @@ enum UserRole {
   CUSTOMER
 }
 
+enum OtpPurpose {
+  SIGNUP
+  PASSWORD_RESET
+}
+
 enum ProductStatus {
   DRAFT
   ACTIVE
@@ -85,6 +90,23 @@ enum AttributeTermType {
 }
 
 // ─── USERS & AUTHENTICATION ─────────────────────
+
+model OtpChallenge {
+  id             String     @id @default(cuid())
+  email          String
+  purpose        OtpPurpose
+  codeHash       String
+  payload        Json?
+  expiresAt      DateTime
+  attempts       Int        @default(0)
+  verifiedAt     DateTime?
+  resetTokenHash String?
+  consumedAt     DateTime?
+  createdAt      DateTime   @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
 
 model User {
   id           String   @id @default(cuid())
