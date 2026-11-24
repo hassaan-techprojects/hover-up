@@ -22,6 +22,9 @@ jobs:
         run: npm ci
       - name: Generate Prisma Client and build
         run: npm run build
+      - name: Audit ESLint findings
+        run: npm run lint
+        continue-on-error: true
         env:
           NEXTAUTH_SECRET: ci-build-only-placeholder
           NEXTAUTH_URL: http://localhost:3000
