@@ -113,11 +113,9 @@ function ProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        {discount > 0 && (
-          <span className="absolute left-3 top-3 bg-black px-3 py-1.5 text-[10px] font-semibold tracking-wider text-white">
-            {discount}% OFF
-          </span>
-        )}
+        <span className="absolute left-3 top-3 bg-black px-3 py-1.5 text-[10px] font-semibold tracking-wider text-white">
+          PACK OF 2
+        </span>
 
         <button
           onClick={() => setWishlisted(!wishlisted)}
@@ -191,14 +189,9 @@ function ProductCard({ product }: { product: Product }) {
           </span>
 
           {discount > 0 && (
-            <>
-              <span className="text-xs text-[#999] line-through">
-                {formatPrice(comparePrice)}
-              </span>
-              <span className="text-[10px] font-semibold text-[#a16e42]">
-                {discount}% OFF
-              </span>
-            </>
+            <span className="text-[10px] font-semibold tracking-wide text-[#8b7054]">
+              PACK OF 2
+            </span>
           )}
         </div>
 
