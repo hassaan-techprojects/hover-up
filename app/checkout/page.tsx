@@ -3,7 +3,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, LockKeyhole, MapPin, PackageCheck, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, MapPin, PackageCheck, ShieldCheck } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
 
@@ -25,12 +25,6 @@ type CartItem = {
   customizationNotes?: string;
 };
 
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
-  }
-}
-
 const CART_STORAGE_KEY = "hover-up-cart";
 const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 
@@ -45,9 +39,6 @@ export default function CheckoutPage() {
   const [loaded, setLoaded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
-  const [razorpayReady, setRazorpayReady] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "ONLINE">("COD");
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,18 +95,6 @@ export default function CheckoutPage() {
     return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => setRazorpayReady(true);
-    script.onerror = () => setRazorpayReady(false);
-    document.body.appendChild(script);
-    return () => {
-      script.remove();
-    };
-  }, []);
-
   const total = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.price) * (item.packSize ? 1 : item.quantity), 0),
     [items]
@@ -127,11 +106,6 @@ export default function CheckoutPage() {
       setMessage("Your shopping bag is empty.");
       return;
     }
-    if (paymentMethod === "ONLINE" && !razorpayReady) {
-      setMessage("Online payment is still loading. Please wait a moment and try again.");
-      return;
-    }
-
     setSubmitting(true);
     setMessage("");
 
@@ -151,61 +125,15 @@ export default function CheckoutPage() {
             country: "India",
           },
           items,
-          paymentMethod,
+          paymentMethod: "COD",
         }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to place your order.");
 
-      if (paymentMethod === "COD") {
-        localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
-        router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
-        return;
-      }
-
-      if (!data.payment?.keyId || !data.payment?.orderId || !window.Razorpay) {
-        throw new Error("The online payment session could not be started.");
-      }
-
-      const checkout = new window.Razorpay({
-        key: data.payment.keyId,
-        amount: data.payment.amount,
-        currency: data.payment.currency,
-        name: "Hover Up",
-        description: `Order ${data.order.orderNumber}`,
-        order_id: data.payment.orderId,
-        prefill: { name: [firstName, lastName].filter(Boolean).join(" "), email, contact: phone },
-        notes: { orderNumber: data.order.orderNumber },
-        theme: { color: "#b99a76" },
-        handler: async (paymentResponse: Record<string, string>) => {
-          const verifyResponse = await fetch("/api/payments/razorpay/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              orderId: data.order.id,
-              razorpay_order_id: paymentResponse.razorpay_order_id,
-              razorpay_payment_id: paymentResponse.razorpay_payment_id,
-              razorpay_signature: paymentResponse.razorpay_signature,
-            }),
-          });
-          const verified = await verifyResponse.json();
-          if (!verifyResponse.ok) {
-            setMessage(verified.error || "Payment verification failed. Please contact the store with your order number.");
-            setSubmitting(false);
-            return;
-          }
-          localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
-          router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
-        },
-        modal: {
-          ondismiss: () => {
-            setSubmitting(false);
-            setMessage("Payment was not completed. Your order remains pending; you can retry or contact the store.");
-          },
-        },
-      });
-      checkout.open();
-      setSubmitting(false);
+      localStorage.removeItem(isBuyNow ? BUY_NOW_STORAGE_KEY : CART_STORAGE_KEY);
+      router.push(`/order-success?order=${encodeURIComponent(data.order.orderNumber)}`);
+      return;
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Something went wrong.");
       setSubmitting(false);
@@ -242,22 +170,15 @@ export default function CheckoutPage() {
               </section>
 
               <section className="rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-7">
-                <div className="flex items-center gap-3"><div className="rounded-xl bg-[#f5f1eb] p-2.5 text-[#92785e]"><LockKeyhole size={18} /></div><div><h2 className="text-lg font-semibold">Payment method</h2><p className="mt-1 text-xs text-[#888]">Choose how you would like to pay.</p></div></div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => setPaymentMethod("COD")} className={`rounded-xl border p-4 text-left transition ${paymentMethod === "COD" ? "border-[#b99a76] bg-[#faf6f0] ring-2 ring-[#b99a76]/15" : "border-[#e8e3dc] hover:border-[#c9b9a5]"}`}>
-                    <span className="block text-sm font-semibold">Cash on Delivery</span><span className="mt-1 block text-xs text-[#888]">Pay when your order arrives</span>
-                  </button>
-                  <button type="button" onClick={() => setPaymentMethod("ONLINE")} className={`rounded-xl border p-4 text-left transition ${paymentMethod === "ONLINE" ? "border-[#b99a76] bg-[#faf6f0] ring-2 ring-[#b99a76]/15" : "border-[#e8e3dc] hover:border-[#c9b9a5]"}`}>
-                    <span className="block text-sm font-semibold">Pay Online</span><span className="mt-1 block text-xs text-[#888]">UPI, cards and net banking via Razorpay</span>
-                  </button>
-                </div>
+                <h2 className="text-lg font-semibold">Payment after confirmation</h2>
+                <p className="mt-2 text-xs leading-6 text-[#777]">Place your order now. Our team will review your selected pack, sizes, artwork and availability, then coordinate payment with you. Online payment will be enabled later.</p>
               </section>
 
               {message && <p role="alert" className="rounded-xl border border-[#e7d4c5] bg-[#fff9f3] px-4 py-3 text-sm text-[#8b5636]">{message}</p>}
               <button type="submit" disabled={submitting || !loaded || items.length === 0} className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#171717] px-6 text-xs font-semibold tracking-[0.14em] text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:cursor-not-allowed disabled:opacity-50">
-                {submitting ? "PROCESSING..." : paymentMethod === "COD" ? "PLACE ORDER" : "PAY NOW"} <ArrowRight size={16} />
+                {submitting ? "SUBMITTING ORDER..." : "PLACE ORDER"} <ArrowRight size={16} />
               </button>
-              <p className="text-center text-[10px] text-[#999]">By placing your order, you agree to be contacted about order confirmation and delivery.</p>
+              <p className="text-center text-[10px] text-[#999]">No online payment is collected at this stage. Our team will contact you to confirm the order and payment.</p>
             </form>
 
             <aside className="h-fit rounded-2xl border border-[#e9e4dc] bg-white p-5 sm:p-6 lg:sticky lg:top-28">
