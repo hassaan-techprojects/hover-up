@@ -189,7 +189,7 @@ export default function DashboardOrdersPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold">{formatPrice(order.totalAmount)}</p>
-                      <p className="mt-1 text-[10px] text-[#999]">{order.items.length} line item(s) · {order.payment?.method || "—"}</p>
+                      <p className="mt-1 text-[10px] text-[#999]">{order.items.length} line item(s) · {order.paymentStatus === "PENDING" ? "Payment pending" : order.payment?.method || "—"}</p>
                     </div>
                     <div>
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${statusClass(order.status)}`}>{statusLabel(order.status)}</span>
