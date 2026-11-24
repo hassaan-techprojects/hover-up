@@ -50,8 +50,8 @@ export async function findActiveChallenge(email: string, purpose: "SIGNUP" | "PA
   });
 }
 
-export async function registerOtpAttempt(challengeId: string, attempts: number) {
-  await prisma.otpChallenge.update({ where: { id: challengeId }, data: { attempts: attempts + 1 } });
+export async function registerOtpAttempt(challengeId: string) {
+  await prisma.otpChallenge.update({ where: { id: challengeId }, data: { attempts: { increment: 1 } } });
 }
 
 export const MAX_OTP_ATTEMPTS = MAX_ATTEMPTS;
