@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ export default function AccountLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +44,7 @@ export default function AccountLoginPage() {
           <h1 className="mt-3 text-3xl font-semibold">Welcome back</h1>
           <p className="mt-2 text-sm text-[#888]">Sign in to see your orders and account details.</p>
           <label className="mt-7 block text-xs font-medium text-[#5f574e]">Email address<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} className={field} /></label>
-          <label className="mt-4 block text-xs font-medium text-[#5f574e]">Password<input required type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} className={field} /></label>
+          <label className="mt-4 block text-xs font-medium text-[#5f574e]">Password<div className="relative"><input required type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} className={`${field} pr-12`} /><button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#777] hover:text-[#171717]">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></label>
           {error && <p role="alert" className="mt-4 text-xs text-[#a14d3d]">{error}</p>}
           <button disabled={loading} className="mt-6 min-h-12 w-full rounded-xl bg-[#171717] text-xs font-semibold tracking-[0.12em] text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50">{loading ? "SIGNING IN..." : "SIGN IN"}</button>
           <p className="mt-6 text-center text-xs text-[#888]">New to Hover Up? <Link href="/account/register" className="font-semibold text-[#8b7054] underline">Create an account</Link></p>

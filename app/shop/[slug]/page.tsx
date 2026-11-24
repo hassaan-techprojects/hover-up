@@ -34,6 +34,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 import ProductReviewForm from "@/components/storefront/product-review-form";
 
 type ProductImage = {
@@ -867,14 +868,14 @@ function ProductDetailContent({
               <button
                 type="button"
                 onClick={() => setRetryCount((count) => count + 1)}
-                className="inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
+                className="inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-sm tracking-[0.16em] text-white transition hover:bg-[#444]"
               >
                 TRY AGAIN
               </button>
             )}
             <Link
               href="/shop"
-              className="inline-flex items-center gap-3 border border-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-[#171717] transition hover:bg-[#f5f3ef]"
+              className="inline-flex items-center gap-3 border border-[#171717] px-8 py-4 text-sm tracking-[0.16em] text-[#171717] transition hover:bg-[#f5f3ef]"
             >
               <ArrowLeft size={15} />
               BACK TO SHOP
@@ -897,7 +898,7 @@ function ProductDetailContent({
         {/* BREADCRUMB */}
 
         <div className="mx-auto max-w-[1500px] px-5 pt-7 md:px-10">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] tracking-[0.12em] text-[#888]">
+          <div className="flex flex-wrap items-center gap-2 text-sm tracking-[0.12em] text-[#888]">
             <Link href="/" className="transition hover:text-black">
               HOME
             </Link>
@@ -986,7 +987,7 @@ function ProductDetailContent({
                 )}
 
                 {discount > 0 && (
-                  <span className="absolute left-4 top-4 bg-[#171717] px-3 py-2 text-[10px] tracking-[0.12em] text-white">
+                  <span className="absolute left-4 top-4 bg-[#171717] px-3 py-2 text-sm tracking-[0.12em] text-white">
                     {discount}% OFF
                   </span>
                 )}
@@ -1039,7 +1040,7 @@ function ProductDetailContent({
                   </>
                 )}
 
-                <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-2 text-[10px] tracking-[0.12em]">
+                <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-2 text-sm tracking-[0.12em]">
                   {String(
                     productImages.length > 0 ? selectedImage + 1 : 0
                   ).padStart(2, "0")}{" "}
@@ -1072,7 +1073,7 @@ function ProductDetailContent({
 
           <div className="lg:sticky lg:top-28 lg:self-start lg:py-5">
             {product.categories[0] && (
-              <p className="text-[10px] tracking-[0.22em] text-[#999]">
+              <p className="text-sm tracking-[0.22em] text-[#999]">
                 {product.categories[0].category.name.toUpperCase()}
               </p>
             )}
@@ -1104,7 +1105,7 @@ function ProductDetailContent({
                   ))}
                 </div>
 
-                <span className="text-[11px] text-[#777]">
+                <span className="text-sm text-[#777]">
                   {product.averageRating.toFixed(1)} (
                   {product.reviewCount} reviews)
                 </span>
@@ -1117,7 +1118,7 @@ function ProductDetailContent({
               <span className="text-[25px] font-bold tracking-wide">
                 {formatPrice(currentPrice)}
               </span>
-              <span className="text-[10px] tracking-[0.12em] text-[#777]">
+              <span className="text-sm tracking-[0.12em] text-[#777]">
                 PACK PRICE
               </span>
 
@@ -1127,14 +1128,14 @@ function ProductDetailContent({
                     {formatPrice(currentComparePrice)}
                   </span>
 
-                  <span className="text-[10px] tracking-[0.12em] text-[#8a4e37]">
+                  <span className="text-sm tracking-[0.12em] text-[#8a4e37]">
                     SAVE {discount}%
                   </span>
                 </>
               )}
             </div>
 
-            <p className="mt-2 text-[11px] text-[#999]">
+            <p className="mt-2 text-sm text-[#999]">
               Inclusive of all applicable taxes
             </p>
 
@@ -1143,7 +1144,7 @@ function ProductDetailContent({
             {/* SHORT DESCRIPTION */}
 
             {product.shortDescription && (
-              <p className="text-[13px] leading-7 text-[#666]">
+              <p className="text-sm leading-7 text-[#666]">
                 {product.shortDescription}
               </p>
             )}
@@ -1153,11 +1154,11 @@ function ProductDetailContent({
             {colorOptions.length > 0 && (
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-[11px] tracking-[0.16em]">
+                  <p className="text-sm tracking-[0.16em]">
                     COLOR
                   </p>
 
-                  <span className="text-[11px] text-[#777]">
+                  <span className="text-sm text-[#777]">
                     {selectedColor || "Select a color"}
                   </span>
                 </div>
@@ -1226,8 +1227,8 @@ function ProductDetailContent({
 
             <div className="mt-8">
               <div className="mb-4 flex items-center justify-between">
-                <p className="text-[11px] tracking-[0.16em]">SELECT PACK</p>
-                <span className="text-[11px] text-[#777]">
+                <p className="text-sm tracking-[0.16em]">SELECT PACK</p>
+                <span className="text-sm text-[#777]">
                   {selectedPack} pieces · {formatPrice(currentPrice)}
                 </span>
               </div>
@@ -1250,7 +1251,7 @@ function ProductDetailContent({
                         : "border-[#dedbd6] hover:border-[#171717]"
                     }`}
                   >
-                    <span className="block text-[11px] tracking-wide">Pack of {packSize}</span>
+                    <span className="block text-sm tracking-wide">Pack of {packSize}</span>
                     <span className={`mt-1 block text-sm ${selectedPack === packSize ? "text-white" : "text-[#555]"}`}>
                       {formatPrice(PACK_PRICES[packSize])}
                     </span>
@@ -1263,12 +1264,12 @@ function ProductDetailContent({
 
             <div className="mt-8">
               <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="text-[11px] tracking-[0.16em]">PACK OF {selectedPack}</p>
+                <p className="text-sm tracking-[0.16em]">PACK OF {selectedPack}</p>
                 <div className="flex items-center gap-3">
-                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-[#765238] underline underline-offset-4 hover:text-[#171717]">
+                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="inline-flex items-center gap-1.5 text-sm font-semibold tracking-wide text-[#765238] underline underline-offset-4 hover:text-[#171717]">
                     <Ruler size={13} /> SIZE GUIDE
                   </button>
-                  <span className="text-[11px] text-[#777]">
+                  <span className="text-sm text-[#777]">
                     {selectedSizeTotal} / {selectedPack} selected
                   </span>
                 </div>
@@ -1282,7 +1283,7 @@ function ProductDetailContent({
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
                       <div>
-                        <p className={`inline-flex min-h-8 items-center rounded-sm border px-3 text-xs font-medium ${sizeQuantity > 0 ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] bg-white text-[#171717]"}`}>
+                        <p className={`inline-flex min-h-8 items-center rounded-sm border px-3 text-sm font-medium ${sizeQuantity > 0 ? "border-[#171717] bg-[#171717] text-white" : "border-[#dedbd6] bg-white text-[#171717]"}`}>
                           {size.sizeSymbol === "XXL" ? "2XL" : size.sizeSymbol || size.value}
                         </p>
                       </div>
@@ -1337,35 +1338,35 @@ function ProductDetailContent({
                 })}
               </div>
 
-              <p className="mt-3 text-[11px] text-[#171717]">Selected {selectedSizeTotal} out of {selectedPack} item(s)</p>
+              <p className="mt-3 text-sm text-[#171717]">Selected {selectedSizeTotal} out of {selectedPack} item(s)</p>
             </div>
 
             {/* DESIGN IMAGE UPLOADS */}
 
             <div className="mt-8 rounded-xl border border-[#e8e1d7] bg-[#faf8f5] p-4">
-              <p className="text-xs font-semibold text-[#4f463d]">We’ll send your design for approval</p>
-              <p className="mt-1 text-[11px] leading-5 text-[#82766a]">After your order is placed and confirmed, our team will share the design with you before production.</p>
+              <p className="text-sm font-semibold text-[#4f463d]">We’ll send your design for approval</p>
+              <p className="mt-1 text-sm leading-5 text-[#82766a]">After your order is placed and confirmed, our team will share the design with you before production.</p>
             </div>
 
             <div className="mt-6">
-              <p className="mb-3 text-[11px] font-semibold tracking-[0.16em]">YOUR LOGO / DESIGN</p>
+              <p className="mb-3 text-sm font-semibold tracking-[0.16em]">YOUR LOGO / DESIGN</p>
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#e7e2da] bg-white p-4 transition hover:border-[#765238]">
                 <input type="checkbox" checked={textOnlyDesign} onChange={(event) => { const enabled = event.target.checked; setTextOnlyDesign(enabled); if (enabled) { setFrontImageFile(null); setBackImageFile(null); } }} className="mt-0.5 h-4 w-4 accent-[#765238]" />
                 <span>
-                  <span className="block text-xs font-semibold text-[#171717]">I don’t have a logo — create a design using my text</span>
-                  <span className="mt-1 block text-[11px] leading-5 text-[#888]">No problem. Tell us what you want, and our team will create a design and share it for your approval.</span>
+                  <span className="block text-sm font-semibold text-[#171717]">I don’t have a logo — create a design using my text</span>
+                  <span className="mt-1 block text-sm leading-5 text-[#888]">No problem. Tell us what you want, and our team will create a design and share it for your approval.</span>
                 </span>
               </label>
               {!textOnlyDesign && (
               <>
-              <p className="mb-4 mt-5 text-[11px] tracking-[0.16em]">UPLOAD FRONT AND BACK LOGOS</p>
+              <p className="mb-4 mt-5 text-sm tracking-[0.16em]">UPLOAD FRONT AND BACK LOGOS</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE</span>
-                  <span className="mt-2 block truncate text-[11px] text-[#777]">
+                  <span className="block text-sm font-semibold tracking-[0.12em]">FRONT DESIGN IMAGE</span>
+                  <span className="mt-2 block truncate text-sm text-[#777]">
                     {frontImageFile ? frontImageFile.name : "Add your front artwork"}
                   </span>
-                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
                     <Upload size={14} /> {frontImageFile ? "CHANGE IMAGE" : "UPLOAD FRONT IMAGE"}
                   </span>
                       <input
@@ -1377,11 +1378,11 @@ function ProductDetailContent({
                 </label>
 
                 <label className="cursor-pointer border border-dashed border-[#cfcac2] p-4 transition hover:border-[#171717]">
-                  <span className="block text-[11px] font-semibold tracking-[0.12em]">BACK DESIGN IMAGE</span>
-                  <span className="mt-2 block truncate text-[11px] text-[#777]">
+                  <span className="block text-sm font-semibold tracking-[0.12em]">BACK DESIGN IMAGE</span>
+                  <span className="mt-2 block truncate text-sm text-[#777]">
                     {backImageFile ? backImageFile.name : "Add your back artwork"}
                   </span>
-                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-[10px] font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
+                  <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-[#765238] px-4 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition hover:bg-[#5f3f2b]">
                     <Upload size={14} /> {backImageFile ? "CHANGE IMAGE" : "UPLOAD BACK IMAGE"}
                   </span>
                   <input
@@ -1392,7 +1393,7 @@ function ProductDetailContent({
                   />
                 </label>
               </div>
-              <p className="mt-2 text-[10px] text-[#999]">
+              <p className="mt-2 text-sm text-[#999]">
                 Add artwork now or share your design instructions after placing the order.
               </p>
               </>
@@ -1401,7 +1402,7 @@ function ProductDetailContent({
 
             {/* OPTIONAL CUSTOMIZATION NOTES */}
             <div className="mt-6">
-              <label htmlFor="customization-notes" className="mb-3 block text-[11px] font-semibold tracking-[0.14em]">
+              <label htmlFor="customization-notes" className="mb-3 block text-sm font-semibold tracking-[0.14em]">
                 {textOnlyDesign ? "TEXT / DESIGN INSTRUCTIONS" : "ANY TEXT OR CUSTOMIZATION NEEDED"} <span className="font-normal normal-case tracking-normal text-[#999]">{textOnlyDesign ? "(Required)" : "(Optional)"}</span>
               </label>
               <textarea
@@ -1413,32 +1414,19 @@ function ProductDetailContent({
                 placeholder={textOnlyDesign ? "Describe the text, wording, style, colours or design you want us to create..." : "Tell us about text, placement, print colors, or any special instructions..."}
                 className="w-full resize-y border border-[#dedbd6] bg-white px-4 py-3 text-sm text-[#171717] outline-none transition placeholder:text-[#aaa] focus:border-[#765238] focus:ring-2 focus:ring-[#765238]/15"
               />
-              <p className="mt-1 text-right text-[10px] text-[#999]">{customizationNotes.length}/1000</p>
+              <p className="mt-1 text-right text-sm text-[#999]">{customizationNotes.length}/1000</p>
             </div>
 
             {/* VARIANT DETAILS */}
 
-            {selectedVariant && (
-              <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] tracking-wide text-[#888]">
-                {selectedVariant.sku && (
-                  <span>SKU: {selectedVariant.sku}</span>
+            {(product.sku || selectedVariant) && (
+              <div className="mt-5 flex flex-wrap items-center gap-3 text-sm tracking-wide text-[#888]">
+                {product.sku && (
+                  <span>SKU: <strong className="font-bold text-[#333]">{product.sku}</strong></span>
                 )}
-
-                <span>{selectedVariant.name}</span>
+                {selectedVariant?.name && <span>{selectedVariant.name}</span>}
               </div>
             )}
-
-            {/* STOCK */}
-
-            <div className="mt-8 flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full bg-[#63876b]"
-              />
-
-              <span className="text-[11px] tracking-wide text-[#666]">
-                Available to order
-              </span>
-            </div>
 
             {/* ACTION BUTTONS */}
 
@@ -1448,7 +1436,7 @@ function ProductDetailContent({
                 disabled={
                   addingToCart
                 }
-                className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-sm tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ShoppingBag size={17} strokeWidth={1.5} />
                 {addingToCart ? "ADDING..." : "ADD TO CART"}
@@ -1459,7 +1447,7 @@ function ProductDetailContent({
                 disabled={
                   addingToCart
                 }
-                className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-sm tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 BUY NOW
                 <ArrowRight size={16} />
@@ -1482,11 +1470,11 @@ function ProductDetailContent({
                 <Truck size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     FREE SHIPPING
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Delivery options and timelines are confirmed at checkout.
                   </p>
                 </div>
@@ -1496,11 +1484,11 @@ function ProductDetailContent({
                 <ShieldCheck size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     SECURE CHECKOUT
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Your order information is protected.
                   </p>
                 </div>
@@ -1510,11 +1498,11 @@ function ProductDetailContent({
                 <RotateCcw size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     CUSTOMER SUPPORT
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Our team is available to help with your order.
                   </p>
                 </div>
@@ -1530,7 +1518,7 @@ function ProductDetailContent({
             <div className="flex gap-8 border-b border-[#eae8e4]">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`pb-4 text-[11px] tracking-[0.15em] transition ${
+                className={`pb-4 text-sm tracking-[0.15em] transition ${
                   activeTab === "description"
                     ? "border-b border-[#171717] text-[#171717]"
                     : "text-[#999]"
@@ -1541,7 +1529,7 @@ function ProductDetailContent({
 
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`pb-4 text-[11px] tracking-[0.15em] transition ${
+                className={`pb-4 text-sm tracking-[0.15em] transition ${
                   activeTab === "reviews"
                     ? "border-b border-[#171717] text-[#171717]"
                     : "text-[#999]"
@@ -1551,7 +1539,7 @@ function ProductDetailContent({
               </button>
               <button
                 onClick={() => setActiveTab("shipping")}
-                className={`pb-4 text-[11px] tracking-[0.15em] transition ${activeTab === "shipping" ? "border-b border-[#171717] text-[#171717]" : "text-[#999]"}`}
+                className={`pb-4 text-sm tracking-[0.15em] transition ${activeTab === "shipping" ? "border-b border-[#171717] text-[#171717]" : "text-[#999]"}`}
               >
                 SHIPPING & RETURNS
               </button>
@@ -1564,18 +1552,12 @@ function ProductDetailContent({
                 </h2>
 
                 <div className="mt-5">
-                  {product.description
-                    ? renderProductDescription(product.description)
-                    : (
-                      <p className="text-[14px] leading-8 text-[#626262]">
-                        {product.shortDescription || "Product details will be updated soon."}
-                      </p>
-                    )}
+                  {renderProductDescription(product.description || product.shortDescription || buildDefaultProductDescription(product.name))}
                 </div>
 
                 {product.sku && (
-                  <p className="mt-8 text-[11px] text-[#999]">
-                    Product SKU: {product.sku}
+                  <p className="mt-8 text-sm text-[#999]">
+                    Product SKU: <strong className="font-bold text-[#333]">{product.sku}</strong>
                   </p>
                 )}
               </div>
@@ -1583,7 +1565,7 @@ function ProductDetailContent({
               <div className="max-w-3xl py-9">
                 <ProductReviewForm slug={product.slug} />
                 {product.reviews.length === 0 ? (
-                  <p className="text-[13px] text-[#888]">
+                  <p className="text-sm text-[#888]">
                     No reviews available for this product yet.
                   </p>
                 ) : (
@@ -1621,7 +1603,7 @@ function ProductDetailContent({
                         )}
 
                         {review.comment && (
-                          <p className="mt-2 text-[13px] leading-7 text-[#666]">
+                          <p className="mt-2 text-sm leading-7 text-[#666]">
                             {review.comment}
                           </p>
                         )}
@@ -1636,7 +1618,7 @@ function ProductDetailContent({
                           </div>
                         )}
 
-                        <p className="mt-3 text-[10px] tracking-wide text-[#999]">
+                        <p className="mt-3 text-sm tracking-wide text-[#999]">
                           {review.customer.firstName}{" "}
                           {review.customer.lastName || ""}
                         </p>
@@ -1646,7 +1628,7 @@ function ProductDetailContent({
                 )}
               </div>
             ) : (
-              <div className="max-w-3xl space-y-7 py-9 text-[13px] leading-7 text-[#626262]">
+              <div className="max-w-3xl space-y-7 py-9 text-sm leading-7 text-[#626262]">
                 <section><h2 className="text-base font-semibold text-[#171717]">Order Processing Time</h2><p className="mt-2">All orders go through a production process before shipping.</p></section>
                 <section><h3 className="font-semibold text-[#171717]">Production Time</h3><p className="mt-2"><strong>1–3 business days</strong> (may vary depending on the order volume and customization requirements).</p></section>
                 <section><h3 className="font-semibold text-[#171717]">Shipping Time</h3><p className="mt-2">Shipping usually takes <strong>5–7 business days</strong>, depending on your location.</p><p className="mt-2">We currently <strong>ship across India</strong>.</p></section>
@@ -1665,9 +1647,9 @@ function ProductDetailContent({
           <section className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-[#765238]">SIZE REFERENCE</p>
+                <p className="text-sm font-semibold tracking-[0.18em] text-[#765238]">SIZE REFERENCE</p>
                 <h2 className="mt-2 text-xl font-semibold">Available sizes</h2>
-                <p className="mt-1 text-xs text-[#888]">Choose the size values configured for this product.</p>
+                <p className="mt-1 text-sm text-[#888]">Choose the size values configured for this product.</p>
               </div>
               <button type="button" onClick={() => setSizeGuideOpen(false)} aria-label="Close size guide" className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f2ed] text-[#65594d]"><X size={17} /></button>
             </div>
@@ -1727,7 +1709,7 @@ function ProductDetailContent({
             <ChevronRight size={30} />
           </button>
 
-          <div className="absolute bottom-5 text-[11px] tracking-[0.15em] text-white/70">
+          <div className="absolute bottom-5 text-sm tracking-[0.15em] text-white/70">
             {selectedImage + 1} / {productImages.length}
           </div>
         </div>

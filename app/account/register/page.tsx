@@ -4,6 +4,7 @@ import { type FormEvent, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
 
@@ -14,6 +15,7 @@ export default function AccountRegisterPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -80,7 +82,7 @@ export default function AccountRegisterPage() {
             <label className="text-xs font-medium text-[#5f574e]">Last name<input autoComplete="family-name" value={lastName} onChange={e=>setLastName(e.target.value)} className={field} /></label>
             <label className="text-xs font-medium text-[#5f574e] sm:col-span-2">Email address *<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} className={field} /></label>
             <label className="text-xs font-medium text-[#5f574e] sm:col-span-2">Contact number *<input required type="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} className={field} /></label>
-            <label className="text-xs font-medium text-[#5f574e] sm:col-span-2">Password *<input required type="password" minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} className={field} /><span className="mt-1 block text-[10px] font-normal text-[#999]">Use at least 8 characters.</span></label>
+            <label className="text-xs font-medium text-[#5f574e] sm:col-span-2">Password *<div className="relative"><input required type={showPassword ? "text" : "password"} minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} className={`${field} pr-12`} /><button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#777] hover:text-[#171717]">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div><span className="mt-1 block text-[10px] font-normal text-[#999]">Use at least 8 characters.</span></label>
           </div>
           {error && <p role="alert" className="mt-4 text-xs text-[#a14d3d]">{error}</p>}
           <button disabled={loading} className="mt-6 min-h-12 w-full rounded-xl bg-[#171717] text-xs font-semibold tracking-[0.12em] text-white transition hover:bg-[#b99a76] hover:text-[#171717] disabled:opacity-50">{loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}</button>

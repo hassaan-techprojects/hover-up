@@ -25,6 +25,7 @@ import {
 
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 
 type ProductImage = {
   id: string;
@@ -607,7 +608,7 @@ export default function ProductDetailClient({
 
           <Link
             href="/shop"
-            className="mt-8 inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-xs tracking-[0.16em] text-white transition hover:bg-[#444]"
+            className="mt-8 inline-flex items-center gap-3 bg-[#171717] px-8 py-4 text-sm tracking-[0.16em] text-white transition hover:bg-[#444]"
           >
             <ArrowLeft size={15} />
             BACK TO SHOP
@@ -627,7 +628,7 @@ export default function ProductDetailClient({
         {/* BREADCRUMB */}
 
         <div className="mx-auto max-w-[1500px] px-5 pt-7 md:px-10">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] tracking-[0.12em] text-[#888]">
+          <div className="flex flex-wrap items-center gap-2 text-sm tracking-[0.12em] text-[#888]">
             <Link href="/" className="transition hover:text-black">
               HOME
             </Link>
@@ -716,7 +717,7 @@ export default function ProductDetailClient({
                 )}
 
                 {discount > 0 && (
-                  <span className="absolute left-4 top-4 bg-[#171717] px-3 py-2 text-[10px] tracking-[0.12em] text-white">
+                  <span className="absolute left-4 top-4 bg-[#171717] px-3 py-2 text-sm tracking-[0.12em] text-white">
                     {discount}% OFF
                   </span>
                 )}
@@ -768,7 +769,7 @@ export default function ProductDetailClient({
                   </>
                 )}
 
-                <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-2 text-[10px] tracking-[0.12em]">
+                <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-2 text-sm tracking-[0.12em]">
                   {String(selectedImage + 1).padStart(2, "0")} /{" "}
                   {String(productImages.length).padStart(2, "0")}
                 </div>
@@ -799,7 +800,7 @@ export default function ProductDetailClient({
 
           <div className="lg:sticky lg:top-28 lg:self-start lg:py-5">
             {product.categories[0] && (
-              <p className="text-[10px] tracking-[0.22em] text-[#999]">
+              <p className="text-sm tracking-[0.22em] text-[#999]">
                 {product.categories[0].category.name.toUpperCase()}
               </p>
             )}
@@ -831,7 +832,7 @@ export default function ProductDetailClient({
                   ))}
                 </div>
 
-                <span className="text-[11px] text-[#777]">
+                <span className="text-sm text-[#777]">
                   {product.averageRating.toFixed(1)} (
                   {product.reviewCount} reviews)
                 </span>
@@ -851,14 +852,14 @@ export default function ProductDetailClient({
                     {formatPrice(currentComparePrice)}
                   </span>
 
-                  <span className="text-[10px] tracking-[0.12em] text-[#8a4e37]">
+                  <span className="text-sm tracking-[0.12em] text-[#8a4e37]">
                     SAVE {discount}%
                   </span>
                 </>
               )}
             </div>
 
-            <p className="mt-2 text-[11px] text-[#999]">
+            <p className="mt-2 text-sm text-[#999]">
               Inclusive of all applicable taxes
             </p>
 
@@ -867,7 +868,7 @@ export default function ProductDetailClient({
             {/* SHORT DESCRIPTION */}
 
             {product.shortDescription && (
-              <p className="text-[13px] leading-7 text-[#666]">
+              <p className="text-sm leading-7 text-[#666]">
                 {product.shortDescription}
               </p>
             )}
@@ -877,11 +878,11 @@ export default function ProductDetailClient({
             {colorOptions.length > 0 && (
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-[11px] tracking-[0.16em]">
+                  <p className="text-sm tracking-[0.16em]">
                     COLOR
                   </p>
 
-                  <span className="text-[11px] text-[#777]">
+                  <span className="text-sm text-[#777]">
                     {selectedColor || "Select a color"}
                   </span>
                 </div>
@@ -951,11 +952,11 @@ export default function ProductDetailClient({
             {sizeOptions.length > 0 && (
               <div className="mt-8">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-[11px] tracking-[0.16em]">
+                  <p className="text-sm tracking-[0.16em]">
                     SIZE
                   </p>
 
-                  <span className="text-[11px] text-[#777]">
+                  <span className="text-sm text-[#777]">
                     {selectedSize || "Select a size"}
                   </span>
                 </div>
@@ -978,7 +979,7 @@ export default function ProductDetailClient({
                         key={size.id}
                         onClick={() => changeSize(size)}
                         disabled={unavailable}
-                        className={`flex min-w-[58px] items-center justify-center border px-4 py-3 text-[11px] tracking-wide transition ${
+                        className={`flex min-w-[58px] items-center justify-center border px-4 py-3 text-sm tracking-wide transition ${
                           isSelected
                             ? "border-[#171717] bg-[#171717] text-white"
                             : "border-[#dedbd6] hover:border-[#171717]"
@@ -998,13 +999,12 @@ export default function ProductDetailClient({
 
             {/* VARIANT DETAILS */}
 
-            {selectedVariant && (
-              <div className="mt-5 flex flex-wrap items-center gap-3 text-[10px] tracking-wide text-[#888]">
-                {selectedVariant.sku && (
-                  <span>SKU: {selectedVariant.sku}</span>
+            {(product.sku || selectedVariant) && (
+              <div className="mt-5 flex flex-wrap items-center gap-3 text-sm tracking-wide text-[#888]">
+                {product.sku && (
+                  <span>SKU: <strong className="font-bold text-[#333]">{product.sku}</strong></span>
                 )}
-
-                <span>{selectedVariant.name}</span>
+                {selectedVariant?.name && <span>{selectedVariant.name}</span>}
               </div>
             )}
 
@@ -1019,7 +1019,7 @@ export default function ProductDetailClient({
                 }`}
               />
 
-              <span className="text-[11px] tracking-wide text-[#666]">
+              <span className="text-sm tracking-wide text-[#666]">
                 {availableStock > 0
                   ? availableStock <= 5
                     ? `Only ${availableStock} left in stock`
@@ -1031,7 +1031,7 @@ export default function ProductDetailClient({
             {/* QUANTITY */}
 
             <div className="mt-7">
-              <p className="mb-3 text-[10px] tracking-[0.16em]">
+              <p className="mb-3 text-sm tracking-[0.16em]">
                 QUANTITY
               </p>
 
@@ -1078,7 +1078,7 @@ export default function ProductDetailClient({
                   availableStock <= 0 ||
                   (hasVariants && !selectedVariant)
                 }
-                className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-[10px] tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-[55px] items-center justify-center gap-3 border border-[#171717] bg-white px-5 text-sm tracking-[0.16em] transition hover:bg-[#f5f4f1] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ShoppingBag size={17} strokeWidth={1.5} />
                 {addingToCart ? "ADDING..." : "ADD TO BAG"}
@@ -1091,7 +1091,7 @@ export default function ProductDetailClient({
                   availableStock <= 0 ||
                   (hasVariants && !selectedVariant)
                 }
-                className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-[10px] tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-[55px] items-center justify-center gap-3 bg-[#171717] px-5 text-sm tracking-[0.16em] text-white transition hover:bg-[#444] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 BUY NOW
                 <ArrowRight size={16} />
@@ -1114,11 +1114,11 @@ export default function ProductDetailClient({
                 <Truck size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     FREE SHIPPING
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Delivery options and timelines are confirmed at checkout.
                   </p>
                 </div>
@@ -1128,11 +1128,11 @@ export default function ProductDetailClient({
                 <ShieldCheck size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     SECURE CHECKOUT
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Your order information is protected.
                   </p>
                 </div>
@@ -1142,11 +1142,11 @@ export default function ProductDetailClient({
                 <RotateCcw size={20} strokeWidth={1.3} />
 
                 <div>
-                  <p className="text-[11px] tracking-[0.1em]">
+                  <p className="text-sm tracking-[0.1em]">
                     CUSTOMER SUPPORT
                   </p>
 
-                  <p className="mt-1 text-[11px] text-[#888]">
+                  <p className="mt-1 text-sm text-[#888]">
                     Our team is available to help with your order.
                   </p>
                 </div>
@@ -1162,7 +1162,7 @@ export default function ProductDetailClient({
             <div className="flex gap-8 border-b border-[#eae8e4]">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`pb-4 text-[11px] tracking-[0.15em] transition ${
+                className={`pb-4 text-sm tracking-[0.15em] transition ${
                   activeTab === "description"
                     ? "border-b border-[#171717] text-[#171717]"
                     : "text-[#999]"
@@ -1173,7 +1173,7 @@ export default function ProductDetailClient({
 
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`pb-4 text-[11px] tracking-[0.15em] transition ${
+                className={`pb-4 text-sm tracking-[0.15em] transition ${
                   activeTab === "reviews"
                     ? "border-b border-[#171717] text-[#171717]"
                     : "text-[#999]"
@@ -1189,22 +1189,22 @@ export default function ProductDetailClient({
                   Product Description
                 </h2>
 
-                <div className="mt-5 whitespace-pre-line text-[13px] leading-8 text-[#666]">
+                <div className="mt-5 whitespace-pre-line text-sm leading-8 text-[#666]">
                   {product.description ||
                     product.shortDescription ||
-                    "Product details will be updated soon."}
+                    buildDefaultProductDescription(product.name).replace(/^## /gm, "")}
                 </div>
 
                 {product.sku && (
-                  <p className="mt-8 text-[11px] text-[#999]">
-                    Product SKU: {product.sku}
+                  <p className="mt-8 text-sm text-[#999]">
+                    Product SKU: <strong className="font-bold text-[#333]">{product.sku}</strong>
                   </p>
                 )}
               </div>
             ) : (
               <div className="max-w-3xl py-9">
                 {product.reviews.length === 0 ? (
-                  <p className="text-[13px] text-[#888]">
+                  <p className="text-sm text-[#888]">
                     No reviews available for this product yet.
                   </p>
                 ) : (
@@ -1242,12 +1242,12 @@ export default function ProductDetailClient({
                         )}
 
                         {review.comment && (
-                          <p className="mt-2 text-[13px] leading-7 text-[#666]">
+                          <p className="mt-2 text-sm leading-7 text-[#666]">
                             {review.comment}
                           </p>
                         )}
 
-                        <p className="mt-3 text-[10px] tracking-wide text-[#999]">
+                        <p className="mt-3 text-sm tracking-wide text-[#999]">
                           {review.customer.firstName}{" "}
                           {review.customer.lastName || ""}
                         </p>
@@ -1305,7 +1305,7 @@ export default function ProductDetailClient({
             <ChevronRight size={30} />
           </button>
 
-          <div className="absolute bottom-5 text-[11px] tracking-[0.15em] text-white/70">
+          <div className="absolute bottom-5 text-sm tracking-[0.15em] text-white/70">
             {selectedImage + 1} / {productImages.length}
           </div>
         </div>

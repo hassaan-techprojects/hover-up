@@ -45,6 +45,20 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date(), lastActiveAt: new Date() },
+        });
+        await prisma.activityLog.create({
+          data: {
+            userId: user.id,
+            action: "USER_LOGIN",
+            entity: "USER",
+            entityId: user.id,
+            description: user.email + " signed in",
+          },
+        });
+
         return {
           id: user.id,
           name: user.name,
@@ -57,6 +71,11 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
+    maxAge: 90 * 24 * 60 * 60,
+  },
+
+  jwt: {
+    maxAge: 90 * 24 * 60 * 60,
   },
 
   callbacks: {

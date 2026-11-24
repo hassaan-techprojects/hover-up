@@ -324,6 +324,9 @@ export default function AddProductPage() {
 
     buildCombinations(0, {});
 
+    const baseSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
+    setSku(baseSku);
+
     const generated: Variation[] = combinations.map((combination) => {
       const combinationName = Object.values(combination)
         .map((term) => term.value)
@@ -332,11 +335,10 @@ export default function AddProductPage() {
       return {
         id: createId(),
         attributes: combination,
-        sku: sku
-          ? `${sku}-${Object.values(combination)
+        sku: `${baseSku}-${Object.values(combination)
               .map((term) => term.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
-              .join("-")}`
-          : "",
+              .join("-")}`,
+
         regularPrice,
         salePrice,
         stock,
@@ -425,7 +427,9 @@ export default function AddProductPage() {
       formData.append("name", name.trim());
       formData.append("slug", slug.trim());
       formData.append("description", description);
-      formData.append("sku", sku.trim());
+      const productSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
+      setSku(productSku);
+      formData.append("sku", productSku);
       formData.append("price", salePrice || regularPrice);
       formData.append("comparePrice", salePrice ? regularPrice : "");
       formData.append("stock", stock);
@@ -867,7 +871,7 @@ export default function AddProductPage() {
                 <input
                   value={sku}
                   onChange={(event) => setSku(event.target.value)}
-                  placeholder="Example: HU-TSHIRT-001"
+                  placeholder="Auto-generated SKU, e.g. HU-57T80"
                   className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
                 />
                 <p className="mt-2 text-xs text-gray-400">

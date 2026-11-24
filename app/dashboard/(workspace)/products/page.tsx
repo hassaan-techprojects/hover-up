@@ -143,7 +143,14 @@ export default function AllProductsPage() {
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    let active = true;
+    async function initializeProducts() {
+      // Backfill legacy products once so every catalogue item has a unique HU SKU.
+      await fetch("/api/dashboard/products/backfill-skus", { method: "POST" }).catch(() => undefined);
+      if (active) await fetchProducts();
+    }
+    void initializeProducts();
+    return () => { active = false; };
   }, [fetchProducts]);
 
   const filteredProducts = useMemo(() => {

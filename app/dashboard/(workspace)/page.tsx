@@ -1,192 +1,87 @@
-import {
-  IndianRupee,
-  ShoppingBag,
-  Package,
-  Users,
-  ArrowUpRight,
-  ArrowDownRight,
-  Plus,
-} from "lucide-react";
+import Link from "next/link";
+import { IndianRupee, ShoppingBag, Package, Users, ArrowUpRight, Clock3 } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "₹0",
-    change: "0%",
-    description: "Compared to previous period",
-    icon: IndianRupee,
-  },
-  {
-    title: "Total Orders",
-    value: "0",
-    change: "0%",
-    description: "Compared to previous period",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Total Products",
-    value: "0",
-    change: "0%",
-    description: "Products in your catalogue",
-    icon: Package,
-  },
-  {
-    title: "Total Customers",
-    value: "0",
-    change: "0%",
-    description: "Registered customers",
-    icon: Users,
-  },
-];
+function money(value: unknown) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value ?? 0));
+}
 
-export default function DashboardPage() {
+function dateLabel(value: Date) {
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(value);
+}
+
+export default async function DashboardPage() {
+  const [products, orders, customers, revenue, recentOrders, recentActivity] = await Promise.all([
+    prisma.product.count(),
+    prisma.order.count(),
+    prisma.customer.count(),
+    prisma.order.aggregate({ where: { paymentStatus: "PAID" }, _sum: { totalAmount: true } }),
+    prisma.order.findMany({ take: 5, orderBy: { createdAt: "desc" }, include: { customer: { select: { firstName: true, lastName: true, email: true } } } }),
+    prisma.activityLog.findMany({ take: 5, orderBy: { createdAt: "desc" }, include: { user: { select: { name: true, email: true } } } }),
+  ]);
+
+  const stats = [
+    { title: "Paid revenue", value: money(revenue._sum.totalAmount), description: "Confirmed payments", icon: IndianRupee },
+    { title: "Total orders", value: orders.toLocaleString("en-IN"), description: "All recorded orders", icon: ShoppingBag },
+    { title: "Total products", value: products.toLocaleString("en-IN"), description: "Products in your catalogue", icon: Package },
+    { title: "Total customers", value: customers.toLocaleString("en-IN"), description: "Registered customers", icon: Users },
+  ];
+
   return (
     <div className="space-y-7">
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <p className="text-[10px] tracking-[0.2em] text-[#a18c75]">
-            YOUR STORE AT A GLANCE
-          </p>
-          <h2 className="mt-2 font-[var(--font-playfair)] text-3xl text-[#111111] sm:text-4xl">
-            Welcome back.
-          </h2>
-          <p className="mt-2 text-sm text-[#817b72]">
-            Here&apos;s what&apos;s happening with your store today.
-          </p>
+          <p className="text-xs font-semibold tracking-[0.2em] text-[#a18c75]">YOUR STORE AT A GLANCE</p>
+          <h2 className="mt-2 font-[var(--font-playfair)] text-3xl text-[#111111] sm:text-4xl">Welcome back.</h2>
+          <p className="mt-2 text-base text-[#817b72]">Live store totals from your database.</p>
         </div>
-
-        <button className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#111111] px-4 text-xs font-medium text-white transition hover:bg-[#b99a76] hover:text-[#111111]">
-          <Plus size={15} />
-          Quick action
-        </button>
+        <Link href="/dashboard/products/new" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#111111] px-5 text-sm font-semibold text-white transition hover:bg-[#b99a76] hover:text-[#111111]">
+          <Package size={16} /> Add product
+        </Link>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
-
-          return (
-            <div
-              key={stat.title}
-              className="rounded-2xl border border-[#ebe6de] bg-white p-5 transition duration-200 hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-[#817b72]">{stat.title}</p>
-                <div className="rounded-xl bg-[#f5f1eb] p-2.5 text-[#92785e]">
-                  <Icon size={18} strokeWidth={1.7} />
-                </div>
-              </div>
-
-              <p className="mt-5 text-2xl font-semibold tracking-tight text-[#111111]">
-                {stat.value}
-              </p>
-
-              <div className="mt-3 flex items-center gap-1.5">
-                <ArrowUpRight size={13} className="text-[#a18c75]" />
-                <span className="text-[10px] text-[#a18c75]">
-                  {stat.change}
-                </span>
-                <span className="text-[10px] text-[#aaa39a]">
-                  {stat.description}
-                </span>
-              </div>
+          return <article key={stat.title} className="rounded-2xl border border-[#ebe6de] bg-white p-5 transition hover:-translate-y-1 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-[#817b72]">{stat.title}</p>
+              <div className="rounded-xl bg-[#f5f1eb] p-2.5 text-[#92785e]"><Icon size={19} strokeWidth={1.7} /></div>
             </div>
-          );
+            <p className="mt-5 text-3xl font-semibold tracking-tight text-[#111111]">{stat.value}</p>
+            <p className="mt-2 text-xs text-[#999187]">{stat.description}</p>
+          </article>;
         })}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+      <section className="grid gap-5 xl:grid-cols-2">
         <div className="rounded-2xl border border-[#ebe6de] bg-white p-5 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-semibold text-[#111111]">
-                Sales overview
-              </h3>
-              <p className="mt-1 text-xs text-[#999187]">
-                Your store revenue will appear here.
-              </p>
-            </div>
-
-            <select className="rounded-lg border border-[#eae6df] bg-white px-3 py-2 text-xs text-[#55514b] outline-none">
-              <option>Last 30 days</option>
-              <option>Last 7 days</option>
-              <option>Last 90 days</option>
-              <option>Last 6 months</option>
-              <option>Last year</option>
-            </select>
+          <div className="flex items-center justify-between gap-3">
+            <div><h3 className="text-lg font-semibold text-[#111111]">Recent orders</h3><p className="mt-1 text-sm text-[#999187]">The five latest customer orders.</p></div>
+            <Link href="/dashboard/orders" className="text-sm font-semibold text-[#8b7054] underline">View all</Link>
           </div>
-
-          <div className="mt-7 flex h-[220px] items-center justify-center rounded-xl border border-dashed border-[#e8e1d7] bg-[#fcfbf9]">
-            <div className="text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#f1ece4] text-[#9b846a]">
-                <IndianRupee size={20} />
-              </div>
-              <p className="mt-3 text-xs font-medium text-[#625b52]">
-                Sales chart will appear here
-              </p>
-              <p className="mt-1 text-[10px] text-[#aaa39a]">
-                Connect your store data to view sales performance.
-              </p>
-            </div>
+          <div className="mt-5 divide-y divide-[#eee9e2]">
+            {recentOrders.length ? recentOrders.map(order => <div key={order.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div><p className="text-sm font-semibold text-[#222]">{order.orderNumber}</p><p className="mt-1 text-xs text-[#888]">{[order.customer.firstName, order.customer.lastName].filter(Boolean).join(" ") || order.customer.email} · {dateLabel(order.createdAt)}</p></div>
+              <div className="text-right"><p className="text-sm font-semibold">{money(order.totalAmount)}</p><p className="mt-1 text-xs text-[#8b7054]">{order.status.replaceAll("_", " ")}</p></div>
+            </div>) : <p className="py-8 text-center text-sm text-[#888]">No orders have been recorded yet.</p>}
           </div>
         </div>
-
         <div className="rounded-2xl border border-[#ebe6de] bg-white p-5 sm:p-6">
-          <h3 className="text-sm font-semibold text-[#111111]">
-            Recent activity
-          </h3>
-          <p className="mt-1 text-xs text-[#999187]">
-            The latest updates from your store.
-          </p>
-
-          <div className="flex h-[220px] items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#f1ece4] text-[#9b846a]">
-                <ShoppingBag size={19} />
-              </div>
-              <p className="mt-3 text-xs font-medium text-[#625b52]">
-                No recent activity
-              </p>
-              <p className="mt-1 text-[10px] text-[#aaa39a]">
-                New orders and updates will show here.
-              </p>
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <div><h3 className="text-lg font-semibold text-[#111111]">Recent activity</h3><p className="mt-1 text-sm text-[#999187]">Latest recorded changes in your store.</p></div>
+            <Link href="/dashboard/activity-logs" className="text-sm font-semibold text-[#8b7054] underline">View logs</Link>
+          </div>
+          <div className="mt-5 divide-y divide-[#eee9e2]">
+            {recentActivity.length ? recentActivity.map(entry => <div key={entry.id} className="flex gap-3 py-3">
+              <Clock3 size={17} className="mt-0.5 shrink-0 text-[#a18c75]" />
+              <div className="min-w-0"><p className="text-sm font-medium text-[#333]">{entry.description || entry.action.replaceAll("_", " ")}</p><p className="mt-1 text-xs text-[#999]">{entry.user?.name || entry.user?.email || "System"} · {dateLabel(entry.createdAt)}</p></div>
+            </div>) : <p className="py-8 text-center text-sm text-[#888]">No activity has been recorded yet.</p>}
           </div>
         </div>
       </section>
-
-      <section className="rounded-2xl border border-[#ebe6de] bg-white p-5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-semibold text-[#111111]">
-              Store setup
-            </h3>
-            <p className="mt-1 text-xs text-[#999187]">
-              Your dashboard is ready for the next steps.
-            </p>
-          </div>
-          <Package size={20} className="text-[#a18c75]" />
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          {[
-            "Add your first product",
-            "Create product categories",
-            "Upload your homepage banner",
-          ].map((item, index) => (
-            <div
-              key={item}
-              className="rounded-xl bg-[#faf8f5] p-4"
-            >
-              <span className="text-[10px] tracking-[0.15em] text-[#a18c75]">
-                STEP 0{index + 1}
-              </span>
-              <p className="mt-2 text-xs font-medium text-[#33302c]">
-                {item}
-              </p>
-            </div>
-          ))}
-        </div>
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[{ label: "Manage catalogue", href: "/dashboard/products" }, { label: "Review inventory", href: "/dashboard/inventory" }, { label: "Open analytics", href: "/dashboard/analytics" }].map(item => <Link key={item.href} href={item.href} className="flex items-center justify-between rounded-xl border border-[#ebe6de] bg-white p-4 text-sm font-semibold text-[#333] transition hover:border-[#b99a76]">{item.label}<ArrowUpRight size={17} className="text-[#a18c75]" /></Link>)}
       </section>
     </div>
   );

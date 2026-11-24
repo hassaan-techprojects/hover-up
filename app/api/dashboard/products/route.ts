@@ -216,7 +216,15 @@ export async function POST(request: NextRequest) {
     const slug = String(formData.get("slug") || "").trim();
     const submittedDescription = String(formData.get("description") || "").trim();
     const description = submittedDescription || buildDefaultProductDescription(name);
-    const sku = String(formData.get("sku") || "").trim();
+    let sku = String(formData.get("sku") || "").trim();
+    if (!sku) {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const candidate = `HU-${parseInt(randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
+        const existing = await prisma.product.findUnique({ where: { sku: candidate }, select: { id: true } });
+        if (!existing) { sku = candidate; break; }
+      }
+      if (!sku) throw new Error("Unable to generate a unique product SKU. Please try again.");
+    }
 
     const regularPrice = parseAmount(
       String(formData.get("comparePrice") || formData.get("price") || ""),
@@ -619,6 +627,17 @@ export async function POST(request: NextRequest) {
           },
         });
       }
+
+      await tx.activityLog.create({
+        data: {
+          userId: auth.user.id,
+          action: "PRODUCT_CREATED",
+          entity: "PRODUCT",
+          entityId: createdProduct.id,
+          description: "Created product " + createdProduct.name,
+          metadata: { sku: createdProduct.sku, status },
+        },
+      });
 
       return createdProduct;
     });
