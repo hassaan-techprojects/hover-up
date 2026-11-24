@@ -86,7 +86,6 @@ export default function AccountOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -107,7 +106,6 @@ export default function AccountOrdersPage() {
           setOrders(data.orders || []);
           setCustomerName([data.customer?.firstName, data.customer?.lastName].filter(Boolean).join(" ") || "Customer");
           setCustomerEmail(data.customer?.email || "");
-          setCustomerPhone(data.customer?.phone || "");
         }
       })
       .catch(() => {})
