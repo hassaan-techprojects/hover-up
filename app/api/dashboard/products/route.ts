@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
     const name = String(formData.get("name") || "").trim();
     const slug = String(formData.get("slug") || "").trim();
     const submittedDescription = String(formData.get("description") || "").trim();
-    const description = submittedDescription || buildDefaultProductDescription(name);
+    const description = submittedDescription || buildDefaultProductDescription();
     let sku = String(formData.get("sku") || "").trim();
     if (!sku) {
       for (let attempt = 0; attempt < 8; attempt += 1) {
