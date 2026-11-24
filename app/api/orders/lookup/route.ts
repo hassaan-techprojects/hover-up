@@ -11,7 +11,8 @@ export async function POST(request: Request) {
       phone?: string;
     };
 
-    const orderNumber = body.orderNumber?.trim().toUpperCase() || "";
+    const orderReference = body.orderNumber?.trim() || "";
+    const orderNumber = orderReference.toUpperCase();
     const email = body.email?.trim().toLowerCase() || "";
     const phone = body.phone?.trim() || "";
 
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
     } as const;
 
     if (orderNumber) {
-      const order = await prisma.order.findUnique({
-        where: { orderNumber },
+      const order = await prisma.order.findFirst({
+        where: { OR: [{ orderNumber }, { id: orderReference }] },
         include,
       });
 
