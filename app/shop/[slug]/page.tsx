@@ -1090,7 +1090,7 @@ function ProductDetailContent({
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star
                       key={index}
-                      size={20}
+                      size={26}
                       fill={
                         index < Math.round(product.averageRating)
                           ? "#D4AF37"
@@ -1514,10 +1514,10 @@ function ProductDetailContent({
             <div className="flex gap-8 border-b border-[#eae8e4]">
               <button
                 onClick={() => setActiveTab("description")}
-                className={`pb-4 text-sm tracking-[0.15em] transition ${
+                className={`pb-4 text-base font-extrabold tracking-[0.1em] text-black transition ${
                   activeTab === "description"
-                    ? "border-b border-[#171717] text-[#171717]"
-                    : "text-[#999]"
+                    ? "border-b-2 border-black text-black"
+                    : "text-black"
                 }`}
               >
                 DESCRIPTION
@@ -1525,17 +1525,17 @@ function ProductDetailContent({
 
               <button
                 onClick={() => setActiveTab("reviews")}
-                className={`pb-4 text-sm tracking-[0.15em] transition ${
+                className={`pb-4 text-base font-extrabold tracking-[0.1em] text-black transition ${
                   activeTab === "reviews"
-                    ? "border-b border-[#171717] text-[#171717]"
-                    : "text-[#999]"
+                    ? "border-b-2 border-black text-black"
+                    : "text-black"
                 }`}
               >
                 REVIEWS ({product.reviewCount})
               </button>
               <button
                 onClick={() => setActiveTab("shipping")}
-                className={`pb-4 text-sm tracking-[0.15em] transition ${activeTab === "shipping" ? "border-b border-[#171717] text-[#171717]" : "text-[#999]"}`}
+                className={`pb-4 text-base font-extrabold tracking-[0.1em] text-black transition ${activeTab === "shipping" ? "border-b-2 border-black text-black" : "text-black"}`}
               >
                 SHIPPING & RETURNS
               </button>
@@ -1576,7 +1576,7 @@ function ProductDetailContent({
                             (_, index) => (
                               <Star
                                 key={index}
-                                size={18}
+                                size={24}
                                 fill={
                                   index < review.rating
                                     ? "#D4AF37"
