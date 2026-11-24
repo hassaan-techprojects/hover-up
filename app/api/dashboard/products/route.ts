@@ -8,7 +8,7 @@ import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/prisma";
 import { getDashboardAdmin } from "@/lib/dashboard-admin";
-import { buildDefaultProductDescription } from "@/lib/product-description";
+import { buildDefaultProductDescription } from "../../../../src/lib/product-description";
 import {
   s3,
   storageBucket,

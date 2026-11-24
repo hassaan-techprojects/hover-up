@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { buildDefaultProductDescription } from "@/lib/product-description";
+import { buildDefaultProductDescription } from "../../../../../src/lib/product-description";
 import {
   ArrowLeft,
   Save,
