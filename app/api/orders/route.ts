@@ -453,7 +453,7 @@ export async function POST(request: Request) {
           metadata: {
             orderNumber: createdOrder.orderNumber,
             customerId: savedCustomer.id,
-            paymentMethod: "COD",
+            paymentMethod: "PAY_LATER",
             hasCustomerAccount: Boolean(savedCustomer.userId),
             customerAccountUserId: savedCustomer.userId,
             status: "PENDING",
@@ -463,7 +463,7 @@ export async function POST(request: Request) {
       return createdOrder;
     });
 
-    return NextResponse.json({ order, payment: { provider: "COD" } }, { status: 201 });
+    return NextResponse.json({ order, payment: { provider: "PAY_LATER", status: "PENDING" } }, { status: 201 });
   } catch (error) {
     console.error("Create order API error:", error);
     return NextResponse.json(
