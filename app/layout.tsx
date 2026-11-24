@@ -15,6 +15,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hoverup.in"),
   title: {
     default: "Hover Up | Discover Your Style. Make Your Statement.",
     template: "%s | Hover Up",
@@ -64,9 +65,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Hover Up",
+    url: "https://hoverup.in",
+    sameAs: ["https://www.instagram.com/hoverup.in/"],
+    telephone: "+91-9363254591",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Masjid St, Noorullahpet, Muslimpur, Basheerabad",
+      addressLocality: "Vaniyambadi",
+      addressRegion: "Tamil Nadu",
+      postalCode: "635751",
+      addressCountry: "IN",
+    },
+  };
+
   return (
     <html lang="en-IN">
       <body className={`${manrope.variable} ${playfair.variable} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
         {children}
       </body>
     </html>
