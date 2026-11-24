@@ -443,7 +443,7 @@ export async function POST(request: Request) {
           },
           payment: {
             create: {
-              method: "COD",
+              method: "UPI",
               status: "PENDING",
               amount: subtotal,
               gateway: null,
