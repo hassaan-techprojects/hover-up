@@ -526,7 +526,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-[1500px]">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-extrabold tracking-[0.3em] text-[#a18c75]">
+              <p className="text-xs font-extrabold tracking-[0.3em] text-[#a18c75]">
                 SEE IT IN ACTION
               </p>
 
