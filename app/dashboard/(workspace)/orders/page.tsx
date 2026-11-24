@@ -58,11 +58,13 @@ export default function DashboardOrdersPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [canManage, setCanManage] = useState(false);
 
-  const loadOrders = useCallback(async () => {
+  const loadOrders = useCallback(async (search = "") => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/dashboard/orders", { cache: "no-store" });
+      const params = new URLSearchParams();
+      if (search.trim()) params.set("search", search.trim());
+      const response = await fetch(`/api/dashboard/orders${params.size ? `?${params.toString()}` : ""}`, { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to load orders.");
       setOrders(data.orders ?? []);
@@ -74,7 +76,7 @@ export default function DashboardOrdersPage() {
     }
   }, []);
 
-  useEffect(() => { void loadOrders(); }, [loadOrders]);
+  useEffect(() => { void loadOrders(query); }, [loadOrders, query]);
 
   async function updateStatus(orderId: string, status: string) {
     setUpdating(orderId);
@@ -122,7 +124,7 @@ export default function DashboardOrdersPage() {
           <h1 className="mt-2 text-3xl font-semibold text-[#111] sm:text-4xl">Orders</h1>
           <p className="mt-2 text-sm text-[#817b72]">Review customer orders, artwork, delivery details and update fulfilment status.</p>
         </div>
-        <button type="button" onClick={() => void loadOrders()} disabled={loading} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#e6dfd5] bg-white px-4 text-xs font-medium text-[#51483f] transition hover:border-[#b99a76] disabled:opacity-50">
+        <button type="button" onClick={() => void loadOrders(query)} disabled={loading} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#e6dfd5] bg-white px-4 text-xs font-medium text-[#51483f] transition hover:border-[#b99a76] disabled:opacity-50">
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh orders
         </button>
       </section>
