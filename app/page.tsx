@@ -275,7 +275,7 @@ export default function HomePage() {
 
       {/* Homepage Banner Slider */}
       {!bannersLoading && banners.length > 0 && (
-        <section className="relative flex min-h-[190px] w-full items-center overflow-hidden bg-[#f8f6f2] py-2 sm:min-h-[240px] md:py-3">
+        <section className="relative flex min-h-[240px] w-full items-center overflow-hidden bg-[#f8f6f2] py-4 sm:min-h-[320px] md:min-h-[420px] md:py-5 lg:min-h-[460px]">
           <div
             className="flex transition-transform duration-700 ease-in-out will-change-transform"
             style={{
@@ -283,11 +283,11 @@ export default function HomePage() {
             }}
           >
             {banners.map((banner, index) => (
-              <div key={banner.id} className="w-full shrink-0">
+              <div key={banner.id} className="flex w-full shrink-0 items-center justify-center">
                 <img
                   src={banner.image}
                   alt={`Hover Up promotional banner ${index + 1}`}
-                  className="block h-auto w-full object-contain"
+                  className="block h-auto max-h-[460px] w-full object-contain object-center"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
@@ -334,8 +334,8 @@ export default function HomePage() {
       </section>
 
       {/* Shop by Category */}
-      <section className="mx-auto max-w-[1500px] overflow-hidden py-16 md:py-20">
-        <div className="mb-10 flex items-end justify-between px-6 md:px-10">
+      <section className="mx-auto max-w-[1500px] overflow-hidden py-8 md:py-10">
+        <div className="mb-6 flex items-end justify-between px-6 md:px-10">
           <div>
             <p className="text-xs font-extrabold tracking-[0.25em] text-[#a18c75]">
               EXPLORE
@@ -398,7 +398,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="bg-white px-6 py-12 md:bg-[#f8f6f2] md:px-10 md:py-20">
+      <section className="bg-white px-6 py-8 md:bg-[#f8f6f2] md:px-10 md:py-10">
         <div className="mx-auto max-w-[1500px]">
           <p className="text-xs font-extrabold tracking-[0.25em] text-[#a18c75]">
             THE COLLECTION
@@ -422,17 +422,21 @@ export default function HomePage() {
               {Array.from({ length: 4 }).map((_, index) => <div key={index} className="aspect-[3/4] animate-pulse bg-[#f1efeb]" />)}
             </div>
           ) : products.length > 0 ? (
-            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
+            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
               {products.slice(0, 8).map((product) => {
                 const image = product.images?.find((item) => item.isPrimary) || product.images?.[0];
                 return (
-                  <article key={product.id} className="min-w-0">
-                    <Link href={`/shop/${product.slug}`} className="block aspect-[3/4] overflow-hidden">
-                      {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-xs text-[#999]">NO IMAGE</div>}
-                    </Link>
-                    <Link href={`/shop/${product.slug}`}><h3 className="mt-4 line-clamp-2 text-lg font-bold leading-7 text-[#171717] transition-colors hover:text-[#987b5c] sm:text-xl">{product.name}</h3></Link>
-                    <p className="mt-2 text-lg font-semibold text-[#171717]">₹1,299</p>
-                    <p className="mt-1 text-xs font-medium text-[#82766a]">
+                  <article key={product.id} className="group min-w-0">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-[#f8f6f2]">
+                      <Link href={`/shop/${product.slug}`} aria-label={`View ${product.name}`} className="absolute inset-0 flex items-center justify-center">
+                        {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-1 transition-transform duration-500 group-hover:scale-[1.04]" /> : <div className="flex h-full items-center justify-center text-base text-[#777]">NO IMAGE</div>}
+                      </Link>
+                      <span className="absolute left-3 top-3 z-10 rounded-sm bg-black px-3 py-2 text-sm font-extrabold tracking-wide text-white">PACK OF 2</span>
+                      <Link href={`/shop/${product.slug}`} className="absolute inset-x-3 bottom-3 flex min-h-12 items-center justify-center rounded-sm bg-black px-4 text-base font-extrabold tracking-wider text-white opacity-100 transition-all duration-300 hover:bg-[#b99a76] hover:text-black sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100">VIEW PRODUCT</Link>
+                    </div>
+                    <Link href={`/shop/${product.slug}`}><h3 className="mt-4 line-clamp-2 text-lg font-extrabold leading-7 text-[#171717] transition-colors hover:text-[#987b5c] sm:text-xl">{product.name}</h3></Link>
+                    <p className="mt-2 text-xl font-extrabold text-[#171717]">₹1,399</p>
+                    <p className="mt-1 text-sm font-semibold text-[#625b53]">
                       {(() => {
                         const colors = [...new Set((product.attributes || []).filter((item) => item.attributeValue.termType === "COLOR").map((item) => item.attributeValue.value))];
                         return colors.length ? `Colours: ${colors.join(", ")}` : "2-piece pack";
