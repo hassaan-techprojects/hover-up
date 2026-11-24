@@ -45,6 +45,20 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date(), lastActiveAt: new Date() },
+        });
+        await prisma.activityLog.create({
+          data: {
+            userId: user.id,
+            action: "USER_LOGIN",
+            entity: "USER",
+            entityId: user.id,
+            description: user.email + " signed in",
+          },
+        });
+
         return {
           id: user.id,
           name: user.name,
