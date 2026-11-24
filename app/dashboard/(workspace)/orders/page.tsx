@@ -51,6 +51,18 @@ function statusClass(status: string) {
   return "bg-[#f4f1ec] text-[#81766a]";
 }
 
+function displaySizeLabel(value: string) {
+  const labels: Record<string, string> = {
+    "41": "S",
+    "43": "M",
+    "45": "L",
+    "47": "XL",
+    "49": "2XL",
+    "XXL": "2XL",
+  };
+  return labels[value.toUpperCase()] ?? value;
+}
+
 export default function DashboardOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
