@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     const search = new URL(request.url).searchParams.get("search")?.trim() || "";
-    const phoneDigits = search.replace(/\\D/g, "");
+    const phoneDigits = search.replace(/\D/g, "");
     const orders = await prisma.order.findMany({
       ...(search ? {
         where: {
