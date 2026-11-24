@@ -142,15 +142,20 @@ export default function DashboardOrdersPage() {
     const matchesFilter = filter === "ALL" || order.status === filter;
     const search = query.trim().toLowerCase();
     const address = order.shippingAddress;
-    const matchesQuery = !search || [
+    const phoneSearch = search.replace(/\\D/g, "");
+    const searchable = [
+      order.id,
       order.orderNumber,
       order.customer.firstName,
       order.customer.lastName || "",
       order.customer.email,
       order.customer.phone || "",
-      order.customer.id,
       String(address.city || ""),
-    ].join(" ").toLowerCase().includes(search);
+      String(address.email || ""),
+      String(address.phone || ""),
+    ].join(" ").toLowerCase();
+    const phoneValues = [order.customer.phone || "", String(address.phone || "")].map(value => value.replace(/\\D/g, ""));
+    const matchesQuery = !search || searchable.includes(search) || (phoneSearch.length >= 5 && phoneValues.some(value => value.includes(phoneSearch)));
     return matchesFilter && matchesQuery;
   }), [orders, filter, query]);
 
