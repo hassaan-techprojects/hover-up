@@ -292,7 +292,7 @@ export default function HomePage() {
                 <img
                   src={banner.image}
                   alt={`Hover Up promotional banner ${index + 1}`}
-                  className="block h-[320px] w-full object-cover md:h-auto md:object-contain"
+                  className="block h-[420px] w-full object-cover md:h-auto md:object-contain"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
@@ -325,7 +325,7 @@ export default function HomePage() {
       )}
 
       {/* Homepage Hero */}
-      <section className="flex items-center justify-center bg-white px-6 py-7 md:bg-[#f8f6f2] md:py-12">
+      <section className="flex items-center justify-center bg-white px-6 py-3 md:bg-[#f8f6f2] md:py-12">
         <Link
           href="/shop"
           className="group inline-flex items-center gap-3 bg-black px-9 py-4 text-xs font-extrabold tracking-widest text-white transition-all duration-300 hover:bg-[#b99a76]"
@@ -403,7 +403,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="bg-[#f8f6f2] px-6 py-20 md:px-10">
+      <section className="bg-white px-6 py-12 md:bg-[#f8f6f2] md:px-10 md:py-20">
         <div className="mx-auto max-w-[1500px]">
           <p className="text-[10px] font-extrabold tracking-[0.25em] text-[#a18c75]">
             THE COLLECTION
