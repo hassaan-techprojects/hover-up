@@ -18,7 +18,7 @@ function validate(body: Record<string, unknown>) {
   if (!name) return { error: "Enter a name for this stock sheet." } as const;
   if (!Number.isInteger(packSize) || packSize < 2 || packSize > 100) return { error: "Pack size must be between 2 and 100." } as const;
   const amountText = body.totalAmount == null || body.totalAmount === "" ? null : String(body.totalAmount);
-  if (amountText !== null && (!/^\\d{1,10}(\\.\\d{1,2})?$/.test(amountText) || Number(amountText) < 0)) return { error: "Enter a valid total amount." } as const;
+  if (amountText !== null && (!/^\d{1,10}(\.\d{1,2})?$/.test(amountText) || Number(amountText) < 0)) return { error: "Enter a valid total amount." } as const;
   const notes = typeof body.notes === "string" ? body.notes.slice(0, 1000) : null;
   return { value: { name, packSize, sizes, totalAmount: amountText, notes } } as const;
 }
