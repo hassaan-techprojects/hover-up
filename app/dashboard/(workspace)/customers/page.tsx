@@ -46,7 +46,8 @@ export default function DashboardCustomersPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState<string | null>(null);\n  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadCustomers = useCallback(async (search = "") => {
     setLoading(true);
