@@ -49,6 +49,7 @@ function AnnouncementContent() {
 
 export default function StorefrontHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountSectionOpen, setAccountSectionOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
@@ -401,33 +402,29 @@ export default function StorefrontHeader() {
               </div>
 
               {/* Customer Links */}
-              <div className="mt-9 space-y-6">
-                <Link
-                  href="/account"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 text-sm font-bold text-black transition-colors hover:text-[#b99a76]"
-                >
-                  <UserRound size={19} strokeWidth={2} />
-                  My Account
-                </Link>
-
-                <Link
-                  href="/account/orders"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 text-base font-bold text-black transition-colors hover:text-[#b99a76]"
-                >
-                  <ShoppingBag size={19} strokeWidth={2} />
-                  My Orders
-                </Link>
-
-                <Link
-                  href="/account/track-order"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 text-base font-bold text-black transition-colors hover:text-[#b99a76]"
-                >
-                  <Search size={19} strokeWidth={2} />
-                  Track Order
-                </Link>
+              <div className="mt-9 space-y-5">
+                <div className="border-b border-[#e8e3dc] pb-5">
+                  <button
+                    type="button"
+                    onClick={() => setAccountSectionOpen(open => !open)}
+                    aria-expanded={accountSectionOpen}
+                    aria-controls="customer-account-submenu"
+                    className="flex w-full items-center justify-between text-base font-extrabold text-black transition-colors hover:text-[#b99a76]"
+                  >
+                    <span className="flex items-center gap-3">
+                      <UserRound size={20} strokeWidth={2} />
+                      Account
+                    </span>
+                    <ChevronDown size={18} className={`transition-transform duration-200 ${accountSectionOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {accountSectionOpen && (
+                    <div id="customer-account-submenu" className="mt-4 ml-8 space-y-4 border-l-2 border-[#d8c5ae] pl-4">
+                      <Link href="/account" onClick={closeMenu} className="block py-1 text-base font-bold text-black transition-colors hover:text-[#b99a76]">Account</Link>
+                      <Link href="/account/track-order" onClick={closeMenu} className="block py-1 text-base font-bold text-black transition-colors hover:text-[#b99a76]">Order Tracker</Link>
+                      <Link href="/account/orders" onClick={closeMenu} className="block py-1 text-base font-bold text-black transition-colors hover:text-[#b99a76]">My Orders</Link>
+                    </div>
+                  )}
+                </div>
 
                 <Link
                   href="/wishlist"
