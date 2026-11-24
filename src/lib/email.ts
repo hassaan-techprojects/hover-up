@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 
 function getTransporter() {
   const user = process.env.GMAIL_USER;
-  const appPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\\s/g, "");
+  const appPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
   if (!user || !appPassword) {
     throw new Error("Gmail SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD.");
   }
