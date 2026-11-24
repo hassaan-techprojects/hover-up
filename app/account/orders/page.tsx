@@ -33,6 +33,18 @@ function pill(value: string) {
   return "bg-[#f4f1ec] text-[#81766a]";
 }
 
+function displaySizeLabel(value: string) {
+  const labels: Record<string, string> = {
+    "41": "S",
+    "43": "M",
+    "45": "L",
+    "47": "XL",
+    "49": "2XL",
+    "XXL": "2XL",
+  };
+  return labels[value.toUpperCase()] ?? value;
+}
+
 export default function AccountOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customerName, setCustomerName] = useState("");
@@ -130,7 +142,7 @@ export default function AccountOrdersPage() {
                           <div className="flex justify-between gap-3"><p className="text-xs font-semibold">{item.productName}</p><p className="text-xs font-semibold">{money(item.totalPrice)}</p></div>
                           <p className="mt-1 text-[10px] text-[#999]">Quantity: {item.quantity}</p>
                           {custom.packSize != null ? <p className="mt-2 text-[10px] text-[#8b7054]">Pack of {String(custom.packSize)}</p> : null}
-                          {sizes.length>0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map(size=><span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{size.size}: {size.quantity}</span>)}</div>}
+                          {sizes.length>0 && <div className="mt-2 flex flex-wrap gap-1.5">{sizes.map(size=><span key={size.size} className="rounded-md bg-[#f5f1eb] px-2 py-1 text-[10px]">{displaySizeLabel(size.size)}: {size.quantity}</span>)}</div>}
                           {custom.textOnlyDesign === true && <p className="mt-2 text-[10px] font-semibold text-[#8b7054]">Text-only design requested</p>}
                           <div className="mt-3 flex flex-wrap gap-3">
                             {typeof custom.frontImageUrl==="string" && <a href={custom.frontImageUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#8b7054] underline">Front logo</a>}
