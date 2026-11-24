@@ -140,7 +140,7 @@ const BUY_NOW_STORAGE_KEY = "hover-up-buy-now";
 const WISHLIST_STORAGE_KEY = "hover-up-wishlist";
 
 const PACK_PRICES: Record<number, number> = {
-  2: 1399,
+  2: 1299,
   5: 3250,
   10: 6250,
   15: 9100,
@@ -1090,17 +1090,13 @@ function ProductDetailContent({
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Star
                       key={index}
-                      size={13}
+                      size={20}
                       fill={
                         index < Math.round(product.averageRating)
-                          ? "#171717"
+                          ? "#D4AF37"
                           : "none"
                       }
-                      className={
-                        index < Math.round(product.averageRating)
-                          ? "text-[#171717]"
-                          : "text-[#ccc]"
-                      }
+                      className="text-[#D4AF37]"
                     />
                   ))}
                 </div>
@@ -1552,7 +1548,7 @@ function ProductDetailContent({
                 </h2>
 
                 <div className="mt-5">
-                  {renderProductDescription(product.description || product.shortDescription || buildDefaultProductDescription(product.name))}
+                  {renderProductDescription(buildDefaultProductDescription())}
                 </div>
 
                 {product.sku && (
@@ -1580,17 +1576,13 @@ function ProductDetailContent({
                             (_, index) => (
                               <Star
                                 key={index}
-                                size={13}
+                                size={18}
                                 fill={
                                   index < review.rating
-                                    ? "#171717"
+                                    ? "#D4AF37"
                                     : "none"
                                 }
-                                className={
-                                  index < review.rating
-                                    ? "text-[#171717]"
-                                    : "text-[#ccc]"
-                                }
+                                className="text-[#D4AF37]"
                               />
                             )
                           )}
