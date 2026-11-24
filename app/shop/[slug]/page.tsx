@@ -1282,14 +1282,7 @@ function ProductDetailContent({
               <div className="space-y-2">
                 {sizeOptions.map((size) => {
                   const sizeQuantity = sizeQuantities[size.value] ?? 0;
-                  const matches = matchingVariants(selectedColor, size.value);
-                  const variant = matches[0] ?? null;
-                  const stock = variant ? getAvailableStock(variant) : Number.POSITIVE_INFINITY;
-                  const unavailable = false;
                   const atPackLimit = selectedSizeTotal >= selectedPack;
-                  // Let customers configure the full pack even when inventory is low.
-                  // The add-to-cart validation below remains the final stock guard.
-                  const atStockLimit = false;
 
                   return (
                     <div key={size.id} className="flex items-center justify-between border border-[#e7e4df] px-4 py-3">
@@ -1326,7 +1319,7 @@ function ProductDetailContent({
                               );
                               const currentSizeQuantity = current[size.value] ?? 0;
 
-                              if (currentTotal >= selectedPack || unavailable) {
+                              if (currentTotal >= selectedPack) {
                                 return current;
                               }
 
@@ -1337,7 +1330,7 @@ function ProductDetailContent({
                             });
                             setCartMessage("");
                           }}
-                          disabled={unavailable || atPackLimit || atStockLimit}
+                          disabled={atPackLimit}
                           className="flex h-full w-9 items-center justify-center disabled:opacity-30"
                           aria-label={`Increase ${size.value} quantity`}
                         >
