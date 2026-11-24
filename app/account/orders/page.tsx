@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Package, Search, Truck } from "lucide-react";
+import { ArrowRight, Package, Search } from "lucide-react";
 import StorefrontHeader from "@/components/storefront/storefront-header";
 import StorefrontFooter from "@/components/storefront/storefront-footer";
 
