@@ -30,6 +30,19 @@ type Banner = {
   sortOrder: number;
 };
 
+type HomeProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | string;
+  comparePrice: number | string | null;
+  images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[];
+};
+
+function formatHomePrice(value: number | string) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value));
+}
+
 type Brand = {
   name: string;
   logo: string;
@@ -80,6 +93,8 @@ export default function HomePage() {
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannersLoading, setBannersLoading] = useState(true);
+  const [products, setProducts] = useState<HomeProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   // Watch & Buy viewer
@@ -151,6 +166,25 @@ export default function HomePage() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Fetch active products uploaded from the dashboard
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchProducts() {
+      try {
+        const response = await fetch("/api/products", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to load products.");
+        if (isMounted) setProducts(data.products || []);
+      } catch (error) {
+        console.error("Failed to load homepage products:", error);
+      } finally {
+        if (isMounted) setProductsLoading(false);
+      }
+    }
+    fetchProducts();
+    return () => { isMounted = false; };
   }, []);
 
   // Automatic banner slider
@@ -258,7 +292,7 @@ export default function HomePage() {
                 <img
                   src={banner.image}
                   alt={`Hover Up promotional banner ${index + 1}`}
-                  className="block h-auto w-full object-contain"
+                  className="block h-[320px] w-full object-cover md:h-auto md:object-contain"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
@@ -291,7 +325,7 @@ export default function HomePage() {
       )}
 
       {/* Homepage Hero */}
-      <section className="flex items-center justify-center bg-[#f8f6f2] px-6 py-12">
+      <section className="flex items-center justify-center bg-white px-6 py-7 md:bg-[#f8f6f2] md:py-12">
         <Link
           href="/shop"
           className="group inline-flex items-center gap-3 bg-black px-9 py-4 text-xs font-extrabold tracking-widest text-white transition-all duration-300 hover:bg-[#b99a76]"
@@ -388,11 +422,33 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-10 flex min-h-48 items-center justify-center border border-dashed border-[#d8d0c6] bg-white px-5 text-center">
-            <p className="max-w-sm text-sm font-medium leading-6 text-neutral-500">
-              Products and images uploaded through the dashboard will automatically appear here after database integration.
-            </p>
-          </div>
+          {productsLoading ? (
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => <div key={index} className="aspect-[3/4] animate-pulse bg-[#f1efeb]" />)}
+            </div>
+          ) : products.length > 0 ? (
+            <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
+              {products.slice(0, 8).map((product) => {
+                const image = product.images?.find((item) => item.isPrimary) || product.images?.[0];
+                const comparePrice = Number(product.comparePrice || 0);
+                const price = Number(product.price);
+                return (
+                  <article key={product.id} className="min-w-0">
+                    <Link href={`/shop/${product.slug}`} className="block aspect-[3/4] overflow-hidden bg-white">
+                      {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-[1.03]" /> : <div className="flex h-full items-center justify-center text-xs text-[#999]">NO IMAGE</div>}
+                    </Link>
+                    <Link href={`/shop/${product.slug}`}><h3 className="mt-3 line-clamp-2 text-xs font-semibold leading-5 text-[#171717] sm:text-sm">{product.name}</h3></Link>
+                    <div className="mt-2 flex flex-wrap items-center gap-2"><span className="text-sm font-semibold">{formatHomePrice(price)}</span>{comparePrice > price && <span className="text-xs text-[#999] line-through">{formatHomePrice(comparePrice)}</span>}</div>
+                    <Link href={`/shop/${product.slug}`} className="mt-3 flex min-h-10 items-center justify-center border border-[#222] bg-white px-3 text-[10px] font-semibold tracking-[0.12em] transition hover:bg-[#171717] hover:text-white">VIEW PRODUCT</Link>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="mt-10 flex min-h-48 items-center justify-center border border-dashed border-[#d8d0c6] bg-white px-5 text-center">
+              <p className="max-w-sm text-sm font-medium leading-6 text-neutral-500">Active products published in the Hover Up dashboard will appear here.</p>
+            </div>
+          )}
         </div>
       </section>
 
