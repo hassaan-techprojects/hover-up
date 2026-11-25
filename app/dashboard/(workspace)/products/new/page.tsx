@@ -246,10 +246,6 @@ export default function AddProductPage() {
   function addAttribute(attribute: Attribute) {
     setSelectedAttributes({ [attribute.id]: [] });
     setVariations([]);
-    setColorImages({});
-    setColorDetails({});
-    setMainColorTermId("");
-    setExpandedColorId(null);
     setAttributeSearch("");
     setShowAttributeDropdown(false);
   }
