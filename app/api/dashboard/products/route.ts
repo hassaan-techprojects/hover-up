@@ -32,9 +32,15 @@ type AttributeSelection = {
   termIds: string[];
 };
 
-type ColorImageMetadata = {
+type ColourVariationInput = {
   termId: string;
-  altText?: string;
+  sku?: string;
+  regularPrice?: string;
+  salePrice?: string;
+  stock?: string;
+  imageCount?: number;
+  isMainColour?: boolean;
+  attributes: Record<string, { id: string; value: string; sizeSymbol?: string | null }>;
 };
 
 type VariationInput = {
@@ -294,10 +300,16 @@ export async function POST(request: NextRequest) {
       []
     );
 
-    const variations = parseJSON<VariationInput[]>(
-      formData.get("variations"),
-      []
-    );
+    const variations = parseJSON<VariationInput[]>(formData.get("variations"), []);
+    const colourVariations = parseJSON<ColourVariationInput[]>(formData.get("colourVariations"), []);
+    const colourImageFiles = formData.getAll("colourImages").filter((value): value is File => value instanceof File);
+    const expectedColourImageCount = colourVariations.reduce((total, variation) => total + (variation.imageCount ?? 0), 0);
+    if (expectedColourImageCount !== colourImageFiles.length) {
+      return NextResponse.json({ error: "Colour image information does not match uploaded images." }, { status: 400 });
+    }
+    if (colourImageFiles.length > 100) {
+      return NextResponse.json({ error: "Too many colour images. Maximum 100 images across all colours." }, { status: 400 });
+    }
 
     const imageMetadata = parseJSON<{ altText?: string; isPrimary?: boolean; sortOrder?: number }[]>(formData.get("images"), []);
     const imageFiles = formData.getAll("productImages").filter((value): value is File => value instanceof File);
@@ -504,6 +516,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const validatedColourVariations = colourVariations.map((variation) => {
+      if (!variation.termId || !allowedTermIds.has(variation.termId)) {
+        throw new Error("A colour variation contains an invalid colour term.");
+      }
+      const regular = variation.regularPrice ? parseAmount(variation.regularPrice, "colour regular price") : null;
+      const sale = variation.salePrice ? parseAmount(variation.salePrice, "colour sale price") : regular;
+      if (regular !== null && sale !== null && sale > regular) throw new Error("Colour sale price cannot be greater than regular price.");
+      const colourSku = String(variation.sku || "").trim() || null;
+      const colourStock = parseStock(String(variation.stock ?? "0"), "colour stock");
+      return { ...variation, regular, sale, colourSku, colourStock };
+    });
+
+    const colourSkus = validatedColourVariations.map((variation) => variation.colourSku).filter((value): value is string => Boolean(value));
+    if (new Set(colourSkus).size !== colourSkus.length || (sku && colourSkus.includes(sku))) {
+      return NextResponse.json({ error: "Product and colour variation SKUs must be unique." }, { status: 400 });
+    }
+    if (colourSkus.length) {
+      const existingColourSkus = await prisma.productVariant.findMany({ where: { sku: { in: colourSkus } }, select: { sku: true } });
+      if (existingColourSkus.length) return NextResponse.json({ error: "One or more colour SKUs are already in use." }, { status: 409 });
+    }
+
     // Upload product images to Neon Object Storage
     // Explicit type fixes the TypeScript implicit any[] error.
     const uploadedImages: Awaited<
@@ -521,6 +554,19 @@ export async function POST(request: NextRequest) {
 
       uploadedObjects.push({ key: uploaded.key });
       uploadedImages.push(uploaded);
+    }
+
+    const uploadedColourImages: Awaited<ReturnType<typeof uploadProductImage>>[][] = [];
+    let colourFileOffset = 0;
+    for (const variation of validatedColourVariations) {
+      const imagesForColour: Awaited<ReturnType<typeof uploadProductImage>>[] = [];
+      for (let imageIndex = 0; imageIndex < (variation.imageCount ?? 0); imageIndex++) {
+        const file = colourImageFiles[colourFileOffset++];
+        const uploaded = await uploadProductImage(file, file.name, imageIndex);
+        uploadedObjects.push({ key: uploaded.key });
+        imagesForColour.push(uploaded);
+      }
+      uploadedColourImages.push(imagesForColour);
     }
 
     // Create product and related records
@@ -570,11 +616,34 @@ export async function POST(request: NextRequest) {
       });
 
       // Products without variations use product-level inventory
-      if (validatedVariations.length === 0) {
+      if (validatedVariations.length === 0 && validatedColourVariations.length === 0) {
         await tx.inventory.create({
           data: {
             productId: createdProduct.id,
             quantity: stock,
+          },
+        });
+      }
+
+      // Create individual colour variants with their own gallery and inventory.
+      for (let index = 0; index < validatedColourVariations.length; index++) {
+        const variation = validatedColourVariations[index];
+        const colourImages = uploadedColourImages[index] ?? [];
+        await tx.productVariant.create({
+          data: {
+            productId: createdProduct.id,
+            name: Object.values(variation.attributes).map((term) => term.value).join(" / "),
+            sku: variation.colourSku,
+            price: variation.sale,
+            comparePrice: variation.regular !== null && variation.sale !== null && variation.sale < variation.regular ? variation.regular : null,
+            stock: variation.colourStock,
+            attributes: { ...variation.attributes, isMainColour: Boolean(variation.isMainColour) },
+            isActive: true,
+            images: { create: colourImages.map((image, imageIndex) => ({
+              storageKey: image.key, url: image.url, altText: image.altText,
+              isPrimary: imageIndex === 0, sortOrder: imageIndex,
+            })) },
+            inventory: { create: { productId: createdProduct.id, quantity: variation.colourStock } },
           },
         });
       }
