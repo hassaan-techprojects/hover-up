@@ -1129,46 +1129,116 @@ main video.home-reveal-visible {
 }
 
 
-/* HOVER UP animated brand wordmark */
+/* HOVER UP — spread, reassemble, system-hack glitch, then settle */
 .hoverup-logo-wordmark {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  letter-spacing: .12em;
-  perspective: 700px;
+  letter-spacing: .14em;
+  perspective: 900px;
+  isolation: isolate;
 }
 .hoverup-logo-letter {
+  position: relative;
   display: inline-block;
-  transform-origin: 50% 65%;
-  animation: hu-wordmark-cycle 7.2s cubic-bezier(.22,.7,.2,1) infinite both;
-  will-change: transform, opacity, filter;
+  transform-origin: 50% 55%;
+  animation: hu-wordmark-hack-cycle 8.4s cubic-bezier(.2,.75,.2,1) infinite both;
+  will-change: transform, opacity, filter, text-shadow;
 }
-@keyframes hu-wordmark-cycle {
-  0%, 5% {
-    opacity: 0;
-    transform: translate3d(0, 13px, 0) rotateX(-75deg) scale(.82);
-    filter: blur(4px);
-  }
-  13%, 57% {
+.hoverup-logo-letter:nth-child(1) { --scatter-x: -42px; --scatter-y: -24px; }
+.hoverup-logo-letter:nth-child(2) { --scatter-x: -28px; --scatter-y: 27px; }
+.hoverup-logo-letter:nth-child(3) { --scatter-x: -14px; --scatter-y: -34px; }
+.hoverup-logo-letter:nth-child(4) { --scatter-x: 0px; --scatter-y: 32px; }
+.hoverup-logo-letter:nth-child(5) { --scatter-x: 15px; --scatter-y: -30px; }
+.hoverup-logo-letter:nth-child(6) { --scatter-x: 29px; --scatter-y: 25px; }
+.hoverup-logo-letter:nth-child(7) { --scatter-x: 43px; --scatter-y: -22px; }
+.hoverup-logo-letter:nth-child(8) { --scatter-x: 56px; --scatter-y: 28px; }
+
+@keyframes hu-wordmark-hack-cycle {
+  0%, 8% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) rotateX(0) scale(1);
+    transform: translate3d(0,0,0) rotate(0) scale(1);
     filter: blur(0);
+    text-shadow: none;
   }
-  65% {
-    opacity: .72;
-    transform: translate3d(0, -5px, 0) rotate(-8deg) scale(.94);
+  /* All characters burst outward and scatter. */
+  18% {
+    opacity: .9;
+    transform: translate3d(var(--scatter-x),var(--scatter-y),0) rotate(var(--scatter-rotate, 18deg)) scale(1.16);
     filter: blur(1px);
+    text-shadow: 0 0 9px rgba(185,154,118,.55);
   }
-  73% {
+  /* Characters snap back into the exact wordmark. */
+  29%, 39% {
     opacity: 1;
-    transform: translate3d(0, 2px, 0) rotate(5deg) scale(1.05);
+    transform: translate3d(0,0,0) rotate(0) scale(1);
     filter: blur(0);
+    text-shadow: none;
   }
-  82%, 100% {
+  /* Digital/system-hack flicker after the letters have reassembled. */
+  42% {
+    transform: translate3d(-2px,0,0) skewX(-12deg);
+    filter: contrast(1.8) brightness(1.4);
+    text-shadow: 3px 0 #b99a76, -3px 0 #00d9ff;
+  }
+  44% {
+    transform: translate3d(3px,-1px,0) skewX(10deg);
+    filter: contrast(2) brightness(.75);
+    text-shadow: -4px 0 #b99a76, 4px 0 #00d9ff;
+  }
+  46% {
+    transform: translate3d(-1px,1px,0) skewX(-5deg);
+    filter: contrast(1.7) brightness(1.5);
+    text-shadow: 2px 0 #00d9ff, -2px 0 #b99a76;
+  }
+  49% {
+    transform: translate3d(2px,0,0) skewX(7deg);
+    filter: contrast(1.6);
+    text-shadow: -3px 0 #00d9ff, 3px 0 #b99a76;
+  }
+  53%, 57% {
+    transform: translate3d(0,0,0) skewX(0);
+    filter: none;
+    text-shadow: none;
+  }
+  64%, 100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+    transform: translate3d(0,0,0) rotate(0) scale(1);
     filter: blur(0);
+    text-shadow: none;
   }
+}
+.hoverup-logo-wordmark::before,
+.hoverup-logo-wordmark::after {
+  content: "HOVER UP";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  white-space: nowrap;
+  letter-spacing: inherit;
+  font: inherit;
+}
+.hoverup-logo-wordmark::before {
+  color: #b99a76;
+  animation: hu-hack-overlay-warm 8.4s steps(1,end) infinite;
+}
+.hoverup-logo-wordmark::after {
+  color: #00bfe8;
+  animation: hu-hack-overlay-cyan 8.4s steps(1,end) infinite;
+}
+@keyframes hu-hack-overlay-warm {
+  0%, 40%, 57%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(0 0 100% 0); }
+  42%, 46%, 51% { opacity: .75; transform: translateX(-3px); clip-path: inset(10% 0 58% 0); }
+  44%, 49%, 54% { opacity: .65; transform: translateX(3px); clip-path: inset(56% 0 12% 0); }
+}
+@keyframes hu-hack-overlay-cyan {
+  0%, 40%, 57%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(100% 0 0 0); }
+  42%, 49%, 54% { opacity: .8; transform: translateX(3px); clip-path: inset(42% 0 28% 0); }
+  44%, 46%, 51% { opacity: .65; transform: translateX(-4px); clip-path: inset(4% 0 70% 0); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hoverup-logo-letter { animation: none !important; }
+  .hoverup-logo-letter,
+  .hoverup-logo-wordmark::before,
+  .hoverup-logo-wordmark::after { animation: none !important; }
 }
