@@ -364,14 +364,6 @@ export default function AddProductPage() {
     });
   }
 
-  function clearTerms(attributeId: string) {
-    setSelectedAttributes((current) => ({
-      ...current,
-      [attributeId]: [],
-    }));
-
-    setVariations([]);
-  }
 
   function generateVariations() {
     if (!selectedAttributeList.length) {
