@@ -422,15 +422,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const selectedColorTermIds = new Set(
-        existingTerms.filter((term) => term.termType === "COLOR").map((term) => term.id)
-      );
-      if (colorImageMetadata.some((item) => !selectedColorTermIds.has(item.termId))) {
-        return NextResponse.json(
-          { error: "Colour images must match selected colour terms." },
-          { status: 400 }
-        );
-      }
     }
 
     // Validate each variation
