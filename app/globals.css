@@ -504,15 +504,16 @@ button {
 
 /* PREMIUM DIAMOND ICON */
 .watch-feature-icon-diamond {
-  background: #b99a76;
+  background: #ffffff;
+  border: 1px solid #ffffff;
   color: #111111;
 }
 
 .watch-feature-icon-diamond svg {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   color: #111111;
-  stroke-width: 2;
+  stroke-width: 2.1;
 }
 
 /* ZOOM ONLY - NO ROTATION */
@@ -907,7 +908,7 @@ header nav a,
 }
 .category-marquee-track {
   width: max-content;
-  animation: category-scroll 32s linear infinite;
+  animation: category-scroll 21s linear infinite;
   will-change: transform;
 }
 .category-marquee:hover .category-marquee-track {
