@@ -316,12 +316,12 @@ export default function AddProductPage() {
   }
 
   function removeColorImage(termId: string) {
+    const image = colorImages[termId];
+    if (image) URL.revokeObjectURL(image.preview);
+    if (mainColorTermId === termId) setMainColorTermId("");
     setColorImages((current) => {
-      const image = current[termId];
-      if (image) URL.revokeObjectURL(image.preview);
       const updated = { ...current };
       delete updated[termId];
-      if (mainColorTermId === termId) setMainColorTermId("");
       return updated;
     });
   }
