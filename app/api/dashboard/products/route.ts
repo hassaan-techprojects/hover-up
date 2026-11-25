@@ -232,12 +232,12 @@ export async function POST(request: NextRequest) {
     }
 
     const regularPrice = parseAmount(
-      String(formData.get("comparePrice") || formData.get("price") || ""),
+      String(formData.get("comparePrice") || formData.get("price") || "0"),
       "regular price"
     );
 
     const submittedPrice = parseAmount(
-      String(formData.get("price") || ""),
+      String(formData.get("price") || "0"),
       "product price"
     );
 
@@ -299,64 +299,9 @@ export async function POST(request: NextRequest) {
       []
     );
 
-    const colorImageMetadata = parseJSON<ColorImageMetadata[]>(
-      formData.get("colorImageMetadata"),
-      []
-    );
-    const mainColorTermId = String(formData.get("mainColorTermId") || "").trim();
-
-    const imageMetadata = parseJSON<
-      { altText?: string; isPrimary?: boolean }[]
-    >(
-      formData.get("images"),
-      []
-    );
-
-    // Validate product images
-    const imageFiles = formData
-      .getAll("productImages")
-      .filter((value): value is File => value instanceof File);
-
-    if (imageFiles.length > 20) {
-      return NextResponse.json(
-        { error: "You can upload a maximum of 20 product images." },
-        { status: 400 }
-      );
-    }
-
-    if (
-      imageMetadata.length > 0 &&
-      imageMetadata.length !== imageFiles.length
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Product image information does not match uploaded images.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const colorImageFiles = new Map<string, File>();
-    for (const metadata of colorImageMetadata) {
-      const file = formData.get(`colorImage:${metadata.termId}`);
-      if (!metadata.termId || !(file instanceof File)) {
-        return NextResponse.json({ error: "Every selected colour must have its own image." }, { status: 400 });
-      }
-      colorImageFiles.set(metadata.termId, file);
-    }
-    if (colorImageMetadata.length > 0 && !colorImageFiles.has(mainColorTermId)) {
-      return NextResponse.json({ error: "Choose a selected colour image as the main product image." }, { status: 400 });
-    }
+    const imageMetadata = parseJSON<{ altText?: string; isPrimary?: boolean; sortOrder?: number }[]>(formData.get("images"), []);
 
     // Validate variation requirements
-    if (attributeSelections.length > 0 && variations.length === 0) {
-      return NextResponse.json(
-        { error: "Generate product variations before saving." },
-        { status: 400 }
-      );
-    }
-
     const selectedTermIds = [
       ...new Set(
         attributeSelections.flatMap((selection) => selection.termIds)
@@ -580,15 +525,6 @@ export async function POST(request: NextRequest) {
       uploadedImages.push(uploaded);
     }
 
-    const uploadedColorImages = new Map<string, Awaited<ReturnType<typeof uploadProductImage>>>();
-    for (const metadata of colorImageMetadata) {
-      const file = colorImageFiles.get(metadata.termId);
-      if (!file) continue;
-      const uploaded = await uploadProductImage(file, metadata.altText || file.name, 0);
-      uploadedObjects.push({ key: uploaded.key });
-      uploadedColorImages.set(metadata.termId, uploaded);
-    }
-
     // Create product and related records
     const product = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
@@ -606,25 +542,16 @@ export async function POST(request: NextRequest) {
           publishedAt: isActive ? new Date() : null,
 
           images: {
-            create: [
-              ...uploadedImages.map((image) => ({
-                storageKey: image.key,
-                url: image.url,
-                altText: image.altText,
-                isPrimary: uploadedColorImages.size === 0 && image.isPrimary,
-                sortOrder: uploadedColorImages.size === 0 ? image.sortOrder : image.sortOrder + uploadedColorImages.size,
-              })),
-              ...Array.from(uploadedColorImages.entries()).map(([termId, image], index) => ({
-                storageKey: image.key,
-                url: image.url,
-                altText: image.altText,
-                isPrimary: termId === mainColorTermId,
-                sortOrder: index,
-              })),
-            ],
+            create: uploadedImages.map((image, index) => ({
+              storageKey: image.key,
+              url: image.url,
+              altText: image.altText,
+              isPrimary: imageMetadata[index]?.isPrimary ?? index === 0,
+              sortOrder: imageMetadata[index]?.sortOrder ?? index,
+            })),
           },
 
-          categories: {
+          categories: {          categories: {
             create: uniqueCategoryIds.map((categoryId) => ({
               categoryId,
             })),
@@ -656,45 +583,12 @@ export async function POST(request: NextRequest) {
 
       // Create individual variations and their inventories
       for (const variation of validatedVariations) {
-        const matchingColorTerm = Object.values(variation.attributes).find((term) =>
-          uploadedColorImages.has(term.id)
-        );
-        const colorImage = matchingColorTerm
-          ? uploadedColorImages.get(matchingColorTerm.id)
-          : undefined;
-
         await tx.productVariant.create({
           data: {
-            productId: createdProduct.id,
-            name: variation.name,
-            sku: variation.sku,
-
-            price: variation.price,
-            comparePrice: variation.comparePrice,
-
-            stock: variation.stock,
-            attributes: variation.attributes,
-
-            isActive: true,
-
-            ...(colorImage ? {
-              images: {
-                create: [{
-                  storageKey: colorImage.key,
-                  url: colorImage.url,
-                  altText: colorImage.altText,
-                  isPrimary: true,
-                  sortOrder: 0,
-                }],
-              },
-            } : {}),
-
-            inventory: {
-              create: {
-                productId: createdProduct.id,
-                quantity: variation.stock,
-              },
-            },
+            productId: createdProduct.id, name: variation.name, sku: variation.sku,
+            price: variation.price, comparePrice: variation.comparePrice, stock: variation.stock,
+            attributes: variation.attributes, isActive: true,
+            inventory: { create: { productId: createdProduct.id, quantity: variation.stock } },
           },
         });
       }
