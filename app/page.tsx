@@ -408,7 +408,6 @@ export default function HomePage() {
               {[0, 1].map((copy) => (
                 <div key={copy} className="flex shrink-0 items-start gap-7 px-6 pb-4 md:gap-10 md:px-10" aria-hidden={copy === 1}>
                   {categories.map((category) => (
-            {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/shop?category=${encodeURIComponent(category.slug)}`}
