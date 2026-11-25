@@ -403,7 +403,7 @@ export default function AddProductPage() {
     const baseSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
     setSku(baseSku);
 
-    const generated: Variation[] = combinations.map((combination) => {
+    const generated: Variation[] = combinations.map((combination, index) => {
       const combinationName = Object.values(combination)
         .map((term) => term.value)
         .join(" / ");
@@ -418,6 +418,8 @@ export default function AddProductPage() {
         regularPrice,
         salePrice,
         stock,
+        images: [],
+        isMainColour: index === 0,
       };
     });
 
