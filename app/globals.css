@@ -1129,39 +1129,22 @@ main video.home-reveal-visible {
 }
 
 
-/* HOVER UP — horizontal letter spread, clean return, monochrome TV glitch */
+/* HOVER UP wordmark: bold display type with monochrome TV glitch only */
 .hoverup-logo-wordmark {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  letter-spacing: .14em;
-  isolation: isolate;
-}
-.hoverup-logo-letter {
-  position: relative;
   display: inline-block;
-  transform-origin: 50% 50%;
-  animation: hu-horizontal-spread 8.4s ease-in-out infinite both;
-  will-change: transform;
-}
-.hoverup-logo-letter:nth-child(1) { --spread-x: -42px; }
-.hoverup-logo-letter:nth-child(2) { --spread-x: -30px; }
-.hoverup-logo-letter:nth-child(3) { --spread-x: -18px; }
-.hoverup-logo-letter:nth-child(4) { --spread-x: -6px; }
-.hoverup-logo-letter:nth-child(5) { --spread-x: 6px; }
-.hoverup-logo-letter:nth-child(6) { --spread-x: 18px; }
-.hoverup-logo-letter:nth-child(7) { --spread-x: 30px; }
-.hoverup-logo-letter:nth-child(8) { --spread-x: 42px; }
-
-@keyframes hu-horizontal-spread {
-  0%, 9%, 100% { transform: translateX(0); }
-  20% { transform: translateX(var(--spread-x)); }
-  31%, 39% { transform: translateX(0); }
-  42%, 54% { transform: translateX(0); }
+  isolation: isolate;
+  white-space: nowrap;
+  font-family: "Arial Black", "Franklin Gothic Heavy", "Trebuchet MS", sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.45rem, 4.2vw, 2.35rem);
+  line-height: 1;
+  letter-spacing: .105em;
+  transform: scaleX(1.025);
+  transform-origin: left center;
 }
 
-/* Monochrome television interference: grey scan lines and black/white flicker only. */
+/* Black, grey and white television interference — no colour split or movement. */
 .hoverup-logo-wordmark::before,
 .hoverup-logo-wordmark::after {
   content: "HOVER UP";
@@ -1187,7 +1170,7 @@ main video.home-reveal-visible {
     #eeeeee 2px,
     #eeeeee 3px
   );
-  animation: hu-tv-static-grey 8.4s steps(1, end) infinite;
+  animation: hu-tv-static-grey 7s steps(1, end) infinite;
 }
 .hoverup-logo-wordmark::after {
   background-image: repeating-linear-gradient(
@@ -1199,20 +1182,19 @@ main video.home-reveal-visible {
     #555555 3px,
     #555555 4px
   );
-  animation: hu-tv-static-black 8.4s steps(1, end) infinite;
+  animation: hu-tv-static-black 7s steps(1, end) infinite;
 }
 @keyframes hu-tv-static-grey {
-  0%, 40%, 56%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(0); }
-  42%, 46%, 50%, 54% { opacity: .9; clip-path: inset(8% 0 62% 0); transform: translateX(-2px); }
-  44%, 48%, 52% { opacity: .75; clip-path: inset(58% 0 8% 0); transform: translateX(2px); }
+  0%, 70%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(0); }
+  72%, 76%, 80% { opacity: .9; clip-path: inset(8% 0 62% 0); transform: translateX(-2px); }
+  74%, 78%, 82% { opacity: .75; clip-path: inset(58% 0 8% 0); transform: translateX(2px); }
 }
 @keyframes hu-tv-static-black {
-  0%, 40%, 56%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateX(0); }
-  42%, 48%, 52% { opacity: .85; clip-path: inset(32% 0 38% 0); transform: translateX(2px); }
-  44%, 46%, 50%, 54% { opacity: .8; clip-path: inset(72% 0 4% 0); transform: translateX(-2px); }
+  0%, 70%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateX(0); }
+  72%, 78%, 82% { opacity: .85; clip-path: inset(32% 0 38% 0); transform: translateX(2px); }
+  74%, 76%, 80% { opacity: .8; clip-path: inset(72% 0 4% 0); transform: translateX(-2px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hoverup-logo-letter,
   .hoverup-logo-wordmark::before,
   .hoverup-logo-wordmark::after { animation: none !important; }
 }
