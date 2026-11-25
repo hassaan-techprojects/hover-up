@@ -141,26 +141,16 @@ export default function StorefrontHeader() {
             <img
               src="/hu.png"
               alt="HOVER UP Logo"
-              className="h-14 w-14 shrink-0 object-cover sm:h-16 sm:w-16"
+              className="h-full w-[68px] shrink-0 self-stretch object-cover sm:w-[76px]"
             />
 
             <span
               aria-label="HOVER UP"
-              className="hoverup-logo-wordmark whitespace-nowrap text-xl font-black tracking-[0.14em] text-black sm:text-3xl"
+              className="hoverup-logo-wordmark whitespace-nowrap text-[22px] font-black text-black sm:text-[34px]"
             >
-              {"HOVER UP".split("").map((letter, index) => (
-                <span
-                  key={index}
-                  aria-hidden="true"
-                  className="hoverup-logo-letter"
-                  style={{ animationDelay: `${index * 85}ms` }}
-                >
-                  {letter === " " ? "\u00a0" : letter}
-                </span>
-              ))}
-              <span className="text-[#b99a76]">.</span>
+              HOVER UP<span className="text-[#b99a76]">.</span>
             </span>
-          </Link>
+          </Link>     </Link>
 
           {/* Desktop Header Icons */}
           <div className="hidden items-center gap-6 md:flex">
