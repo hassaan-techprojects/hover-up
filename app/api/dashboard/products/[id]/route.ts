@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     }
     const retainedIds = new Set(retainedImages.map((image) => image.id));
     const removedKeys = existing.images.filter((image) => !retainedIds.has(image.id)).map((image) => image.storageKey);
-    const uploaded = [];
+    const uploaded: Awaited<ReturnType<typeof uploadImage>>[] = [];
     for (let i = 0; i < files.length; i++) {
       const image = await uploadImage(files[i], newImageMeta[i]?.altText || files[i].name, retainedImages.length + i);
       uploadedKeys.push(image.storageKey);
