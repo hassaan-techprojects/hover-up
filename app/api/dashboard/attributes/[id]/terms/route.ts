@@ -111,10 +111,8 @@ export async function POST(
     const value =
       typeof rawValue === "string" ? rawValue.trim() : "";
 
-    const termType =
-      typeof rawTermType === "string"
-        ? rawTermType.trim().toUpperCase()
-        : "COLOR";
+    // Attribute terms are colour-only; size options are not supported here.
+    const termType = "COLOR";
 
     const sizeSymbol =
       typeof rawSizeSymbol === "string"
@@ -124,13 +122,6 @@ export async function POST(
     if (!value || value.length > 80) {
       return NextResponse.json(
         { error: "Enter a term (maximum 80 characters)." },
-        { status: 400 }
-      );
-    }
-
-    if (termType !== "COLOR" && termType !== "SIZE") {
-      return NextResponse.json(
-        { error: "Invalid term type." },
         { status: 400 }
       );
     }
