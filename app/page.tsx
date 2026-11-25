@@ -859,7 +859,7 @@ export default function HomePage() {
       </section>
 
       {/* Custom Merchandise Showcase */}
-      <section className="overflow-hidden bg-[#111111] px-5 py-16 text-white sm:px-8 md:px-10 md:py-24">
+      <section className="merch-showcase-section overflow-hidden bg-[#111111] px-5 py-16 text-white sm:px-8 md:px-10 md:py-24">
         <div className="mx-auto max-w-[1240px]">
           <div className="mb-9 flex flex-col gap-3 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
             <div>
