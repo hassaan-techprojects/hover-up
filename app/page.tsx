@@ -43,6 +43,38 @@ type Brand = {
   logo: string;
 };
 
+type Insight = {
+  title: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  category: string;
+};
+
+const insights: Insight[] = [
+  {
+    title: "The Everyday Hoodie: A Wardrobe Essential",
+    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1400&q=85",
+    excerpt: "A good hoodie balances easy styling, a comfortable feel and a fit that works throughout the day.",
+    content: "A hoodie is one of the most versatile pieces in a modern wardrobe. Choose a fit that allows easy movement, a fabric weight that suits the season and a colour that works with the pieces you already own. Keep the styling simple for everyday wear, or add a print or logo to make it your own.",
+    category: "STYLE GUIDE",
+  },
+  {
+    title: "From Idea to Print: Making Apparel Your Own",
+    image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1400&q=85",
+    excerpt: "Explore how artwork, colour and thoughtful placement can turn everyday apparel into a clear brand statement.",
+    content: "Printed apparel starts with a clear idea. Think about the message, artwork scale, garment colour and where the design will sit. A simple front print can feel understated, while a larger back graphic can create a stronger visual statement. Consistent choices help teams, events and businesses create a recognisable look.",
+    category: "PRINT & DESIGN",
+  },
+  {
+    title: "Build a Wardrobe Around Everyday Essentials",
+    image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1400&q=85",
+    excerpt: "Start with versatile basics, wearable colours and comfortable pieces that are easy to mix and match.",
+    content: "A useful wardrobe does not need to be complicated. Begin with comfortable T-shirts, dependable layers and colours that work together. Choose pieces that can be styled in more than one way, then add prints or statement items where you want a little more personality.",
+    category: "EVERYDAY WEAR",
+  },
+];
+
 const brands: Brand[] = [
   { name: "Jio", logo: "/brands/jio.jpg" },
   { name: "Airtel", logo: "/brands/airtel.jpg" },
@@ -91,6 +123,10 @@ export default function HomePage() {
   const [products, setProducts] = useState<HomeProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentInsightIndex, setCurrentInsightIndex] = useState(0);
+  const [insightDetailsOpen, setInsightDetailsOpen] = useState(false);
+  const [previewVideoIndex, setPreviewVideoIndex] = useState<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Watch & Buy viewer
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -242,7 +278,8 @@ export default function HomePage() {
 
   const openVideoViewer = (index: number) => {
     setCurrentVideoIndex(index);
-    setIsVideoMuted(true);
+    setIsVideoMuted(false);
+    setPreviewVideoIndex(null);
     setVideoViewerOpen(true);
   };
 
@@ -531,6 +568,69 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Blogs & Insights */}
+      <section className="bg-white px-6 py-14 md:px-10 md:py-20">
+        <div className="mx-auto max-w-[1500px]">
+          <div className="mb-8 text-center md:mb-10">
+            <p className="text-xs font-extrabold tracking-[0.25em] text-[#a18c75]">THE HOVER UP JOURNAL</p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-black sm:text-3xl">BLOGS &amp; INSIGHTS</h2>
+          </div>
+
+          <div className="mx-auto max-w-[900px]">
+            <div className="overflow-hidden rounded-xl">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-[#f2f0ed] sm:aspect-[16/8]">
+                <img
+                  src={insights[currentInsightIndex].image}
+                  alt={insights[currentInsightIndex].title}
+                  className="h-full w-full object-cover transition-transform duration-700"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div className="pt-5">
+                <p className="text-xs font-bold tracking-[0.18em] text-[#a18c75]">{insights[currentInsightIndex].category}</p>
+                <h3 className="mt-2 text-xl font-semibold leading-snug text-[#171717] sm:text-2xl">{insights[currentInsightIndex].title}</h3>
+                <p className="mt-1 text-sm text-[#99918a]">Hover Up Editorial · November 2026</p>
+                <p className="mt-4 text-base leading-7 text-[#77716b] sm:text-lg">{insights[currentInsightIndex].excerpt}</p>
+                <button
+                  type="button"
+                  onClick={() => setInsightDetailsOpen(true)}
+                  className="mt-3 text-base font-medium text-[#625b53] underline-offset-4 hover:text-black hover:underline"
+                >
+                  View details
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 flex items-center justify-center gap-4" aria-label="Choose an insight">
+              {insights.map((insight, index) => (
+                <button
+                  key={insight.title}
+                  type="button"
+                  onClick={() => setCurrentInsightIndex(index)}
+                  aria-label={`Show insight ${index + 1}`}
+                  aria-current={currentInsightIndex === index ? "true" : undefined}
+                  className={`h-3 w-3 rounded-full border border-[#77716b] transition-all duration-300 ${currentInsightIndex === index ? "scale-110 bg-[#111111]" : "bg-white hover:bg-[#d8d0c6]"}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {insightDetailsOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/65 p-4" role="dialog" aria-modal="true" aria-label={insights[currentInsightIndex].title} onClick={() => setInsightDetailsOpen(false)}>
+          <article className="relative max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 sm:p-8" onClick={(event) => event.stopPropagation()}>
+            <button type="button" onClick={() => setInsightDetailsOpen(false)} aria-label="Close insight" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f1ed] text-xl">×</button>
+            <p className="pr-12 text-xs font-bold tracking-[0.18em] text-[#a18c75]">{insights[currentInsightIndex].category}</p>
+            <h2 className="mt-3 pr-8 text-2xl font-bold leading-tight text-[#111111]">{insights[currentInsightIndex].title}</h2>
+            <p className="mt-2 text-sm text-[#99918a]">Hover Up Editorial · November 2026</p>
+            <img src={insights[currentInsightIndex].image} alt="" className="mt-6 aspect-[16/9] w-full rounded-lg object-cover" />
+            <p className="mt-6 text-base leading-8 text-[#625b53]">{insights[currentInsightIndex].content}</p>
+          </article>
+        </div>
+      )}
+
       {/* Watch & Buy */}
       <section className="bg-[#f8f6f2] px-6 py-20 md:px-10">
         <div className="mx-auto max-w-[1500px]">
@@ -552,17 +652,38 @@ export default function HomePage() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => openVideoViewer(index)}
+                onClick={(event) => {
+                  const preview = event.currentTarget.querySelector("video");
+                  if (previewVideoIndex === index) {
+                    preview?.pause();
+                    openVideoViewer(index);
+                    return;
+                  }
+                  setPreviewVideoIndex(index);
+                  document.querySelectorAll<HTMLVideoElement>(".watch-video-card video").forEach((video) => {
+                    if (video !== preview) {
+                      video.pause();
+                      video.currentTime = 0;
+                    }
+                  });
+                  if (preview) {
+                    preview.muted = false;
+                    preview.currentTime = 0;
+                    preview.play().catch(() => {
+                      preview.muted = true;
+                      preview.play().catch(() => undefined);
+                    });
+                  }
+                }}
                 onMouseEnter={(event) => {
+                  if (previewVideoIndex === index) return;
                   const preview = event.currentTarget.querySelector("video");
                   if (!preview) return;
-                  preview.muted = false;
-                  preview.play().catch(() => {
-                    preview.muted = true;
-                    preview.play().catch(() => undefined);
-                  });
+                  preview.muted = true;
+                  preview.play().catch(() => undefined);
                 }}
                 onMouseLeave={(event) => {
+                  if (previewVideoIndex === index) return;
                   const preview = event.currentTarget.querySelector("video");
                   if (preview) {
                     preview.pause();
@@ -577,10 +698,11 @@ export default function HomePage() {
                   }
                 }}
                 onBlur={(event) => {
+                  if (previewVideoIndex === index) return;
                   const preview = event.currentTarget.querySelector("video");
                   if (preview) preview.pause();
                 }}
-                aria-label={`Play ${item.title}`}
+                aria-label={previewVideoIndex === index ? `Open ${item.title} in full screen` : `Tap to play ${item.title}; tap again to open`}
                 className="watch-video-card group relative block cursor-pointer overflow-hidden rounded-xl border-0 bg-black p-0 text-left"
               >
                 <video
@@ -591,7 +713,7 @@ export default function HomePage() {
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="watch-video-card-content transition-opacity duration-300 group-hover:opacity-0 group-focus-visible:opacity-0">
+                <div className={`watch-video-card-content transition-opacity duration-300 group-hover:opacity-0 group-focus-visible:opacity-0 ${previewVideoIndex === index ? "opacity-0" : ""}`}>
                   <span className="watch-video-number">
                     {String(index + 1).padStart(2, "0")}
                   </span>
@@ -664,6 +786,16 @@ export default function HomePage() {
           <div
             className="relative flex h-full w-full items-center justify-center"
             onClick={(event) => event.stopPropagation()}
+            onTouchStart={(event) => { touchStartXRef.current = event.touches[0]?.clientX ?? null; }}
+            onTouchEnd={(event) => {
+              const startX = touchStartXRef.current;
+              const endX = event.changedTouches[0]?.clientX;
+              if (startX !== null && endX !== undefined && Math.abs(endX - startX) > 55) {
+                if (endX < startX) showNextVideo();
+                else showPreviousVideo();
+              }
+              touchStartXRef.current = null;
+            }}
           >
             <video
               key={watchVideos[currentVideoIndex].id}
