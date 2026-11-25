@@ -35,6 +35,7 @@ type HomeProduct = {
   name: string;
   slug: string;
   images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[];
+  variants?: { attributes: unknown; images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[] }[];
   attributes?: { attributeValue: { value: string; image: string | null; termType: "COLOR" | "SIZE"; attribute: { name: string } } }[];
 };
 
@@ -469,7 +470,13 @@ export default function HomePage() {
           ) : products.length > 0 ? (
             <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
               {products.slice(0, 8).map((product) => {
-                const image = product.images?.find((item) => item.isPrimary) || product.images?.[0];
+                const mainColourVariant = product.variants?.find((variant) => {
+                  if (!variant.attributes || typeof variant.attributes !== "object" || Array.isArray(variant.attributes)) return false;
+                  return (variant.attributes as Record<string, unknown>).isMainColour === true;
+                });
+                const mainColourImages = mainColourVariant?.images ?? [];
+                const productCardImages = mainColourImages.length > 0 ? mainColourImages : product.images;
+                const image = productCardImages?.find((item) => item.isPrimary) || productCardImages?.[0];
                 return (
                   <article key={product.id} className="group min-w-0">
                     <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-[#f8f6f2]">
