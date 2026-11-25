@@ -18,6 +18,8 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -36,6 +38,17 @@ export default function AccountPage() {
   }, []);
 
   const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Customer";
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      await signOut({ callbackUrl: "/", redirect: true });
+    } catch {
+      setLoggingOut(false);
+      setLogoutError("Unable to log out. Please try again.");
+    }
+  }
 
   return (
     <>
@@ -68,8 +81,9 @@ export default function AccountPage() {
               <div className="flex flex-wrap gap-3 border-t border-[#eee9e2] pt-6">
                 <Link href="/account/orders" className="inline-flex min-h-12 items-center rounded-xl bg-[#171717] px-5 text-base font-bold text-white transition hover:bg-[#b99a76] hover:text-[#171717]">My Orders</Link>
                 <Link href="/account/track-order" className="inline-flex min-h-12 items-center rounded-xl border border-[#e5ded4] px-5 text-base font-bold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2]">Track Order</Link>
-                <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[#e5ded4] px-5 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2]"><LogOut size={17} /> Log out</button>
+                <button type="button" onClick={handleLogout} disabled={loggingOut} aria-busy={loggingOut} className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-[#e5ded4] px-5 text-sm font-semibold text-[#5f574e] transition hover:border-[#b99a76] hover:bg-[#f8f6f2] disabled:cursor-not-allowed disabled:opacity-60"><LogOut size={17} /> {loggingOut ? "Logging out..." : "Log out"}</button>
               </div>
+              {logoutError && <p role="alert" className="mt-4 text-sm text-red-600">{logoutError}</p>}
             </section>
           ) : (
             <section className="mt-8 max-w-2xl rounded-2xl border border-[#e9e4dc] bg-white p-6 sm:p-8">
