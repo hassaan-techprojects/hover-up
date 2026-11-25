@@ -753,7 +753,6 @@ export default function AddProductPage() {
                 </div>})}
               </div>}
             </section>
- </section>
           </div>
 
           {/* Sidebar */}
