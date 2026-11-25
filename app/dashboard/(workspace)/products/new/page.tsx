@@ -257,10 +257,6 @@ export default function AddProductPage() {
       return updated;
     });
     setVariations([]);
-    setColorImages({});
-    setColorDetails({});
-    setMainColorTermId("");
-    setExpandedColorId(null);
   }
 
   function toggleTerm(attributeId: string, termId: string) {
