@@ -1129,7 +1129,7 @@ main video.home-reveal-visible {
 }
 
 
-/* HOVER UP wordmark: bold display type with monochrome TV glitch only */
+/* HOVER UP wordmark — monochrome analogue-TV glitch */
 .hoverup-logo-wordmark {
   position: relative;
   display: inline-block;
@@ -1142,9 +1142,9 @@ main video.home-reveal-visible {
   letter-spacing: .105em;
   transform: scaleX(1.025);
   transform-origin: left center;
+  animation: hu-tv-word-jitter 5.8s steps(1, end) infinite;
 }
 
-/* Black, grey and white television interference — no colour split or movement. */
 .hoverup-logo-wordmark::before,
 .hoverup-logo-wordmark::after {
   content: "HOVER UP";
@@ -1163,38 +1163,39 @@ main video.home-reveal-visible {
 .hoverup-logo-wordmark::before {
   background-image: repeating-linear-gradient(
     0deg,
-    #111111 0px,
-    #111111 1px,
-    #8a8a8a 1px,
-    #8a8a8a 2px,
-    #eeeeee 2px,
-    #eeeeee 3px
+    #080808 0px, #080808 1px,
+    #777777 1px, #777777 2px,
+    #eeeeee 2px, #eeeeee 3px,
+    #242424 3px, #242424 4px
   );
-  animation: hu-tv-static-grey 7s steps(1, end) infinite;
+  animation: hu-tv-static-grey 5.8s steps(1, end) infinite;
 }
 .hoverup-logo-wordmark::after {
   background-image: repeating-linear-gradient(
     180deg,
-    #050505 0px,
-    #050505 2px,
-    #bdbdbd 2px,
-    #bdbdbd 3px,
-    #555555 3px,
-    #555555 4px
+    #050505 0px, #050505 2px,
+    #bdbdbd 2px, #bdbdbd 3px,
+    #555555 3px, #555555 4px
   );
-  animation: hu-tv-static-black 7s steps(1, end) infinite;
+  animation: hu-tv-static-black 5.8s steps(1, end) infinite;
+}
+@keyframes hu-tv-word-jitter {
+  0%, 71%, 75%, 79%, 83%, 100% { transform: scaleX(1.025) translateX(0); filter: none; }
+  72%, 76%, 80% { transform: scaleX(1.025) translateX(-1px); filter: contrast(1.35); }
+  73%, 77%, 81% { transform: scaleX(1.025) translateX(1px); filter: contrast(1.15); }
 }
 @keyframes hu-tv-static-grey {
-  0%, 70%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(0); }
-  72%, 76%, 80% { opacity: .9; clip-path: inset(8% 0 62% 0); transform: translateX(-2px); }
-  74%, 78%, 82% { opacity: .75; clip-path: inset(58% 0 8% 0); transform: translateX(2px); }
+  0%, 70%, 84%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(0); }
+  71%, 75%, 79% { opacity: .95; clip-path: inset(8% 0 60% 0); transform: translateX(-2px); }
+  73%, 77%, 81% { opacity: .8; clip-path: inset(56% 0 12% 0); transform: translateX(2px); }
 }
 @keyframes hu-tv-static-black {
-  0%, 70%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateX(0); }
-  72%, 78%, 82% { opacity: .85; clip-path: inset(32% 0 38% 0); transform: translateX(2px); }
-  74%, 76%, 80% { opacity: .8; clip-path: inset(72% 0 4% 0); transform: translateX(-2px); }
+  0%, 70%, 84%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateX(0); }
+  72%, 76%, 80% { opacity: .9; clip-path: inset(30% 0 36% 0); transform: translateX(2px); }
+  74%, 78%, 82% { opacity: .85; clip-path: inset(72% 0 4% 0); transform: translateX(-2px); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hoverup-logo-wordmark,
   .hoverup-logo-wordmark::before,
   .hoverup-logo-wordmark::after { animation: none !important; }
 }
