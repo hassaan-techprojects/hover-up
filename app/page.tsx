@@ -905,6 +905,45 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Streetwear and bulk-order callouts — Essential Tees intentionally omitted */}
+      <section className="bg-[#1d1d1d] px-5 py-14 text-white sm:px-8 sm:py-16 md:px-10 md:py-20">
+        <div className="mx-auto max-w-[1240px]">
+          <h2 className="text-3xl font-semibold leading-tight tracking-[0.015em] sm:text-4xl md:text-5xl">
+            OVERSIZED / STREETWEAR
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
+            Relaxed fits, premium fabric and custom branding.
+          </p>
+          <Link
+            href="/shop"
+            className="mt-8 inline-flex min-h-14 min-w-[190px] items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-semibold text-[#111111] transition-colors duration-300 hover:bg-[#d4b998] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+          >
+            SHOP NOW
+          </Link>
+        </div>
+      </section>
+
+      <div className="h-10 bg-white sm:h-12" aria-hidden="true" />
+
+      <section className="bg-[#111111] px-5 py-14 text-white sm:px-8 sm:py-16 md:px-10 md:py-20">
+        <div className="mx-auto max-w-[1240px] text-center">
+          <h2 className="text-3xl font-semibold leading-tight tracking-[0.015em] sm:text-4xl md:text-5xl">
+            BULK &amp; CORPORATE ORDERS
+          </h2>
+          <p className="mx-auto mt-4 max-w-4xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
+            Mixed sizes · automatic tier pricing · quotation · WhatsApp
+          </p>
+          <a
+            href="https://wa.me/919363254591?text=Hello%20Hover%20Up%2C%20I%20would%20like%20a%20bulk%20or%20corporate%20order%20quotation."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex min-h-14 w-full max-w-[620px] items-center justify-center rounded-xl bg-white px-5 py-4 text-sm font-semibold text-[#111111] transition-colors duration-300 hover:bg-[#d4b998] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:text-base"
+          >
+            GET BULK QUOTE ON WHATSAPP
+          </a>
+        </div>
+      </section>
+
       {/* Full-screen Watch & Buy Video Viewer */}
       {videoViewerOpen && watchVideos[currentVideoIndex] && (
         <div
