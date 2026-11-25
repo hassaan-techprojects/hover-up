@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ImagePlus, Loader2, Save, Trash2, X } from "lucide-react";
+import { ArrowLeft, ImagePlus, Save, X } from "lucide-react";
 
 type ProductImage = { id: string; url: string; altText: string | null; isPrimary: boolean; sortOrder: number };
 type Category = { id: string; name: string; slug: string };
