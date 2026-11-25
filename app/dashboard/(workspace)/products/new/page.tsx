@@ -98,9 +98,6 @@ export default function AddProductPage() {
   >({});
   const [variations, setVariations] = useState<Variation[]>([]);
 
-  const [attributeSearch
-
-
   const [attributeSearch, setAttributeSearch] = useState("");
   const [showAttributeDropdown, setShowAttributeDropdown] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
