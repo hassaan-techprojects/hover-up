@@ -923,6 +923,12 @@ export default function AddProductPage() {
                             })}
                           </div>
                         ) : <p className="text-xs text-gray-400">This attribute has no colour terms.</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {selectedAttributeList.length > 0 && (
                 <div className="mt-5">
                   <div className="mb-3 flex items-center justify-between gap-3">
@@ -982,6 +988,7 @@ export default function AddProductPage() {
                 </div>
               )}
             </section>
+          </div>
 
           {/* Sidebar */}
           <aside className="space-y-6 xl:sticky xl:top-6">
