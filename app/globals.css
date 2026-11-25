@@ -504,8 +504,8 @@ button {
 
 /* PREMIUM DIAMOND ICON */
 .watch-feature-icon-diamond {
-  background: #ffffff;
-  border: 1px solid #ffffff;
+  background: #b99a76;
+  border: 1px solid rgba(255, 255, 255, 0.75);
   color: #111111;
 }
 
