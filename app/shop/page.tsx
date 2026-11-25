@@ -40,6 +40,8 @@ type Product = {
   }[];
   variants: {
     id: string;
+    name: string;
+    attributes: unknown;
     images: ProductImage[];
     inventory: {
       quantity: number;
@@ -77,7 +79,12 @@ function ProductCard({ product }: { product: Product }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
 
-  const images = product.images ?? [];
+  const mainColourVariant = product.variants.find((variant) => {
+    if (!variant.attributes || typeof variant.attributes !== "object" || Array.isArray(variant.attributes)) return false;
+    return (variant.attributes as Record<string, unknown>).isMainColour === true;
+  });
+  const mainColourImages = mainColourVariant?.images ?? [];
+  const images = mainColourImages.length > 0 ? mainColourImages : (product.images ?? []);
   const currentImage = images[imageIndex];
 
   const price = Number(product.price);
