@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildDefaultProductDescription } from "../../../../../src/lib/product-description";
 import {
@@ -58,6 +58,8 @@ type ProductImageFile = {
   altText: string;
 };
 
+type ColorImageFile = ProductImageFile;
+
 const SIZE_SYMBOLS = ["S", "M", "L", "XL", "XXL"];
 
 function createId() {
@@ -93,6 +95,8 @@ export default function AddProductPage() {
     Record<string, string[]>
   >({});
   const [variations, setVariations] = useState<Variation[]>([]);
+  const [colorImages, setColorImages] = useState<Record<string, ColorImageFile>>({});
+  const [mainColorTermId, setMainColorTermId] = useState("");
 
   const [attributeSearch, setAttributeSearch] = useState("");
   const [showAttributeDropdown, setShowAttributeDropdown] = useState(false);
@@ -173,6 +177,10 @@ export default function AddProductPage() {
       setLoadingOptions(false);
     }
   }
+
+  useEffect(() => {
+    void loadOptions();
+  }, []);
 
   function handleNameChange(value: string) {
     setName(value);
@@ -271,6 +279,51 @@ export default function AddProductPage() {
     }));
 
     setVariations([]);
+  }
+
+  function selectColorTerms(attribute: Attribute) {
+    const colorIds = attribute.values
+      .filter((term) => term.termType === "COLOR")
+      .map((term) => term.id);
+    setSelectedAttributes((current) => ({ ...current, [attribute.id]: colorIds }));
+    setVariations([]);
+  }
+
+  function handleColorImageChange(termId: string, file: File | undefined) {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Color images must be JPG, PNG or WEBP.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Each color image must be smaller than 5 MB.");
+      return;
+    }
+    setError("");
+    setColorImages((current) => {
+      const previous = current[termId];
+      if (previous) URL.revokeObjectURL(previous.preview);
+      return {
+        ...current,
+        [termId]: {
+          id: createId(),
+          file,
+          preview: URL.createObjectURL(file),
+          altText: file.name.replace(/\\.[^/.]+$/, ""),
+        },
+      };
+    });
+  }
+
+  function removeColorImage(termId: string) {
+    setColorImages((current) => {
+      const image = current[termId];
+      if (image) URL.revokeObjectURL(image.preview);
+      const updated = { ...current };
+      delete updated[termId];
+      if (mainColorTermId === termId) setMainColorTermId("");
+      return updated;
+    });
   }
 
   function clearTerms(attributeId: string) {
@@ -450,6 +503,31 @@ export default function AddProductPage() {
           }))
         )
       );
+
+      const selectedColorTerms = selectedAttributeList.flatMap((attribute) =>
+        attribute.values.filter((term) =>
+          term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)
+        )
+      );
+      if (selectedColorTerms.length > 0 && selectedColorTerms.some((term) => !colorImages[term.id])) {
+        setError("Upload an image for every selected colour before saving.");
+        setSubmitting(false);
+        return;
+      }
+      if (selectedColorTerms.length > 0 && !selectedColorTerms.some((term) => term.id === mainColorTermId)) {
+        setError("Choose one uploaded colour as the main colour.");
+        setSubmitting(false);
+        return;
+      }
+      formData.append("mainColorTermId", mainColorTermId);
+      const colorImageMetadata = selectedColorTerms.map((term) => ({
+        termId: term.id,
+        altText: colorImages[term.id].altText,
+      }));
+      formData.append("colorImageMetadata", JSON.stringify(colorImageMetadata));
+      selectedColorTerms.forEach((term) => {
+        formData.append(`colorImage:${term.id}`, colorImages[term.id].file);
+      });
 
       formData.append(
         "variations",
@@ -994,6 +1072,13 @@ export default function AddProductPage() {
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
+                              onClick={() => selectColorTerms(attribute)}
+                              className="text-xs font-medium text-gray-600 underline underline-offset-4 hover:text-black"
+                            >
+                              Select Colours
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => selectAllTerms(attribute)}
                               className="text-xs font-medium text-gray-600 underline underline-offset-4 hover:text-black"
                             >
@@ -1065,6 +1150,51 @@ export default function AddProductPage() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {selectedAttributeList.some((attribute) =>
+                attribute.values.some((term) =>
+                  term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)
+                )
+              ) && (
+                <div className="mt-5 rounded-lg border border-[#e9e7e2] bg-[#fcfbf9] p-4">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-[#171717]">Colour Images & Main Colour</h3>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">Upload a separate image for every selected colour. Choose which colour should appear first on the shop and product listing.</p>
+                  </div>
+                  <div className="space-y-3">
+                    {selectedAttributeList.flatMap((attribute) =>
+                      attribute.values
+                        .filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id))
+                        .map((term) => (
+                          <div key={term.id} className="flex flex-col gap-3 rounded-lg border border-[#e8e6e1] bg-white p-3 sm:flex-row sm:items-center">
+                            <div className="flex min-w-0 flex-1 items-center gap-3">
+                              {colorImages[term.id] ? (
+                                <img src={colorImages[term.id].preview} alt={term.value} className="h-16 w-14 rounded-md border border-[#e8e6e1] object-cover" />
+                              ) : (
+                                <div className="flex h-16 w-14 items-center justify-center rounded-md border border-dashed border-[#d8d2c9] bg-[#faf9f7] text-[10px] text-gray-400">No image</div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-[#171717]">{term.value}</p>
+                                <p className="text-xs text-gray-400">{colorImages[term.id] ? colorImages[term.id].file.name : "Upload this colour's product image"}</p>
+                              </div>
+                            </div>
+                            <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e8e6e1] px-3 text-xs font-medium text-[#171717] hover:bg-[#f8f7f4]">
+                              <ImagePlus size={14} /> {colorImages[term.id] ? "Replace image" : "Upload image"}
+                              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { handleColorImageChange(term.id, event.target.files?.[0]); event.currentTarget.value = ""; }} />
+                            </label>
+                            {colorImages[term.id] && (
+                              <button type="button" onClick={() => removeColorImage(term.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+                            )}
+                            <label className="flex items-center gap-2 text-xs font-medium text-[#4b463f]">
+                              <input type="radio" name="mainColor" checked={mainColorTermId === term.id} onChange={() => setMainColorTermId(term.id)} className="accent-[#171717]" />
+                              Main colour
+                            </label>
+                          </div>
+                        ))
+                    )}
+                  </div>
                 </div>
               )}
 
