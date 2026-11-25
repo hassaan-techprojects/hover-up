@@ -26,26 +26,26 @@ export default async function CategoriesPage() {
                   aria-label={`Shop ${category.name}`}
                   className="group w-full min-w-0 max-w-[230px] focus-visible:outline-none sm:max-w-[270px] lg:max-w-[290px]"
                 >
-                  <div className="relative aspect-square w-full overflow-hidden rounded-full border border-[#e8e3dc] bg-[#f8f6f2] transition-transform duration-500 group-hover:scale-[1.035] group-hover:border-[#b99a76]">
-                    {category.image ? (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        loading="lazy"
-                        className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[#f1ece5]">
-                        <span className="font-serif text-6xl text-[#b99a76] sm:text-7xl">
-                          {category.name.slice(0, 1)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 flex min-h-[34%] items-end justify-center bg-gradient-to-t from-black/75 via-black/35 to-transparent px-3 pb-[12%] pt-10">
-                      <span className="text-center text-sm font-bold leading-tight tracking-wide text-white drop-shadow sm:text-lg">
-                        {category.name}
-                      </span>
+                  <div className="flex w-full flex-col items-center">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-full border border-[#e8e3dc] bg-[#f8f6f2] transition-transform duration-500 group-hover:scale-[1.035] group-hover:border-[#b99a76]">
+                      {category.image ? (
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          loading="lazy"
+                          className="h-full w-full object-contain object-center p-4 sm:p-5"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#f1ece5]">
+                          <span className="font-serif text-6xl text-[#b99a76] sm:text-7xl">
+                            {category.name.slice(0, 1)}
+                          </span>
+                        </div>
+                      )}
                     </div>
+                    <span className="mt-4 block w-full px-2 text-center text-base font-bold leading-snug tracking-wide text-[#111111] transition-colors duration-300 group-hover:text-[#987b5c] sm:text-lg">
+                      {category.name}
+                    </span>
                   </div>
                 </Link>
               ))}
