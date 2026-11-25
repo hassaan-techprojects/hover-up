@@ -51,6 +51,8 @@ type Variation = {
   regularPrice: string;
   salePrice: string;
   stock: string;
+  images: ProductImageFile[];
+  isMainColour: boolean;
 };
 
 type ProductImageFile = {
@@ -266,18 +268,76 @@ export default function AddProductPage() {
     setSelectedAttributes((current) => {
       const existing = current[attributeId] ?? [];
       const next = existing.includes(termId) ? existing.filter((id) => id !== termId) : [...existing, termId];
+      const attribute = attributes.find((item) => item.id === attributeId);
+      setVariations((currentVariations) => {
+        const retained = currentVariations.filter((variation) => next.includes(Object.values(variation.attributes)[0]?.id));
+        const additions = next.filter((id) => !retained.some((variation) => Object.values(variation.attributes)[0]?.id === id)).map((id) => {
+          const selectedTerm = attribute?.values.find((term) => term.id === id);
+          return { id: createId(), attributes: selectedTerm ? { [attributeId]: selectedTerm } : {}, sku: "", regularPrice: "", salePrice: "", stock: "0", images: [], isMainColour: retained.length === 0 && next[0] === id };
+        });
+        const merged = [...retained, ...additions];
+        if (merged.length && !merged.some((variation) => variation.isMainColour)) merged[0].isMainColour = true;
+        return merged;
+      });
       return { [attributeId]: next };
     });
-    setVariations([]);
   }
 
   function selectAllTerms(attribute: Attribute) {
     const colorTerms = attribute.values.filter((term) => term.termType === "COLOR");
     setSelectedAttributes({ [attribute.id]: colorTerms.map((term) => term.id) });
-    setVariations([]);
+    setVariations(colorTerms.map((term, index) => ({
+      id: createId(), attributes: { [attribute.id]: term }, sku: "", regularPrice: "", salePrice: "", stock: "0", images: [], isMainColour: index === 0,
+    })));
   }
 
   function selectColorTerms(attribute: Attribute) { selectAllTerms(attribute); }
+
+  function updateColour(variationId: string, field: "sku" | "regularPrice" | "salePrice" | "stock", value: string) {
+    setVariations((current) => current.map((variation) => variation.id === variationId ? { ...variation, [field]: value } : variation));
+  }
+
+  function addColourImages(variationId: string, files: FileList | null) {
+    if (!files) return;
+    const selected = Array.from(files);
+    if (selected.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024)) {
+      setError("Colour images must be JPG, PNG or WEBP and no larger than 5 MB each.");
+      return;
+    }
+    setVariations((current) => current.map((variation) => {
+      if (variation.id !== variationId) return variation;
+      if (variation.images.length + selected.length > 20) {
+        setError("You can upload a maximum of 20 images for each colour.");
+        return variation;
+      }
+      return { ...variation, images: [...variation.images, ...selected.map((file) => ({ id: createId(), file, preview: URL.createObjectURL(file), altText: file.name.replace(/\\.[^/.]+$/, "") }))] };
+    }));
+    setError("");
+  }
+
+  function moveColourImage(variationId: string, imageIndex: number, direction: -1 | 1) {
+    setVariations((current) => current.map((variation) => {
+      if (variation.id !== variationId) return variation;
+      const nextIndex = imageIndex + direction;
+      if (nextIndex < 0 || nextIndex >= variation.images.length) return variation;
+      const next = [...variation.images];
+      [next[imageIndex], next[nextIndex]] = [next[nextIndex], next[imageIndex]];
+      return { ...variation, images: next };
+    }));
+  }
+
+  function removeColourImage(variationId: string, imageId: string) {
+    setVariations((current) => current.map((variation) => {
+      if (variation.id !== variationId) return variation;
+      const removed = variation.images.find((image) => image.id === imageId);
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return { ...variation, images: variation.images.filter((image) => image.id !== imageId) };
+    }));
+  }
+
+  function setMainColour(variationId: string) {
+    setVariations((current) => current.map((variation) => ({ ...variation, isMainColour: variation.id === variationId })));
+  }
 
   function clearTerms(attributeId: string) {
     setSelectedAttributes({ [attributeId]: [] });
@@ -431,13 +491,24 @@ export default function AddProductPage() {
 
       formData.append(
         "attributeSelections",
-        JSON.stringify(
-          Object.entries(selectedAttributes).map(([attributeId, termIds]) => ({
-            attributeId,
-            termIds: termIds.filter((termId) => attributes.find((item) => item.id === attributeId)?.values.some((term) => term.id === termId && term.termType === "COLOR")),
-          })).filter((selection) => selection.termIds.length > 0)
-        )
+        JSON.stringify(Object.entries(selectedAttributes).map(([attributeId, termIds]) => ({
+          attributeId,
+          termIds: termIds.filter((termId) => attributes.find((item) => item.id === attributeId)?.values.some((term) => term.id === termId && term.termType === "COLOR")),
+        })).filter((selection) => selection.termIds.length > 0))
       );
+
+      const colourMetadata = variations.map((variation) => ({
+        termId: Object.values(variation.attributes)[0]?.id,
+        sku: variation.sku,
+        regularPrice: variation.regularPrice,
+        salePrice: variation.salePrice,
+        stock: variation.stock,
+        imageCount: variation.images.length,
+        isMainColour: variation.isMainColour,
+        attributes: variation.attributes,
+      }));
+      formData.append("colourVariations", JSON.stringify(colourMetadata));
+      variations.forEach((variation) => variation.images.forEach((image) => formData.append("colourImages", image.file)));
 
 
       formData.append("images", JSON.stringify(images.map((image, index) => ({ altText: image.altText, isPrimary: Boolean(image.isPrimary) || (!images.some((item) => item.isPrimary) && index === 0), sortOrder: index }))));
@@ -651,98 +722,38 @@ export default function AddProductPage() {
               <p className="mt-3 text-xs text-gray-400">Use the arrows to arrange images. Select any image as the main product image.</p>
             </section>
 
-            {/* Attributes */}
+            {/* Attributes and colour variations */}
             <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
-              <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="mb-5 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f4f3ef]">
-                    <Layers size={18} className="text-[#171717]" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-[#171717]">
-                      Product Colours (Optional)
-                    </h2>
-                    <p className="mt-1 text-xs text-gray-500">
-                      Optionally select product colours. You can save without selecting any colours.
-                    </p>
-                  </div>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f4f3ef]"><Layers size={18} className="text-[#171717]" /></div>
+                  <div><h2 className="text-base font-semibold text-[#171717]">Attributes & Colour Variations</h2><p className="mt-1 text-xs text-gray-500">Choose an attribute, select its configured colours, then set each colour's images, price, SKU and stock.</p></div>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={loadOptions}
-                  disabled={loadingOptions}
-                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#e8e6e1] px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <RefreshCw
-                    size={14}
-                    className={loadingOptions ? "animate-spin" : ""}
-                  />
-                  {loadingOptions ? "Loading..." : "Load Attributes"}
-                </button>
+                <button type="button" onClick={loadOptions} disabled={loadingOptions} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e8e6e1] px-3 text-xs text-gray-600 disabled:opacity-50"><RefreshCw size={14} className={loadingOptions ? "animate-spin" : ""}/>{loadingOptions ? "Loading..." : "Refresh"}</button>
               </div>
-
               <div className="relative">
-                <div className="relative">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                  <input
-                    value={attributeSearch}
-                    onChange={(event) => {
-                      setAttributeSearch(event.target.value);
-                      setShowAttributeDropdown(true);
-                    }}
-                    onFocus={() => setShowAttributeDropdown(true)}
-                    placeholder="Search and add attributes..."
-                    className="h-11 w-full rounded-lg border border-[#e8e6e1] pl-9 pr-10 text-sm outline-none focus:border-gray-500"
-                  />
-                  <ChevronDown
-                    size={16}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                </div>
-
-                {showAttributeDropdown && (
-                  <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-[#e8e6e1] bg-white shadow-lg">
-                    {filteredAttributes.length > 0 ? (
-                      filteredAttributes.map((attribute) => (
-                        <button
-                          key={attribute.id}
-                          type="button"
-                          onClick={() => addAttribute(attribute)}
-                          className="flex w-full items-center justify-between border-b border-[#f0eee9] px-4 py-3 text-left text-sm last:border-0 hover:bg-[#fcfbf9]"
-                        >
-                          <span className="font-medium text-[#171717]">
-                            {attribute.name}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {attribute.values.length} terms
-                          </span>
-                        </button>
-                      ))
-                    ) : (
-                      <p className="p-4 text-sm text-gray-500">
-                        {attributes.length
-                          ? "No matching attributes found."
-                          : "Click Load Attributes to fetch existing attributes."}
-                      </p>
-                    )}
-                  </div>
-                )}
+                <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/><input value={attributeSearch} onChange={(event)=>{setAttributeSearch(event.target.value);setShowAttributeDropdown(true);}} onFocus={()=>setShowAttributeDropdown(true)} placeholder="Select an attribute..." className="h-11 w-full rounded-lg border border-[#e8e6e1] pl-9 pr-4 text-sm outline-none focus:border-gray-500"/></div>
+                {showAttributeDropdown && <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-[#e8e6e1] bg-white shadow-lg">{filteredAttributes.length ? filteredAttributes.map((attribute)=><button key={attribute.id} type="button" onClick={()=>addAttribute(attribute)} className="flex w-full items-center justify-between border-b border-[#f0eee9] px-4 py-3 text-left text-sm last:border-0 hover:bg-[#fcfbf9]"><span>{attribute.name}</span><span className="text-xs text-gray-400">{attribute.values.filter((term)=>term.termType==="COLOR").length} colours</span></button>) : <p className="p-4 text-sm text-gray-500">No matching attributes. Refresh to reload.</p>}</div>}
               </div>
-
-              {showAttributeDropdown && (
-                <button
-                  type="button"
-                  aria-label="Close attribute dropdown"
-                  className="fixed inset-0 z-10 cursor-default"
-                  onClick={() => setShowAttributeDropdown(false)}
-                />
-              )}
-
+              {showAttributeDropdown && <button type="button" aria-label="Close attribute dropdown" className="fixed inset-0 z-10 cursor-default" onClick={()=>setShowAttributeDropdown(false)}/>}
+              {selectedAttributeList.map((attribute)=>(
+                <div key={attribute.id} className="mt-5 rounded-lg border border-[#e8e6e1] p-4">
+                  <div className="mb-3 flex items-center justify-between"><div><p className="text-sm font-semibold text-[#171717]">{attribute.name}</p><p className="text-xs text-gray-500">Select configured colour terms</p></div><button type="button" onClick={()=>removeAttribute(attribute.id)} className="text-xs text-red-600">Remove attribute</button></div>
+                  <div className="flex flex-wrap gap-2">{attribute.values.filter((term)=>term.termType==="COLOR").map((term)=>{const selected=(selectedAttributes[attribute.id]??[]).includes(term.id);return <button key={term.id} type="button" onClick={()=>toggleTerm(attribute.id,term.id)} className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs ${selected?"border-[#171717] bg-[#f4f3ef] text-[#171717]":"border-[#e8e6e1] text-gray-600"}`}>{term.image ? <img src={term.image} alt="" className="h-5 w-5 rounded-full object-cover"/> : <span className="h-4 w-4 rounded-full border border-gray-300" style={{backgroundColor:term.value.toLowerCase()}}/>}{term.value}{selected ? " ✓" : ""}</button>})}</div>
+                  <div className="mt-3 flex gap-3"><button type="button" onClick={()=>selectColorTerms(attribute)} className="text-xs text-gray-600 underline">Select all colours</button><button type="button" onClick={()=>clearTerms(attribute.id)} className="text-xs text-gray-600 underline">Clear</button></div>
+                </div>
+              ))}
+              {variations.length > 0 && <div className="mt-5 space-y-4"><div><h3 className="text-sm font-semibold text-[#171717]">Configure each colour</h3><p className="mt-1 text-xs text-gray-500">Every colour has independent images, pricing, SKU and inventory. Choose one as the main colour.</p></div>
+                {variations.map((variation)=>{const term=Object.values(variation.attributes)[0];return <div key={variation.id} className="rounded-xl border border-[#e8e6e1] p-4">
+                  <div className="mb-4 flex items-center justify-between gap-3"><div className="flex items-center gap-2"><span className="h-5 w-5 rounded-full border border-gray-300" style={{backgroundColor:term?.value.toLowerCase()}}/><span className="text-sm font-semibold text-[#171717]">{term?.value ?? "Colour"}</span></div><label className="flex items-center gap-2 text-xs text-gray-600"><input type="radio" name="mainColour" checked={variation.isMainColour} onChange={()=>setMainColour(variation.id)} className="accent-[#171717]"/> Main colour</label></div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><label className="text-xs text-gray-600">SKU<input value={variation.sku} onChange={(event)=>updateColour(variation.id,"sku",event.target.value)} placeholder={`SKU-${term?.value.toUpperCase()}`} className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm"/></label><label className="text-xs text-gray-600">Regular price<input type="number" min="0" step="0.01" value={variation.regularPrice} onChange={(event)=>updateColour(variation.id,"regularPrice",event.target.value)} placeholder="0.00" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm"/></label><label className="text-xs text-gray-600">Sale price<input type="number" min="0" step="0.01" value={variation.salePrice} onChange={(event)=>updateColour(variation.id,"salePrice",event.target.value)} placeholder="Optional" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm"/></label><label className="text-xs text-gray-600">Stock<input type="number" min="0" step="1" value={variation.stock} onChange={(event)=>updateColour(variation.id,"stock",event.target.value)} placeholder="0" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm"/></label></div>
+                  <div className="mt-4"><div className="mb-2 flex items-center justify-between"><span className="text-xs font-medium text-gray-700">Images for {term?.value}</span><label className="cursor-pointer rounded-lg border border-[#e8e6e1] px-3 py-2 text-xs"><ImagePlus size={13} className="mr-1 inline"/> Add multiple images<input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(event)=>{addColourImages(variation.id,event.target.files);event.currentTarget.value="";}}/></label></div>
+                    {variation.images.length>0 ? <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{variation.images.map((image,index)=><div key={image.id} className="overflow-hidden rounded-lg border border-[#e8e6e1]"><div className="flex h-28 items-center justify-center p-2"><img src={image.preview} alt={image.altText} className="max-h-full max-w-full object-contain"/></div><div className="flex items-center justify-between bg-[#fcfbf9] p-2"><span className="max-w-[100px] truncate text-[10px] text-gray-500">{image.file.name}</span><div className="flex gap-1"><button type="button" disabled={index===0} onClick={()=>moveColourImage(variation.id,index,-1)} className="rounded border p-1 disabled:opacity-30"><ArrowUp size={12}/></button><button type="button" disabled={index===variation.images.length-1} onClick={()=>moveColourImage(variation.id,index,1)} className="rounded border p-1 disabled:opacity-30"><ArrowDown size={12}/></button><button type="button" onClick={()=>removeColourImage(variation.id,image.id)} className="rounded p-1 text-red-600"><X size={12}/></button></div></div></div>)}</div> : <p className="rounded-lg border border-dashed border-[#dedbd4] p-4 text-center text-xs text-gray-400">No images added for this colour yet.</p>}
+                  </div>
+                </div>})}
+              </div>}
             </section>
+ </section>
           </div>
 
           {/* Sidebar */}
