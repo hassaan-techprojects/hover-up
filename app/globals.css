@@ -1080,6 +1080,11 @@ header nav a,
 }
 
 
+
+/* Keep custom merch typography white against its black showcase panel. */
+.merch-showcase-section :is(h2, h3) { color: #ffffff !important; }
+.merch-showcase-section p { color: rgba(255,255,255,.72); }
+
 /* HOVER UP — slow, staggered homepage motion */
 [data-home-reveal] {
   opacity: 0;
