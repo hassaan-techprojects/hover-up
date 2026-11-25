@@ -199,7 +199,7 @@ function ProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/shop/${product.slug}`}
-          className="mt-3 flex min-h-12 items-center justify-center gap-2 border border-[#222] px-3 py-3 text-sm font-extrabold tracking-[0.1em] transition hover:bg-[#171717] hover:text-white"
+          className="mt-3 flex min-h-12 w-full flex-nowrap items-center justify-center gap-2 whitespace-nowrap border border-[#222] px-2 py-3 text-xs font-extrabold tracking-[0.07em] transition hover:bg-[#171717] hover:text-white sm:px-3 sm:text-sm"
         >
           <ShoppingBag size={18} />
           VIEW PRODUCT
