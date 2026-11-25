@@ -3,6 +3,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getDashboardAdmin } from "@/lib/dashboard-admin";
+import { buildDefaultProductDescription } from "@/lib/product-description";
 import { s3, storageBucket, getPublicObjectUrl } from "@/lib/storage";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -75,7 +76,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     const name = String(form.get("name") ?? "").trim();
     const slug = String(form.get("slug") ?? "").trim();
-    const description = String(form.get("description") ?? "").trim();
+    const submittedDescription = String(form.get("description") ?? "").trim();
+    const description = submittedDescription || buildDefaultProductDescription();
     const sku = String(form.get("sku") ?? "").trim() || null;
     const regularPrice = Number(form.get("regularPrice"));
     const salePriceText = String(form.get("salePrice") ?? "").trim();
@@ -126,7 +128,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       const product = await tx.product.update({
         where: { id },
         data: {
-          name, slug, description: description || null, sku,
+          name, slug, description, sku,
           price: salePrice, comparePrice: salePrice < regularPrice ? regularPrice : null,
           status: status as "DRAFT" | "ACTIVE" | "ARCHIVED",
           isActive: status === "ACTIVE",
