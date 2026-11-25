@@ -127,6 +127,7 @@ export default function HomePage() {
   const [insightDetailsOpen, setInsightDetailsOpen] = useState(false);
   const [previewVideoIndex, setPreviewVideoIndex] = useState<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
+  const insightTouchStartXRef = useRef<number | null>(null);
 
   // Watch & Buy viewer
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
@@ -312,7 +313,7 @@ export default function HomePage() {
 
       {/* Homepage Banner Slider */}
       {!bannersLoading && banners.length > 0 && (
-        <section className="relative flex min-h-[240px] w-full items-center overflow-hidden bg-[#f8f6f2] py-4 sm:min-h-[320px] md:min-h-[420px] md:py-5 lg:min-h-[460px]">
+        <section className="relative flex min-h-[340px] w-full items-center overflow-hidden bg-[#f8f6f2] py-5 sm:min-h-[420px] md:min-h-[500px] md:py-6 lg:min-h-[560px]">
           <div
             className="flex transition-transform duration-700 ease-in-out will-change-transform"
             style={{
@@ -324,7 +325,7 @@ export default function HomePage() {
                 <img
                   src={banner.image}
                   alt={`Hover Up promotional banner ${index + 1}`}
-                  className="block h-auto max-h-[460px] w-full object-contain object-center"
+                  className="block h-auto max-h-[560px] w-full object-contain object-center"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
                   decoding="async"
@@ -402,12 +403,17 @@ export default function HomePage() {
             </p>
           </div>
         ) : (
-          <div className="category-list flex gap-7 overflow-x-auto px-6 pb-4 md:gap-10 md:px-10">
+          <div className="category-marquee overflow-hidden">
+            <div className="category-marquee-track flex w-max">
+              {[0, 1].map((copy) => (
+                <div key={copy} className="flex shrink-0 items-start gap-7 px-6 pb-4 md:gap-10 md:px-10" aria-hidden={copy === 1}>
+                  {categories.map((category) => (
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/shop?category=${encodeURIComponent(category.slug)}`}
                 className="group flex w-44 shrink-0 flex-col items-center text-center md:w-52"
+                tabIndex={copy === 1 ? -1 : undefined}
               >
                 <div className="category-image-frame flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#111111] bg-[#f2f2f2] p-4 transition-all duration-300 group-hover:border-[#b99a76] group-hover:shadow-md md:h-48 md:w-48 md:p-5">
                   {category.image ? (
@@ -429,7 +435,10 @@ export default function HomePage() {
                   {category.name}
                 </h3>
               </Link>
-            ))}
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
@@ -576,7 +585,19 @@ export default function HomePage() {
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-black sm:text-3xl">BLOGS &amp; INSIGHTS</h2>
           </div>
 
-          <div className="mx-auto max-w-[900px]">
+          <div
+            className="mx-auto max-w-[900px]"
+            onTouchStart={(event) => { insightTouchStartXRef.current = event.touches[0]?.clientX ?? null; }}
+            onTouchEnd={(event) => {
+              const startX = insightTouchStartXRef.current;
+              const endX = event.changedTouches[0]?.clientX;
+              if (startX !== null && endX !== undefined && Math.abs(endX - startX) > 45) {
+                setCurrentInsightIndex((index) => endX < startX ? (index + 1) % insights.length : (index - 1 + insights.length) % insights.length);
+                setInsightDetailsOpen(false);
+              }
+              insightTouchStartXRef.current = null;
+            }}
+          >
             <div className="overflow-hidden rounded-xl">
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-[#f2f0ed] sm:aspect-[16/8]">
                 <img
