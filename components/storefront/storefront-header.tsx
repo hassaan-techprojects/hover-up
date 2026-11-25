@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
@@ -48,12 +49,18 @@ function AnnouncementContent() {
 }
 
 export default function StorefrontHeader() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountSectionOpen, setAccountSectionOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
   const closeMenu = () => setMenuOpen(false);
+  const isHomeActive = pathname === "/";
+  const isShopActive = pathname === "/shop" || pathname.startsWith("/categories") || pathname.startsWith("/collections");
+  const isAccountActive = pathname.startsWith("/account");
+  const navItemClass = (active: boolean) =>
+    `mobile-nav-item relative flex h-full flex-col items-center justify-center gap-1.5 transition-colors duration-300 ${active ? "text-[#a98762]" : "text-[#171717]"}`;
 
   useEffect(() => {
     const syncCartCount = () => {
@@ -453,40 +460,50 @@ export default function StorefrontHeader() {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 z-50 grid h-[66px] w-full grid-cols-4 border-t border-[#e8e3dc] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.04)] backdrop-blur-md md:hidden">
+      <nav aria-label="Mobile navigation" className="fixed bottom-0 left-0 z-50 grid h-[72px] w-full grid-cols-4 border-t border-[#e8e3dc] bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-md md:hidden">
         <Link
           href="/"
-          className="mobile-nav-item flex flex-col items-center justify-center gap-1"
+          aria-current={isHomeActive ? "page" : undefined}
+          className={navItemClass(isHomeActive)}
         >
-          <Home size={21} strokeWidth={2.2} />
-          <span className="text-[10px] font-bold">Home</span>
+          {isHomeActive && <span aria-hidden="true" className="absolute top-0 h-[3px] w-9 rounded-full bg-[#b99a76]" />}
+          <Home size={26} strokeWidth={2.15} />
+          <span className={`text-[11px] ${isHomeActive ? "font-extrabold" : "font-semibold"}`}>Home</span>
         </Link>
 
         <button
+          type="button"
+          aria-label="Search"
+          aria-current={searchOpen ? "page" : undefined}
           onClick={() => {
             setSearchOpen(true);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="mobile-nav-item flex flex-col items-center justify-center gap-1"
+          className={navItemClass(searchOpen)}
         >
-          <Search size={21} strokeWidth={2.2} />
-          <span className="text-[10px] font-bold">Search</span>
+          {searchOpen && <span aria-hidden="true" className="absolute top-0 h-[3px] w-9 rounded-full bg-[#b99a76]" />}
+          <Search size={26} strokeWidth={2.15} />
+          <span className={`text-[11px] ${searchOpen ? "font-extrabold" : "font-semibold"}`}>Search</span>
         </button>
 
         <Link
           href="/shop"
-          className="mobile-nav-item flex flex-col items-center justify-center gap-1"
+          aria-current={isShopActive ? "page" : undefined}
+          className={navItemClass(isShopActive)}
         >
-          <ShoppingBag size={21} strokeWidth={2.2} />
-          <span className="text-[10px] font-bold">Shop</span>
+          {isShopActive && <span aria-hidden="true" className="absolute top-0 h-[3px] w-9 rounded-full bg-[#b99a76]" />}
+          <ShoppingBag size={26} strokeWidth={2.15} />
+          <span className={`text-[11px] ${isShopActive ? "font-extrabold" : "font-semibold"}`}>Shop</span>
         </Link>
 
         <Link
           href="/account"
-          className="mobile-nav-item flex flex-col items-center justify-center gap-1"
+          aria-current={isAccountActive ? "page" : undefined}
+          className={navItemClass(isAccountActive)}
         >
-          <UserRound size={21} strokeWidth={2.2} />
-          <span className="text-[10px] font-bold">Account</span>
+          {isAccountActive && <span aria-hidden="true" className="absolute top-0 h-[3px] w-9 rounded-full bg-[#b99a76]" />}
+          <UserRound size={26} strokeWidth={2.15} />
+          <span className={`text-[11px] ${isAccountActive ? "font-extrabold" : "font-semibold"}`}>Account</span>
         </Link>
       </nav>
     </>
