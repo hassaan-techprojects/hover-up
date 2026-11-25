@@ -1,4 +1,4 @@
-const DEFAULT_APPAREL_DESCRIPTION = `### Custom T-Shirt Printing with Your Logo or Design
+const DEFAULT_APPAREL_DESCRIPTION = `## Custom T-Shirt Printing with Your Logo or Design
 
 Hover Up lets you turn your logo, artwork or idea into apparel you can wear and share. You upload your design, choose the garment, colour and sizes, and place your order in a few simple steps. Our custom t-shirt printing service is made for businesses, startups, colleges, sports teams, event organisers, families and individuals who want clothing that is personal and professional. Whether you need a small pack or a large bulk order, we make it easy to get printed apparel with your own identity on it.
 
