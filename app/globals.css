@@ -1129,85 +1129,39 @@ main video.home-reveal-visible {
 }
 
 
-/* HOVER UP — spread, reassemble, system-hack glitch, then settle */
+/* HOVER UP — horizontal letter spread, clean return, monochrome TV glitch */
 .hoverup-logo-wordmark {
   position: relative;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
   letter-spacing: .14em;
-  perspective: 900px;
   isolation: isolate;
 }
 .hoverup-logo-letter {
   position: relative;
   display: inline-block;
-  transform-origin: 50% 55%;
-  animation: hu-wordmark-hack-cycle 8.4s cubic-bezier(.2,.75,.2,1) infinite both;
-  will-change: transform, opacity, filter, text-shadow;
+  transform-origin: 50% 50%;
+  animation: hu-horizontal-spread 8.4s ease-in-out infinite both;
+  will-change: transform;
 }
-.hoverup-logo-letter:nth-child(1) { --scatter-x: -42px; --scatter-y: -24px; }
-.hoverup-logo-letter:nth-child(2) { --scatter-x: -28px; --scatter-y: 27px; }
-.hoverup-logo-letter:nth-child(3) { --scatter-x: -14px; --scatter-y: -34px; }
-.hoverup-logo-letter:nth-child(4) { --scatter-x: 0px; --scatter-y: 32px; }
-.hoverup-logo-letter:nth-child(5) { --scatter-x: 15px; --scatter-y: -30px; }
-.hoverup-logo-letter:nth-child(6) { --scatter-x: 29px; --scatter-y: 25px; }
-.hoverup-logo-letter:nth-child(7) { --scatter-x: 43px; --scatter-y: -22px; }
-.hoverup-logo-letter:nth-child(8) { --scatter-x: 56px; --scatter-y: 28px; }
+.hoverup-logo-letter:nth-child(1) { --spread-x: -42px; }
+.hoverup-logo-letter:nth-child(2) { --spread-x: -30px; }
+.hoverup-logo-letter:nth-child(3) { --spread-x: -18px; }
+.hoverup-logo-letter:nth-child(4) { --spread-x: -6px; }
+.hoverup-logo-letter:nth-child(5) { --spread-x: 6px; }
+.hoverup-logo-letter:nth-child(6) { --spread-x: 18px; }
+.hoverup-logo-letter:nth-child(7) { --spread-x: 30px; }
+.hoverup-logo-letter:nth-child(8) { --spread-x: 42px; }
 
-@keyframes hu-wordmark-hack-cycle {
-  0%, 8% {
-    opacity: 1;
-    transform: translate3d(0,0,0) rotate(0) scale(1);
-    filter: blur(0);
-    text-shadow: none;
-  }
-  /* All characters burst outward and scatter. */
-  18% {
-    opacity: .9;
-    transform: translate3d(var(--scatter-x),var(--scatter-y),0) rotate(var(--scatter-rotate, 18deg)) scale(1.16);
-    filter: blur(1px);
-    text-shadow: 0 0 9px rgba(185,154,118,.55);
-  }
-  /* Characters snap back into the exact wordmark. */
-  29%, 39% {
-    opacity: 1;
-    transform: translate3d(0,0,0) rotate(0) scale(1);
-    filter: blur(0);
-    text-shadow: none;
-  }
-  /* Digital/system-hack flicker after the letters have reassembled. */
-  42% {
-    transform: translate3d(-2px,0,0) skewX(-12deg);
-    filter: contrast(1.8) brightness(1.4);
-    text-shadow: 3px 0 #b99a76, -3px 0 #00d9ff;
-  }
-  44% {
-    transform: translate3d(3px,-1px,0) skewX(10deg);
-    filter: contrast(2) brightness(.75);
-    text-shadow: -4px 0 #b99a76, 4px 0 #00d9ff;
-  }
-  46% {
-    transform: translate3d(-1px,1px,0) skewX(-5deg);
-    filter: contrast(1.7) brightness(1.5);
-    text-shadow: 2px 0 #00d9ff, -2px 0 #b99a76;
-  }
-  49% {
-    transform: translate3d(2px,0,0) skewX(7deg);
-    filter: contrast(1.6);
-    text-shadow: -3px 0 #00d9ff, 3px 0 #b99a76;
-  }
-  53%, 57% {
-    transform: translate3d(0,0,0) skewX(0);
-    filter: none;
-    text-shadow: none;
-  }
-  64%, 100% {
-    opacity: 1;
-    transform: translate3d(0,0,0) rotate(0) scale(1);
-    filter: blur(0);
-    text-shadow: none;
-  }
+@keyframes hu-horizontal-spread {
+  0%, 9%, 100% { transform: translateX(0); }
+  20% { transform: translateX(var(--spread-x)); }
+  31%, 39% { transform: translateX(0); }
+  42%, 54% { transform: translateX(0); }
 }
+
+/* Monochrome television interference: grey scan lines and black/white flicker only. */
 .hoverup-logo-wordmark::before,
 .hoverup-logo-wordmark::after {
   content: "HOVER UP";
@@ -1218,24 +1172,44 @@ main video.home-reveal-visible {
   white-space: nowrap;
   letter-spacing: inherit;
   font: inherit;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
 }
 .hoverup-logo-wordmark::before {
-  color: #b99a76;
-  animation: hu-hack-overlay-warm 8.4s steps(1,end) infinite;
+  background-image: repeating-linear-gradient(
+    0deg,
+    #111111 0px,
+    #111111 1px,
+    #8a8a8a 1px,
+    #8a8a8a 2px,
+    #eeeeee 2px,
+    #eeeeee 3px
+  );
+  animation: hu-tv-static-grey 8.4s steps(1, end) infinite;
 }
 .hoverup-logo-wordmark::after {
-  color: #00bfe8;
-  animation: hu-hack-overlay-cyan 8.4s steps(1,end) infinite;
+  background-image: repeating-linear-gradient(
+    180deg,
+    #050505 0px,
+    #050505 2px,
+    #bdbdbd 2px,
+    #bdbdbd 3px,
+    #555555 3px,
+    #555555 4px
+  );
+  animation: hu-tv-static-black 8.4s steps(1, end) infinite;
 }
-@keyframes hu-hack-overlay-warm {
-  0%, 40%, 57%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(0 0 100% 0); }
-  42%, 46%, 51% { opacity: .75; transform: translateX(-3px); clip-path: inset(10% 0 58% 0); }
-  44%, 49%, 54% { opacity: .65; transform: translateX(3px); clip-path: inset(56% 0 12% 0); }
+@keyframes hu-tv-static-grey {
+  0%, 40%, 56%, 100% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateX(0); }
+  42%, 46%, 50%, 54% { opacity: .9; clip-path: inset(8% 0 62% 0); transform: translateX(-2px); }
+  44%, 48%, 52% { opacity: .75; clip-path: inset(58% 0 8% 0); transform: translateX(2px); }
 }
-@keyframes hu-hack-overlay-cyan {
-  0%, 40%, 57%, 100% { opacity: 0; transform: translateX(0); clip-path: inset(100% 0 0 0); }
-  42%, 49%, 54% { opacity: .8; transform: translateX(3px); clip-path: inset(42% 0 28% 0); }
-  44%, 46%, 51% { opacity: .65; transform: translateX(-4px); clip-path: inset(4% 0 70% 0); }
+@keyframes hu-tv-static-black {
+  0%, 40%, 56%, 100% { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateX(0); }
+  42%, 48%, 52% { opacity: .85; clip-path: inset(32% 0 38% 0); transform: translateX(2px); }
+  44%, 46%, 50%, 54% { opacity: .8; clip-path: inset(72% 0 4% 0); transform: translateX(-2px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hoverup-logo-letter,
