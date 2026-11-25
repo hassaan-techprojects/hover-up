@@ -18,6 +18,8 @@ const attributeInclude = {
     select: {
       id: true,
       value: true,
+      termType: true,
+      sizeSymbol: true,
       image: true,
     },
     orderBy: {
