@@ -1127,3 +1127,48 @@ main video.home-reveal-visible {
     transition: none !important;
   }
 }
+
+
+/* HOVER UP animated brand wordmark */
+.hoverup-logo-wordmark {
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: .12em;
+  perspective: 700px;
+}
+.hoverup-logo-letter {
+  display: inline-block;
+  transform-origin: 50% 65%;
+  animation: hu-wordmark-cycle 7.2s cubic-bezier(.22,.7,.2,1) infinite both;
+  will-change: transform, opacity, filter;
+}
+@keyframes hu-wordmark-cycle {
+  0%, 5% {
+    opacity: 0;
+    transform: translate3d(0, 13px, 0) rotateX(-75deg) scale(.82);
+    filter: blur(4px);
+  }
+  13%, 57% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateX(0) scale(1);
+    filter: blur(0);
+  }
+  65% {
+    opacity: .72;
+    transform: translate3d(0, -5px, 0) rotate(-8deg) scale(.94);
+    filter: blur(1px);
+  }
+  73% {
+    opacity: 1;
+    transform: translate3d(0, 2px, 0) rotate(5deg) scale(1.05);
+    filter: blur(0);
+  }
+  82%, 100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0) scale(1);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hoverup-logo-letter { animation: none !important; }
+}
