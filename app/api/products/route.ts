@@ -40,6 +40,8 @@ export async function GET() {
           where: { isActive: true },
           select: {
             id: true,
+            name: true,
+            attributes: true,
             images: {
               select: {
                 id: true,
