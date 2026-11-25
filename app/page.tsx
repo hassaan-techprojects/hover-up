@@ -482,11 +482,18 @@ export default function HomePage() {
                       <Link href={`/shop/${product.slug}`} aria-label={`View ${product.name}`} className="absolute inset-0 flex items-center justify-center">
                         {image ? <img src={image.url} alt={image.altText || product.name} loading="lazy" className="h-full w-full object-contain p-1 transition-transform duration-500 group-hover:scale-[1.04]" /> : <div className="flex h-full items-center justify-center text-base text-[#777]">NO IMAGE</div>}
                       </Link>
-                      <span className="absolute left-3 top-3 z-10 rounded-sm bg-black px-3 py-2 text-sm font-extrabold tracking-wide text-white">PACK OF 2</span>
-                      <Link href={`/shop/${product.slug}`} className="absolute inset-x-3 bottom-3 flex min-h-12 items-center justify-center rounded-sm bg-black px-4 text-base font-extrabold tracking-wider text-white opacity-100 transition-all duration-300 hover:bg-[#b99a76] hover:text-black sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100">VIEW PRODUCT</Link>
+                      <span className="absolute left-2 top-2 z-10 rounded-sm bg-black px-2 py-1 text-[9px] font-bold leading-none tracking-wide text-white sm:left-3 sm:top-3 sm:px-2.5 sm:py-1.5 sm:text-[10px]">PACK OF 2</span>
+                      <Link href={`/shop/${product.slug}`} className="absolute inset-x-2 bottom-2 flex min-h-10 flex-nowrap items-center justify-center whitespace-nowrap rounded-sm bg-black px-2 text-[11px] font-extrabold leading-none tracking-[0.08em] text-white opacity-100 transition-all duration-300 hover:bg-[#b99a76] hover:text-black sm:inset-x-3 sm:bottom-3 sm:min-h-11 sm:px-3 sm:text-xs sm:translate-y-3 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100">VIEW PRODUCT</Link>
                     </div>
                     <Link href={`/shop/${product.slug}`}><h3 className="mt-4 line-clamp-2 text-lg font-extrabold leading-7 text-[#171717] transition-colors hover:text-[#987b5c] sm:text-xl">{product.name}</h3></Link>
                     <p className="mt-2 text-xl font-extrabold text-[#171717]">₹1,399</p>
+                    <div className="mt-1 flex items-center gap-0.5 text-[#C49A54]" aria-label="5 out of 5 stars">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <svg key={index} viewBox="0 0 20 20" className="h-4 w-4 fill-current" aria-hidden="true">
+                          <path d="m10 1.6 2.55 5.17 5.7.83-4.13 4.03.98 5.68L10 14.63l-5.1 2.68.98-5.68L1.75 7.6l5.7-.83L10 1.6Z" />
+                        </svg>
+                      ))}
+                    </div>
                     <div className="mt-2 flex min-h-7 flex-wrap items-center gap-2">
                       {(() => {
                         const colors = (product.attributes || [])
