@@ -19,6 +19,8 @@ import {
   Trash2,
   RefreshCw,
   Info,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 type AttributeTerm = {
@@ -87,7 +89,7 @@ export default function AddProductPage() {
   const [salePrice, setSalePrice] = useState("");
   const [stock, setStock] = useState("0");
 
-  const [images, setImages] = useState<ProductImageFile[]>([]);
+  const [images, setImages] = useState<(ProductImageFile & { isPrimary?: boolean })[]>([]);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -95,10 +97,8 @@ export default function AddProductPage() {
     Record<string, string[]>
   >({});
   const [variations, setVariations] = useState<Variation[]>([]);
-  const [colorImages, setColorImages] = useState<Record<string, ColorImageFile>>({});
-  const [mainColorTermId, setMainColorTermId] = useState("");
-  const [expandedColorId, setExpandedColorId] = useState<string | null>(null);
-  const [colorDetails, setColorDetails] = useState<Record<string, { sku: string; regularPrice: string; salePrice: string; stock: string }>>({});
+
+  const [attributeSearch
 
 
   const [attributeSearch, setAttributeSearch] = useState("");
@@ -227,7 +227,7 @@ export default function AddProductPage() {
       altText: file.name.replace(/\.[^/.]+$/, ""),
     }));
 
-    setImages((current) => [...current, ...newImages]);
+    setImages((current) => [...current, ...newImages.map((image, index) => ({ ...image, isPrimary: current.length === 0 && index === 0 }))]);
   }
 
   function removeImage(id: string) {
@@ -236,7 +236,9 @@ export default function AddProductPage() {
 
       if (image) URL.revokeObjectURL(image.preview);
 
-      return current.filter((item) => item.id !== id);
+      const remaining = current.filter((item) => item.id !== id);
+      if (image?.isPrimary && remaining[0]) remaining[0].isPrimary = true;
+      return remaining;
     });
   }
 
@@ -270,100 +272,38 @@ export default function AddProductPage() {
     if (!term || term.termType !== "COLOR") return;
     setSelectedAttributes((current) => {
       const existing = current[attributeId] ?? [];
-      const next = existing.includes(termId)
-        ? existing.filter((id) => id !== termId)
-        : [...existing, termId];
+      const next = existing.includes(termId) ? existing.filter((id) => id !== termId) : [...existing, termId];
       return { [attributeId]: next };
     });
-    if ((selectedAttributes[attributeId] ?? []).includes(termId)) {
-      setColorImages((current) => { const next = { ...current }; delete next[termId]; return next; });
-      setColorDetails((current) => { const next = { ...current }; delete next[termId]; return next; });
-      if (mainColorTermId === termId) setMainColorTermId("");
-      if (expandedColorId === termId) setExpandedColorId(null);
-    } else {
-      setExpandedColorId(termId);
-      setColorDetails((current) => ({
-        ...current,
-        [termId]: current[termId] ?? {
-          sku: `${sku.trim() || "HU"}-${term.value.replace(/[^a-z0-9]/gi, "").toUpperCase()}`,
-          regularPrice: "",
-          salePrice: "",
-          stock: "0",
-        },
-      }));
-    }
     setVariations([]);
   }
 
   function selectAllTerms(attribute: Attribute) {
     const colorTerms = attribute.values.filter((term) => term.termType === "COLOR");
     setSelectedAttributes({ [attribute.id]: colorTerms.map((term) => term.id) });
-    setColorDetails((current) => {
-      const next = { ...current };
-      colorTerms.forEach((term) => {
-        next[term.id] ??= {
-          sku: `${sku.trim() || "HU"}-${term.value.replace(/[^a-z0-9]/gi, "").toUpperCase()}`,
-          regularPrice: "",
-          salePrice: "",
-          stock: "0",
-        };
-      });
-      return next;
-    });
-    setExpandedColorId(colorTerms[0]?.id ?? null);
     setVariations([]);
   }
 
-  function selectColorTerms(attribute: Attribute) {
-    selectAllTerms(attribute);
-  }
+  function selectColorTerms(attribute: Attribute) { selectAllTerms(attribute); }
 
   function clearTerms(attributeId: string) {
     setSelectedAttributes({ [attributeId]: [] });
-    setColorImages({});
-    setColorDetails({});
-    setMainColorTermId("");
-    setExpandedColorId(null);
     setVariations([]);
   }
 
-  function handleColorImageChange(termId: string, file: File | undefined) {
-    if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("Color images must be JPG, PNG or WEBP.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Each color image must be smaller than 5 MB.");
-      return;
-    }
-    setError("");
-    setColorImages((current) => {
-      const previous = current[termId];
-      if (previous) URL.revokeObjectURL(previous.preview);
-      return {
-        ...current,
-        [termId]: {
-          id: createId(),
-          file,
-          preview: URL.createObjectURL(file),
-          altText: file.name.split(".").slice(0, -1).join(".") || file.name,
-        },
-      };
+  function moveImage(index: number, direction: -1 | 1) {
+    setImages((current) => {
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
     });
   }
 
-  function removeColorImage(termId: string) {
-    const image = colorImages[termId];
-    if (image) URL.revokeObjectURL(image.preview);
-    if (mainColorTermId === termId) setMainColorTermId("");
-    setColorImages((current) => {
-      const updated = { ...current };
-      delete updated[termId];
-      return updated;
-    });
+  function setMainImage(id: string) {
+    setImages((current) => current.map((image) => ({ ...image, isPrimary: image.id === id })));
   }
-
 
   function generateVariations() {
     if (!selectedAttributeList.length) {
@@ -475,30 +415,6 @@ export default function AddProductPage() {
       return;
     }
 
-    const selectedColorTerms = selectedAttributeList.flatMap((attribute) =>
-      attribute.values.filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id))
-    );
-    if (!selectedAttributeList.length) {
-      setError("Select an attribute first.");
-      return;
-    }
-    if (!selectedColorTerms.length) {
-      setError("Select at least one colour.");
-      return;
-    }
-    for (const term of selectedColorTerms) {
-      const details = colorDetails[term.id];
-      if (!colorImages[term.id] || !details?.sku.trim() || !details.regularPrice || Number(details.regularPrice) < 0 || (details.salePrice && (Number(details.salePrice) < 0 || Number(details.salePrice) > Number(details.regularPrice))) || !/^\d+$/.test(details.stock) ) {
-        setError(`Complete the image, SKU, price and stock for ${term.value}.`);
-        setExpandedColorId(term.id);
-        return;
-      }
-    }
-    if (!selectedColorTerms.some((term) => term.id === mainColorTermId)) {
-      setError("Choose one colour as the main product image.");
-      return;
-    }
-
     try {
       setSubmitting(true);
 
@@ -508,11 +424,10 @@ export default function AddProductPage() {
       formData.append("slug", slug.trim());
       formData.append("description", description);
       const productSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
-      const mainDetails = colorDetails[mainColorTermId];
       formData.append("sku", productSku);
-      formData.append("price", mainDetails.salePrice || mainDetails.regularPrice);
-      formData.append("comparePrice", mainDetails.salePrice ? mainDetails.regularPrice : "");
-      formData.append("stock", mainDetails.stock);
+      formData.append("price", "0");
+      formData.append("comparePrice", "");
+      formData.append("stock", "0");
       formData.append("status", nextStatus);
       formData.append("isActive", nextStatus === "ACTIVE" ? "true" : "false");
 
@@ -532,32 +447,8 @@ export default function AddProductPage() {
       );
 
 
-      formData.append("mainColorTermId", mainColorTermId);
-      const colorImageMetadata = selectedColorTerms.map((term) => ({
-        termId: term.id,
-        altText: colorImages[term.id].altText,
-      }));
-      formData.append("colorImageMetadata", JSON.stringify(colorImageMetadata));
-      selectedColorTerms.forEach((term) => {
-        formData.append(`colorImage:${term.id}`, colorImages[term.id].file);
-      });
-
-      formData.append(
-        "variations",
-        JSON.stringify(
-          selectedColorTerms.map((term) => ({
-            sku: colorDetails[term.id].sku.trim(),
-            attributes: {
-              [selectedAttributeList[0].name]: { id: term.id, value: term.value, sizeSymbol: term.sizeSymbol },
-            },
-            regularPrice: colorDetails[term.id].regularPrice,
-            salePrice: colorDetails[term.id].salePrice,
-            stock: colorDetails[term.id].stock,
-          }))
-        )
-      );
-
-      formData.append("images", JSON.stringify([]));
+      formData.append("images", JSON.stringify(images.map((image, index) => ({ altText: image.altText, isPrimary: Boolean(image.isPrimary) || (!images.some((item) => item.isPrimary) && index === 0), sortOrder: index }))));
+      images.forEach((image) => formData.append("productImages", image.file));
 
       const response = await fetch("/api/dashboard/products", {
         method: "POST",
@@ -761,6 +652,12 @@ export default function AddProductPage() {
               </div>
             </section>
 
+            <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-base font-semibold text-[#171717]">Product Images</h2><p className="mt-1 text-xs text-gray-500">Upload multiple images together and arrange them in your preferred order.</p></div><label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg bg-[#171717] px-4 text-xs font-medium text-white"><ImagePlus size={15}/> Add Images<input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(event)=>{handleImageChange(event.target.files);event.currentTarget.value="";}}/></label></div>
+              {images.length ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{images.map((image,index)=><div key={image.id} className="overflow-hidden rounded-lg border border-[#e8e6e1]"><div className="flex h-36 items-center justify-center bg-white p-2"><img src={image.preview} alt={image.altText} className="max-h-full max-w-full object-contain"/></div><div className="space-y-2 bg-[#fcfbf9] p-3"><p className="truncate text-xs text-gray-600">{image.file.name}</p><label className="flex items-center gap-2 text-xs text-gray-600"><input type="radio" name="mainProductImage" checked={Boolean(image.isPrimary) || (!images.some((item)=>item.isPrimary) && index===0)} onChange={()=>setMainImage(image.id)} className="accent-[#171717]"/> Main image</label><div className="flex items-center justify-between"><div className="flex gap-1"><button type="button" disabled={index===0} onClick={()=>moveImage(index,-1)} className="rounded border p-1.5 disabled:opacity-30" aria-label="Move image up"><ArrowUp size={14}/></button><button type="button" disabled={index===images.length-1} onClick={()=>moveImage(index,1)} className="rounded border p-1.5 disabled:opacity-30" aria-label="Move image down"><ArrowDown size={14}/></button></div><button type="button" onClick={()=>removeImage(image.id)} className="rounded p-1.5 text-red-600 hover:bg-red-50" aria-label="Remove image"><Trash2 size={14}/></button></div></div></div>)}</div> : <label className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#dedbd4] bg-[#fcfbf9] text-center"><ImagePlus size={25} className="mb-2 text-gray-400"/><span className="text-sm font-medium text-[#171717]">Choose multiple product images</span><span className="mt-1 text-xs text-gray-400">JPG, PNG or WEBP · Maximum 20 images · 5 MB each</span><input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(event)=>{handleImageChange(event.target.files);event.currentTarget.value="";}}/></label>}
+              <p className="mt-3 text-xs text-gray-400">Use the arrows to arrange images. Select any image as the main product image.</p>
+            </section>
+
             {/* Attributes */}
             <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
               <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -770,10 +667,10 @@ export default function AddProductPage() {
                   </div>
                   <div>
                     <h2 className="text-base font-semibold text-[#171717]">
-                      Attributes & Variations
+                      Product Colours (Optional)
                     </h2>
                     <p className="mt-1 text-xs text-gray-500">
-                      Select existing attributes and their terms.
+                      Optionally select product colours. You can save without selecting any colours.
                     </p>
                   </div>
                 </div>
@@ -852,133 +749,6 @@ export default function AddProductPage() {
                 />
               )}
 
-              {selectedAttributeList.length > 0 && (
-                <div className="mt-5 space-y-4">
-                  {selectedAttributeList.map((attribute) => {
-                    const selectedTerms = selectedAttributes[attribute.id] ?? [];
-
-                    return (
-                      <div
-                        key={attribute.id}
-                        className="rounded-lg border border-[#e9e7e2] p-4"
-                      >
-                        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <h3 className="text-sm font-semibold text-[#171717]">
-                              {attribute.name}
-                            </h3>
-                            <p className="mt-1 text-xs text-gray-400">
-                              {selectedTerms.length} of {attribute.values.length} terms selected
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => selectColorTerms(attribute)}
-                              className="text-xs font-medium text-gray-600 underline underline-offset-4 hover:text-black"
-                            >
-                              Select Colours
-                            </button>
-
-
-                            <button
-                              type="button"
-                              onClick={() => clearTerms(attribute.id)}
-                              className="text-xs text-gray-500 underline underline-offset-4 hover:text-red-600"
-                            >
-                              Clear
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => removeAttribute(attribute.id)}
-                              className="flex h-7 w-7 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"
-                              title="Remove attribute"
-                            >
-                              <X size={15} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {attribute.values.filter((term) => term.termType === "COLOR").length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {attribute.values.filter((term) => term.termType === "COLOR").map((term) => {
-                              const selected = selectedTerms.includes(term.id);
-                              return (
-                                <button key={term.id} type="button" onClick={() => toggleTerm(attribute.id, term.id)}
-                                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-[#171717] bg-[#171717] text-white" : "border-[#e8e6e1] bg-white text-gray-600 hover:border-gray-400"}`}>
-                                  {term.image && <img src={term.image} alt="" className="h-5 w-5 rounded-full border border-white/20 object-cover" />}
-                                  {term.value}{selected && <X size={12} />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : <p className="text-xs text-gray-400">This attribute has no colour terms.</p>}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {selectedAttributeList.length > 0 && (
-                <div className="mt-5">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-sm font-semibold text-[#171717]">Selected Colours</h3>
-                      <p className="mt-1 text-xs text-gray-500">Choose colours first. Each colour has its own image, price, SKU and stock.</p>
-                    </div>
-                    <button type="button" onClick={() => selectAllTerms(selectedAttributeList[0])}
-                      className="rounded-lg border border-[#e8e6e1] px-3 py-2 text-xs font-medium text-[#171717] hover:bg-[#f8f7f4]">Select All Colours</button>
-                  </div>
-                  <div className="space-y-3">
-                    {selectedAttributeList.flatMap((attribute) => attribute.values.filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)).map((term) => {
-                      const details = colorDetails[term.id] ?? { sku: "", regularPrice: "", salePrice: "", stock: "0" };
-                      const expanded = expandedColorId === term.id;
-                      return (
-                        <div key={term.id} className="overflow-hidden rounded-lg border border-[#e8e6e1] bg-white">
-                          <button type="button" onClick={() => setExpandedColorId(expanded ? null : term.id)}
-                            className="flex w-full items-center justify-between gap-3 p-3 text-left hover:bg-[#fcfbf9]">
-                            <span className="flex min-w-0 items-center gap-3">
-                              {colorImages[term.id] ? <img src={colorImages[term.id].preview} alt={term.value} className="h-12 w-12 rounded-md border border-[#e8e6e1] object-cover" /> : <span className="flex h-12 w-12 items-center justify-center rounded-md border border-dashed border-[#d8d2c9] text-[10px] text-gray-400">Image</span>}
-                              <span><span className="block text-sm font-semibold text-[#171717]">{term.value}</span><span className="block text-xs text-gray-400">{colorImages[term.id] ? "Image uploaded" : "Image required"} · {details.sku || "SKU pending"}</span></span>
-                            </span>
-                            <ChevronDown size={18} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
-                          </button>
-                          {expanded && (
-                            <div className="space-y-4 border-t border-[#eeeae3] bg-[#fcfbf9] p-4">
-                              <div>
-                                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Product Images</h4>
-                                <p className="mb-3 text-xs text-gray-500">Upload the product photo for {term.value}.</p>
-                                <label className="flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#dedbd4] bg-white p-4 text-center hover:border-gray-400">
-                                  {colorImages[term.id] ? <img src={colorImages[term.id].preview} alt={term.value} className="mb-2 h-24 max-w-full object-contain" /> : <ImagePlus size={24} className="mb-2 text-gray-400" />}
-                                  <span className="text-xs font-medium text-[#171717]">{colorImages[term.id] ? "Replace image" : "Click to upload product image"}</span>
-                                  <span className="mt-1 text-[11px] text-gray-400">JPG, PNG or WEBP · Maximum 5 MB</span>
-                                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { handleColorImageChange(term.id, event.target.files?.[0]); event.currentTarget.value = ""; }} />
-                                </label>
-                                {colorImages[term.id] && <label className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-[#171717]"><input type="radio" name="mainColor" checked={mainColorTermId === term.id} onChange={() => setMainColorTermId(term.id)} className="accent-[#171717]" /> Select as main image</label>}
-                              </div>
-                              <div>
-                                <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Product Pricing</h4>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                  <label className="text-xs text-gray-600">Regular Price (₹)<input type="number" min="0" step="0.01" value={details.regularPrice} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, regularPrice: event.target.value } }))} placeholder="0.00" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
-                                  <label className="text-xs text-gray-600">Sale Price (₹)<input type="number" min="0" step="0.01" value={details.salePrice} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, salePrice: event.target.value } }))} placeholder="Optional" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
-                                  <label className="text-xs text-gray-600">Initial Stock<input type="number" min="0" step="1" value={details.stock} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, stock: event.target.value } }))} className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
-                                </div>
-                              </div>
-                              <div>
-                                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Inventory & SKU</h4>
-                                <label className="text-xs text-gray-600">Product SKU<input value={details.sku} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, sku: event.target.value } }))} placeholder="Enter SKU for this colour" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }))}
-                  </div>
-                  {selectedAttributeList.every((attribute) => !(selectedAttributes[attribute.id] ?? []).length) && <p className="rounded-lg bg-[#fcfbf9] p-4 text-xs text-gray-500">Select one or more colours above to configure their images, prices and SKUs.</p>}
-                </div>
-              )}
             </section>
           </div>
 
