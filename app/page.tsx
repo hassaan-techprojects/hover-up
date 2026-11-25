@@ -671,7 +671,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-          </div
+      </div>
 
       {/* Watch & Buy */}
       <section className="bg-[#f8f6f2] px-6 py-20 md:px-10">
