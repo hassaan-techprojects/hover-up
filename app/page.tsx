@@ -219,6 +219,39 @@ export default function HomePage() {
     return () => { isMounted = false; };
   }, []);
 
+  // Gentle scroll reveals for homepage content, headings, product cards and videos.
+  useEffect(() => {
+    const targets = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "main h1, main h2, main h3, main h4, main strong, main b, main .merch-showcase-card, main .watch-video-card, main video"
+      )
+    );
+    targets.forEach((element, index) => {
+      element.setAttribute("data-home-reveal", "");
+      element.style.setProperty("--home-reveal-delay", `${(index % 5) * 110}ms`);
+    });
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      targets.forEach((element) => element.classList.add("home-reveal-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("home-reveal-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -45px 0px" }
+    );
+
+    targets.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
   // Automatic banner slider
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -826,6 +859,7 @@ export default function HomePage() {
             </div>
           </div>
 
+          <p className="mb-7 max-w-xl text-sm leading-7 text-white/70 sm:mb-9 sm:text-base">Personalised apparel and branded essentials, made for your team, event or everyday style.</p>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             <article className="group merch-showcase-card">
               <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
@@ -843,15 +877,6 @@ export default function HomePage() {
                 </div>
               </div>
               <h3 className="mt-4 text-lg font-bold tracking-wide">BRANDED APPAREL</h3>
-            </article>
-
-            <article className="group merch-showcase-card">
-              <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
-                <div className="aspect-[4/5] overflow-hidden rounded-[24px] bg-[#e9e3da]">
-                  <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1000&q=88" alt="Custom cap merchandise" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
-                </div>
-              </div>
-              <h3 className="mt-4 text-lg font-bold tracking-wide">CUSTOM CAPS</h3>
             </article>
 
           </div>
