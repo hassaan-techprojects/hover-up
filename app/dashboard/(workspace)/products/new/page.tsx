@@ -198,6 +198,10 @@ export default function AddProductPage() {
     if (!files) return;
 
     const selectedFiles = Array.from(files);
+    if (images.length + selectedFiles.length > 20) {
+      setError("You can upload a maximum of 20 product images.");
+      return;
+    }
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     const invalidFile = selectedFiles.find(
