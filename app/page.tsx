@@ -9,7 +9,6 @@ import {
   Volume2,
   VolumeX,
   X,
-  Diamond,
   Shirt,
   PackageCheck,
 } from "lucide-react";
@@ -669,47 +668,43 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Premium printed edition features */}
-      <div className="watch-feature-strip">
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon watch-feature-icon-diamond">
-                <Diamond size={30} strokeWidth={2} />
-              </div>
+      {/* Hover Up brand promise */}
+      <section className="watch-feature-strip" aria-label="Why choose Hover Up">
+        <div className="watch-feature-heading">
+          <p>THE HOVER UP DIFFERENCE</p>
+          <h2>Made for your brand. Ready for every day.</h2>
+        </div>
 
-              <div className="watch-feature-content">
-                <h3>PREMIUM PRINTED EDITION</h3>
-                <p>
-                  High-grade fabrics with consistent finishing.
-                </p>
-              </div>
-            </div>
+        <div className="watch-feature-item watch-feature-item-premium">
+          <div className="watch-feature-icon watch-feature-icon-diamond" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" role="img">
+              <path d="M12 23.5 21 12h22l9 11.5L32 53 12 23.5Z" stroke="currentColor" strokeWidth="2.6" strokeLinejoin="round"/>
+              <path d="m12 23.5 40 0M21 12l5.5 11.5L32 53l5.5-29.5L43 12M21 12l-9 11.5m31-11.5 9 11.5" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round"/>
+              <path d="M8 8v7M4.5 11.5h7M55 8v7M51.5 11.5h7M56 48v7M52.5 51.5h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="watch-feature-content">
+            <h3>PREMIUM PRINTED EDITION</h3>
+            <p>High-grade fabrics with consistent finishing.</p>
+          </div>
+        </div>
 
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon">
-                <Shirt />
-              </div>
+        <div className="watch-feature-item">
+          <div className="watch-feature-icon" aria-hidden="true"><Shirt /></div>
+          <div className="watch-feature-content">
+            <h3>COMFORTABLE FITS</h3>
+            <p>Designed for everyday comfort and movement.</p>
+          </div>
+        </div>
 
-              <div className="watch-feature-content">
-                <h3>COMFORTABLE FITS</h3>
-                <p>
-                  Designed for everyday comfort and movement.
-                </p>
-              </div>
-            </div>
-
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon">
-                <PackageCheck />
-              </div>
-
-              <div className="watch-feature-content">
-                <h3>BULK & CUSTOM ORDER</h3>
-                <p>
-                  Scalable production with customization support.
-                </p>
-              </div>
-            </div>
-      </div>
+        <div className="watch-feature-item">
+          <div className="watch-feature-icon" aria-hidden="true"><PackageCheck /></div>
+          <div className="watch-feature-content">
+            <h3>BULK & CUSTOM ORDER</h3>
+            <p>Scalable production with customization support.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Watch & Buy */}
       <section className="bg-[#f8f6f2] px-6 py-20 md:px-10">
