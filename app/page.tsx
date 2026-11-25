@@ -35,7 +35,7 @@ type HomeProduct = {
   name: string;
   slug: string;
   images: { url: string; altText: string | null; isPrimary: boolean; sortOrder: number }[];
-  attributes?: { attributeValue: { value: string; termType: "COLOR" | "SIZE"; attribute: { name: string } } }[];
+  attributes?: { attributeValue: { value: string; image: string | null; termType: "COLOR" | "SIZE"; attribute: { name: string } } }[];
 };
 
 type Brand = {
@@ -481,12 +481,23 @@ export default function HomePage() {
                     </div>
                     <Link href={`/shop/${product.slug}`}><h3 className="mt-4 line-clamp-2 text-lg font-extrabold leading-7 text-[#171717] transition-colors hover:text-[#987b5c] sm:text-xl">{product.name}</h3></Link>
                     <p className="mt-2 text-xl font-extrabold text-[#171717]">₹1,399</p>
-                    <p className="mt-1 text-sm font-semibold text-[#625b53]">
+                    <div className="mt-2 flex min-h-7 flex-wrap items-center gap-2">
                       {(() => {
-                        const colors = [...new Set((product.attributes || []).filter((item) => item.attributeValue.termType === "COLOR").map((item) => item.attributeValue.value))];
-                        return colors.length ? `Colours: ${colors.join(", ")}` : "2-piece pack";
+                        const colors = (product.attributes || [])
+                          .map((item) => item.attributeValue)
+                          .filter((item) => item.termType === "COLOR")
+                          .filter((item, index, all) => all.findIndex((candidate) => candidate.value === item.value) === index);
+                        return colors.length ? colors.map((color) => (
+                          <span key={color.value} title={color.value} aria-label={color.value} className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-[#ded8cf] bg-white">
+                            {color.image ? (
+                              <img src={color.image} alt={color.value} className="h-full w-full object-cover" loading="lazy" />
+                            ) : (
+                              <span className="h-full w-full rounded-full" style={{ backgroundColor: color.value }} />
+                            )}
+                          </span>
+                        )) : <span className="text-sm font-semibold text-[#625b53]">2-piece pack</span>;
                       })()}
-                    </p>
+                    </div>
                   </article>
                 );
               })}
