@@ -300,6 +300,13 @@ export async function POST(request: NextRequest) {
     );
 
     const imageMetadata = parseJSON<{ altText?: string; isPrimary?: boolean; sortOrder?: number }[]>(formData.get("images"), []);
+    const imageFiles = formData.getAll("productImages").filter((value): value is File => value instanceof File);
+    if (imageFiles.length > 20) {
+      return NextResponse.json({ error: "You can upload a maximum of 20 product images." }, { status: 400 });
+    }
+    if (imageMetadata.length > 0 && imageMetadata.length !== imageFiles.length) {
+      return NextResponse.json({ error: "Product image information does not match uploaded images." }, { status: 400 });
+    }
 
     // Validate variation requirements
     const selectedTermIds = [
@@ -551,7 +558,7 @@ export async function POST(request: NextRequest) {
             })),
           },
 
-          categories: {          categories: {
+          categories: {
             create: uniqueCategoryIds.map((categoryId) => ({
               categoryId,
             })),
