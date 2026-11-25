@@ -78,7 +78,7 @@ export default function AddProductPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(buildDefaultProductDescription());
   const [descriptionEdited, setDescriptionEdited] = useState(false);
   const [sku, setSku] = useState("");
   const [regularPrice, setRegularPrice] = useState("");
