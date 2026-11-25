@@ -309,7 +309,7 @@ export default function AddProductPage() {
           id: createId(),
           file,
           preview: URL.createObjectURL(file),
-          altText: file.name.replace(/\\.[^/.]+$/, ""),
+          altText: file.name.split(".").slice(0, -1).join(".") || file.name,
         },
       };
     });
