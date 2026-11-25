@@ -223,7 +223,7 @@ export default function HomePage() {
   useEffect(() => {
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(
-        "main h1, main h2, main h3, main h4, main strong, main b, main .merch-showcase-card, main .watch-video-card, main video"
+        "main h1, main h2, main h3, main h4, main strong, main b, main [class*='font-bold'], main [class*='font-extrabold'], main [class*='font-semibold'], main .merch-showcase-card, main .watch-video-card, main video"
       )
     );
     targets.forEach((element, index) => {
