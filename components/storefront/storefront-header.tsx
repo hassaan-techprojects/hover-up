@@ -146,7 +146,7 @@ export default function StorefrontHeader() {
 
             <span
               aria-label="HOVER UP"
-              className="hoverup-logo-wordmark whitespace-nowrap text-lg font-black tracking-[0.12em] text-black sm:text-2xl"
+              className="hoverup-logo-wordmark whitespace-nowrap text-xl font-black tracking-[0.14em] text-black sm:text-3xl"
             >
               {"HOVER UP".split("").map((letter, index) => (
                 <span
