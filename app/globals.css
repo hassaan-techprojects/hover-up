@@ -504,8 +504,8 @@ button {
 
 /* PREMIUM DIAMOND ICON */
 .watch-feature-icon-diamond {
-  background: #b99a76;
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: #c7a985;
+  border: 1px solid rgba(255, 255, 255, 0.85);
   color: #111111;
 }
 
@@ -1014,8 +1014,8 @@ header nav a,
   height: 76px;
   min-width: 76px;
   flex-basis: 76px;
-  background: #ffffff;
-  border: 1px solid #ffffff;
+  background: #c7a985;
+  border: 1px solid rgba(255,255,255,.85);
   color: #111111;
 }
 .watch-feature-icon-diamond svg {
@@ -1029,7 +1029,7 @@ header nav a,
   box-shadow: 0 12px 26px rgba(0,0,0,.3);
 }
 .watch-feature-item:hover .watch-feature-icon-diamond {
-  background: #b99a76;
+  background: #d4b895;
 }
 .watch-feature-item-premium .watch-feature-icon-diamond svg {
   animation: hu-diamond-glint 3.8s ease-in-out infinite;
