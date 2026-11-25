@@ -553,10 +553,45 @@ export default function HomePage() {
                 key={item.id}
                 type="button"
                 onClick={() => openVideoViewer(index)}
+                onMouseEnter={(event) => {
+                  const preview = event.currentTarget.querySelector("video");
+                  if (!preview) return;
+                  preview.muted = false;
+                  preview.play().catch(() => {
+                    preview.muted = true;
+                    preview.play().catch(() => undefined);
+                  });
+                }}
+                onMouseLeave={(event) => {
+                  const preview = event.currentTarget.querySelector("video");
+                  if (preview) {
+                    preview.pause();
+                    preview.currentTime = 0;
+                  }
+                }}
+                onFocus={(event) => {
+                  const preview = event.currentTarget.querySelector("video");
+                  if (preview) {
+                    preview.muted = true;
+                    preview.play().catch(() => undefined);
+                  }
+                }}
+                onBlur={(event) => {
+                  const preview = event.currentTarget.querySelector("video");
+                  if (preview) preview.pause();
+                }}
                 aria-label={`Play ${item.title}`}
                 className="watch-video-card group relative block cursor-pointer overflow-hidden rounded-xl border-0 bg-black p-0 text-left"
               >
-                <div className="watch-video-card-content">
+                <video
+                  src={item.video}
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="watch-video-card-content transition-opacity duration-300 group-hover:opacity-0 group-focus-visible:opacity-0">
                   <span className="watch-video-number">
                     {String(index + 1).padStart(2, "0")}
                   </span>
