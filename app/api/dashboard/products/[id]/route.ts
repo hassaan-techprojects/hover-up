@@ -145,7 +145,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       for (const image of retainedImages) {
         await tx.productImage.update({
           where: { id: image.id },
-          data: { altText: image.altText?.trim() || null, isPrimary: Boolean(image.isPrimary), sortOrder: Number.isInteger(image.sortOrder) ? image.sortOrder! : 0 },
+          data: { altText: image.altText?.trim() || null, isPrimary: Boolean(image.isPrimary) || (!retainedImages.some((item) => item.isPrimary) && retainedImages[0]?.id === image.id), sortOrder: Number.isInteger(image.sortOrder) ? image.sortOrder! : 0 },
         });
       }
       await tx.productImage.deleteMany({ where: { productId: id, id: { notIn: [...retainedIds] } } });
