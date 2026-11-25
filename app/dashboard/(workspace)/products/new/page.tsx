@@ -488,7 +488,7 @@ export default function AddProductPage() {
     }
     for (const term of selectedColorTerms) {
       const details = colorDetails[term.id];
-      if (!colorImages[term.id] || !details?.sku.trim() || !details.regularPrice || Number(details.regularPrice) < 0 || (details.salePrice && (Number(details.salePrice) < 0 || Number(details.salePrice) > Number(details.regularPrice))) || !/^\\d+$/.test(details.stock) ) {
+      if (!colorImages[term.id] || !details?.sku.trim() || !details.regularPrice || Number(details.regularPrice) < 0 || (details.salePrice && (Number(details.salePrice) < 0 || Number(details.salePrice) > Number(details.regularPrice))) || !/^\d+$/.test(details.stock) ) {
         setError(`Complete the image, SKU, price and stock for ${term.value}.`);
         setExpandedColorId(term.id);
         return;
