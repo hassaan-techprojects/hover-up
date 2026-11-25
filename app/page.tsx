@@ -249,6 +249,16 @@ export default function HomePage() {
     );
 
     targets.forEach((element) => observer.observe(element));
+
+    const videos = Array.from(document.querySelectorAll<HTMLVideoElement>("main video"));
+    const setSlowPlayback = (video: HTMLVideoElement) => {
+      video.playbackRate = 0.85;
+    };
+    videos.forEach((video) => {
+      setSlowPlayback(video);
+      video.addEventListener("loadedmetadata", () => setSlowPlayback(video), { once: true });
+    });
+
     return () => observer.disconnect();
   }, []);
 
