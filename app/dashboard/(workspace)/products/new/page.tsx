@@ -97,6 +97,9 @@ export default function AddProductPage() {
   const [variations, setVariations] = useState<Variation[]>([]);
   const [colorImages, setColorImages] = useState<Record<string, ColorImageFile>>({});
   const [mainColorTermId, setMainColorTermId] = useState("");
+  const [expandedColorId, setExpandedColorId] = useState<string | null>(null);
+  const [colorDetails, setColorDetails] = useState<Record<string, { sku: string; regularPrice: string; salePrice: string; stock: string }>>({});
+
 
   const [attributeSearch, setAttributeSearch] = useState("");
   const [showAttributeDropdown, setShowAttributeDropdown] = useState(false);
@@ -238,11 +241,12 @@ export default function AddProductPage() {
   }
 
   function addAttribute(attribute: Attribute) {
-    setSelectedAttributes((current) => ({
-      ...current,
-      [attribute.id]: [],
-    }));
-
+    setSelectedAttributes({ [attribute.id]: [] });
+    setVariations([]);
+    setColorImages({});
+    setColorDetails({});
+    setMainColorTermId("");
+    setExpandedColorId(null);
     setAttributeSearch("");
     setShowAttributeDropdown(false);
   }
@@ -253,39 +257,73 @@ export default function AddProductPage() {
       delete updated[attributeId];
       return updated;
     });
-
     setVariations([]);
+    setColorImages({});
+    setColorDetails({});
+    setMainColorTermId("");
+    setExpandedColorId(null);
   }
 
   function toggleTerm(attributeId: string, termId: string) {
+    const attribute = attributes.find((item) => item.id === attributeId);
+    const term = attribute?.values.find((item) => item.id === termId);
+    if (!term || term.termType !== "COLOR") return;
     setSelectedAttributes((current) => {
       const existing = current[attributeId] ?? [];
-
-      return {
-        ...current,
-        [attributeId]: existing.includes(termId)
-          ? existing.filter((id) => id !== termId)
-          : [...existing, termId],
-      };
+      const next = existing.includes(termId)
+        ? existing.filter((id) => id !== termId)
+        : [...existing, termId];
+      return { [attributeId]: next };
     });
-
+    if ((selectedAttributes[attributeId] ?? []).includes(termId)) {
+      setColorImages((current) => { const next = { ...current }; delete next[termId]; return next; });
+      setColorDetails((current) => { const next = { ...current }; delete next[termId]; return next; });
+      if (mainColorTermId === termId) setMainColorTermId("");
+      if (expandedColorId === termId) setExpandedColorId(null);
+    } else {
+      setExpandedColorId(termId);
+      setColorDetails((current) => ({
+        ...current,
+        [termId]: current[termId] ?? {
+          sku: `${sku.trim() || "HU"}-${term.value.replace(/[^a-z0-9]/gi, "").toUpperCase()}`,
+          regularPrice: "",
+          salePrice: "",
+          stock: "0",
+        },
+      }));
+    }
     setVariations([]);
   }
 
   function selectAllTerms(attribute: Attribute) {
-    setSelectedAttributes((current) => ({
-      ...current,
-      [attribute.id]: attribute.values.map((term) => term.id),
-    }));
-
+    const colorTerms = attribute.values.filter((term) => term.termType === "COLOR");
+    setSelectedAttributes({ [attribute.id]: colorTerms.map((term) => term.id) });
+    setColorDetails((current) => {
+      const next = { ...current };
+      colorTerms.forEach((term) => {
+        next[term.id] ??= {
+          sku: `${sku.trim() || "HU"}-${term.value.replace(/[^a-z0-9]/gi, "").toUpperCase()}`,
+          regularPrice: "",
+          salePrice: "",
+          stock: "0",
+        };
+      });
+      return next;
+    });
+    setExpandedColorId(colorTerms[0]?.id ?? null);
     setVariations([]);
   }
 
   function selectColorTerms(attribute: Attribute) {
-    const colorIds = attribute.values
-      .filter((term) => term.termType === "COLOR")
-      .map((term) => term.id);
-    setSelectedAttributes((current) => ({ ...current, [attribute.id]: colorIds }));
+    selectAllTerms(attribute);
+  }
+
+  function clearTerms(attributeId: string) {
+    setSelectedAttributes({ [attributeId]: [] });
+    setColorImages({});
+    setColorDetails({});
+    setMainColorTermId("");
+    setExpandedColorId(null);
     setVariations([]);
   }
 
@@ -445,30 +483,27 @@ export default function AddProductPage() {
       return;
     }
 
-    if (!regularPrice || Number(regularPrice) < 0) {
-      setError("Enter a valid regular price.");
+    const selectedColorTerms = selectedAttributeList.flatMap((attribute) =>
+      attribute.values.filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id))
+    );
+    if (!selectedAttributeList.length) {
+      setError("Select an attribute first.");
       return;
     }
-
-    if (salePrice && Number(salePrice) < 0) {
-      setError("Sale price cannot be negative.");
+    if (!selectedColorTerms.length) {
+      setError("Select at least one colour.");
       return;
     }
-
-    if (
-      salePrice &&
-      Number(salePrice) > 0 &&
-      Number(salePrice) > Number(regularPrice)
-    ) {
-      setError("Sale price cannot be greater than regular price.");
-      return;
+    for (const term of selectedColorTerms) {
+      const details = colorDetails[term.id];
+      if (!colorImages[term.id] || !details?.sku.trim() || !details.regularPrice || Number(details.regularPrice) < 0 || (details.salePrice && (Number(details.salePrice) < 0 || Number(details.salePrice) > Number(details.regularPrice))) || !/^\\d+$/.test(details.stock) ) {
+        setError(`Complete the image, SKU, price and stock for ${term.value}.`);
+        setExpandedColorId(term.id);
+        return;
+      }
     }
-
-    if (
-      selectedAttributeList.length > 0 &&
-      variations.length === 0
-    ) {
-      setError("Generate your variations before saving the product.");
+    if (!selectedColorTerms.some((term) => term.id === mainColorTermId)) {
+      setError("Choose one colour as the main product image.");
       return;
     }
 
@@ -481,11 +516,11 @@ export default function AddProductPage() {
       formData.append("slug", slug.trim());
       formData.append("description", description);
       const productSku = sku.trim() || `HU-${parseInt(crypto.randomUUID().replace(/-/g, "").slice(0, 8), 16).toString(36).toUpperCase().padStart(5, "0").slice(-5)}`;
-      setSku(productSku);
+      const mainDetails = colorDetails[mainColorTermId];
       formData.append("sku", productSku);
-      formData.append("price", salePrice || regularPrice);
-      formData.append("comparePrice", salePrice ? regularPrice : "");
-      formData.append("stock", stock);
+      formData.append("price", mainDetails.salePrice || mainDetails.regularPrice);
+      formData.append("comparePrice", mainDetails.salePrice ? mainDetails.regularPrice : "");
+      formData.append("stock", mainDetails.stock);
       formData.append("status", nextStatus);
       formData.append("isActive", nextStatus === "ACTIVE" ? "true" : "false");
 
@@ -499,26 +534,12 @@ export default function AddProductPage() {
         JSON.stringify(
           Object.entries(selectedAttributes).map(([attributeId, termIds]) => ({
             attributeId,
-            termIds,
-          }))
+            termIds: termIds.filter((termId) => attributes.find((item) => item.id === attributeId)?.values.some((term) => term.id === termId && term.termType === "COLOR")),
+          })).filter((selection) => selection.termIds.length > 0)
         )
       );
 
-      const selectedColorTerms = selectedAttributeList.flatMap((attribute) =>
-        attribute.values.filter((term) =>
-          term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)
-        )
-      );
-      if (selectedColorTerms.length > 0 && selectedColorTerms.some((term) => !colorImages[term.id])) {
-        setError("Upload an image for every selected colour before saving.");
-        setSubmitting(false);
-        return;
-      }
-      if (selectedColorTerms.length > 0 && !selectedColorTerms.some((term) => term.id === mainColorTermId)) {
-        setError("Choose one uploaded colour as the main colour.");
-        setSubmitting(false);
-        return;
-      }
+
       formData.append("mainColorTermId", mainColorTermId);
       const colorImageMetadata = selectedColorTerms.map((term) => ({
         termId: term.id,
@@ -532,46 +553,19 @@ export default function AddProductPage() {
       formData.append(
         "variations",
         JSON.stringify(
-          variations.map((variation) => ({
-            sku: variation.sku,
-            attributes: Object.fromEntries(
-              Object.entries(variation.attributes).map(
-                ([attributeId, term]) => {
-                  const attribute = attributes.find(
-                    (item) => item.id === attributeId
-                  );
-
-                  return [
-                    attribute?.name ?? attributeId,
-                    {
-                      id: term.id,
-                      value: term.value,
-                      sizeSymbol: term.sizeSymbol,
-                    },
-                  ];
-                }
-              )
-            ),
-            regularPrice: variation.regularPrice,
-            salePrice: variation.salePrice,
-            stock: variation.stock,
+          selectedColorTerms.map((term) => ({
+            sku: colorDetails[term.id].sku.trim(),
+            attributes: {
+              [selectedAttributeList[0].name]: { id: term.id, value: term.value, sizeSymbol: term.sizeSymbol },
+            },
+            regularPrice: colorDetails[term.id].regularPrice,
+            salePrice: colorDetails[term.id].salePrice,
+            stock: colorDetails[term.id].stock,
           }))
         )
       );
 
-      formData.append(
-        "images",
-        JSON.stringify(
-          images.map((image) => ({
-            altText: image.altText,
-            isPrimary: false,
-          }))
-        )
-      );
-
-      images.forEach((image) => {
-        formData.append("productImages", image.file);
-      });
+      formData.append("images", JSON.stringify([]));
 
       const response = await fetch("/api/dashboard/products", {
         method: "POST",
@@ -775,189 +769,6 @@ export default function AddProductPage() {
               </div>
             </section>
 
-            {/* Product Images */}
-            <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f4f3ef]">
-                  <ImagePlus size={18} className="text-[#171717]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-[#171717]">
-                    Product Images
-                  </h2>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Upload product photos and manage image descriptions.
-                  </p>
-                </div>
-              </div>
-
-              <label className="flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#dedbd4] bg-[#fcfbf9] p-6 text-center transition hover:border-gray-400 hover:bg-gray-50">
-                <ImagePlus size={27} className="mb-3 text-gray-400" />
-                <p className="text-sm font-medium text-[#171717]">
-                  Click to upload product images
-                </p>
-                <p className="mt-1 text-xs text-gray-400">
-                  JPG, PNG or WEBP · Maximum 5 MB per image
-                </p>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  onChange={(event) => {
-                    handleImageChange(event.target.files);
-                    event.target.value = "";
-                  }}
-                  className="hidden"
-                />
-              </label>
-
-              {images.length > 0 && (
-                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {images.map((image, index) => (
-                    <div
-                      key={image.id}
-                      className="overflow-hidden rounded-lg border border-[#e9e7e2]"
-                    >
-                      <div className="relative h-40 bg-[#f8f7f4]">
-                        <img
-                          src={image.preview}
-                          alt={image.altText}
-                          className="h-full w-full object-contain"
-                        />
-
-                        {index === 0 && (
-                          <span className="absolute left-3 top-3 rounded-full bg-[#171717] px-2.5 py-1 text-[10px] font-medium text-white">
-                            Main Image
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => removeImage(image.id)}
-                          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-600 shadow-sm hover:text-red-600"
-                          aria-label="Remove image"
-                        >
-                          <X size={15} />
-                        </button>
-                      </div>
-
-                      <div className="p-3">
-                        <label className="mb-1 block text-xs font-medium text-gray-500">
-                          Image name / ALT text
-                        </label>
-                        <input
-                          value={image.altText}
-                          onChange={(event) =>
-                            setImages((current) =>
-                              current.map((item) =>
-                                item.id === image.id
-                                  ? {
-                                      ...item,
-                                      altText: event.target.value,
-                                    }
-                                  : item
-                              )
-                            )
-                          }
-                          placeholder="Describe this image"
-                          className="h-9 w-full rounded-md border border-[#e8e6e1] px-2 text-xs outline-none focus:border-gray-400"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Pricing */}
-            <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f4f3ef]">
-                  <Tag size={18} className="text-[#171717]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-[#171717]">
-                    Product Pricing
-                  </h2>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Set the default product prices and stock.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[#333]">
-                    Regular Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={regularPrice}
-                    onChange={(event) =>
-                      setRegularPrice(event.target.value)
-                    }
-                    placeholder="0.00"
-                    className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[#333]">
-                    Sale Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={salePrice}
-                    onChange={(event) =>
-                      setSalePrice(event.target.value)
-                    }
-                    placeholder="Optional"
-                    className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[#333]">
-                    Initial Stock
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={stock}
-                    onChange={(event) => setStock(event.target.value)}
-                    placeholder="0"
-                    className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* SKU */}
-            <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
-              <h2 className="text-base font-semibold text-[#171717]">
-                Inventory & SKU
-              </h2>
-
-              <div className="mt-5">
-                <label className="mb-2 block text-sm font-medium text-[#333]">
-                  Product SKU
-                </label>
-                <input
-                  value={sku}
-                  onChange={(event) => setSku(event.target.value)}
-                  placeholder="Auto-generated SKU, e.g. HU-57T80"
-                  className="h-11 w-full rounded-lg border border-[#e8e6e1] px-3 text-sm outline-none focus:border-gray-500"
-                />
-                <p className="mt-2 text-xs text-gray-400">
-                  Variant SKUs will be generated from this base SKU.
-                </p>
-              </div>
-            </section>
-
             {/* Attributes */}
             <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
               <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -1077,13 +888,7 @@ export default function AddProductPage() {
                             >
                               Select Colours
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => selectAllTerms(attribute)}
-                              className="text-xs font-medium text-gray-600 underline underline-offset-4 hover:text-black"
-                            >
-                              Select All
-                            </button>
+
 
                             <button
                               type="button"
@@ -1104,262 +909,79 @@ export default function AddProductPage() {
                           </div>
                         </div>
 
-                        {attribute.values.length > 0 ? (
+                        {attribute.values.filter((term) => term.termType === "COLOR").length > 0 ? (
                           <div className="flex flex-wrap gap-2">
-                            {attribute.values.map((term) => {
+                            {attribute.values.filter((term) => term.termType === "COLOR").map((term) => {
                               const selected = selectedTerms.includes(term.id);
-
                               return (
-                                <button
-                                  key={term.id}
-                                  type="button"
-                                  onClick={() =>
-                                    toggleTerm(attribute.id, term.id)
-                                  }
-                                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${
-                                    selected
-                                      ? "border-[#171717] bg-[#171717] text-white"
-                                      : "border-[#e8e6e1] bg-white text-gray-600 hover:border-gray-400"
-                                  }`}
-                                >
-                                  {term.termType === "COLOR" && term.image && (
-                                    <img
-                                      src={term.image}
-                                      alt=""
-                                      className="h-5 w-5 rounded-full border border-white/20 object-cover"
-                                    />
-                                  )}
-
-                                  {term.termType === "SIZE" && (
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full border border-current text-[10px]">
-                                      {term.sizeSymbol || term.value}
-                                    </span>
-                                  )}
-
-                                  {term.value}
-                                  {selected && <X size={12} />}
+                                <button key={term.id} type="button" onClick={() => toggleTerm(attribute.id, term.id)}
+                                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition ${selected ? "border-[#171717] bg-[#171717] text-white" : "border-[#e8e6e1] bg-white text-gray-600 hover:border-gray-400"}`}>
+                                  {term.image && <img src={term.image} alt="" className="h-5 w-5 rounded-full border border-white/20 object-cover" />}
+                                  {term.value}{selected && <X size={12} />}
                                 </button>
                               );
                             })}
                           </div>
-                        ) : (
-                          <p className="text-xs text-gray-400">
-                            No terms have been created for this attribute.
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {selectedAttributeList.some((attribute) =>
-                attribute.values.some((term) =>
-                  term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)
-                )
-              ) && (
-                <div className="mt-5 rounded-lg border border-[#e9e7e2] bg-[#fcfbf9] p-4">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-[#171717]">Colour Images & Main Colour</h3>
-                    <p className="mt-1 text-xs leading-5 text-gray-500">Upload a separate image for every selected colour. Choose which colour should appear first on the shop and product listing.</p>
+                        ) : <p className="text-xs text-gray-400">This attribute has no colour terms.</p>}
+              {selectedAttributeList.length > 0 && (
+                <div className="mt-5">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-[#171717]">Selected Colours</h3>
+                      <p className="mt-1 text-xs text-gray-500">Choose colours first. Each colour has its own image, price, SKU and stock.</p>
+                    </div>
+                    <button type="button" onClick={() => selectAllTerms(selectedAttributeList[0])}
+                      className="rounded-lg border border-[#e8e6e1] px-3 py-2 text-xs font-medium text-[#171717] hover:bg-[#f8f7f4]">Select All Colours</button>
                   </div>
                   <div className="space-y-3">
-                    {selectedAttributeList.flatMap((attribute) =>
-                      attribute.values
-                        .filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id))
-                        .map((term) => (
-                          <div key={term.id} className="flex flex-col gap-3 rounded-lg border border-[#e8e6e1] bg-white p-3 sm:flex-row sm:items-center">
-                            <div className="flex min-w-0 flex-1 items-center gap-3">
-                              {colorImages[term.id] ? (
-                                <img src={colorImages[term.id].preview} alt={term.value} className="h-16 w-14 rounded-md border border-[#e8e6e1] object-cover" />
-                              ) : (
-                                <div className="flex h-16 w-14 items-center justify-center rounded-md border border-dashed border-[#d8d2c9] bg-[#faf9f7] text-[10px] text-gray-400">No image</div>
-                              )}
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-[#171717]">{term.value}</p>
-                                <p className="text-xs text-gray-400">{colorImages[term.id] ? colorImages[term.id].file.name : "Upload this colour's product image"}</p>
+                    {selectedAttributeList.flatMap((attribute) => attribute.values.filter((term) => term.termType === "COLOR" && selectedAttributes[attribute.id]?.includes(term.id)).map((term) => {
+                      const details = colorDetails[term.id] ?? { sku: "", regularPrice: "", salePrice: "", stock: "0" };
+                      const expanded = expandedColorId === term.id;
+                      return (
+                        <div key={term.id} className="overflow-hidden rounded-lg border border-[#e8e6e1] bg-white">
+                          <button type="button" onClick={() => setExpandedColorId(expanded ? null : term.id)}
+                            className="flex w-full items-center justify-between gap-3 p-3 text-left hover:bg-[#fcfbf9]">
+                            <span className="flex min-w-0 items-center gap-3">
+                              {colorImages[term.id] ? <img src={colorImages[term.id].preview} alt={term.value} className="h-12 w-12 rounded-md border border-[#e8e6e1] object-cover" /> : <span className="flex h-12 w-12 items-center justify-center rounded-md border border-dashed border-[#d8d2c9] text-[10px] text-gray-400">Image</span>}
+                              <span><span className="block text-sm font-semibold text-[#171717]">{term.value}</span><span className="block text-xs text-gray-400">{colorImages[term.id] ? "Image uploaded" : "Image required"} · {details.sku || "SKU pending"}</span></span>
+                            </span>
+                            <ChevronDown size={18} className={`shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+                          </button>
+                          {expanded && (
+                            <div className="space-y-4 border-t border-[#eeeae3] bg-[#fcfbf9] p-4">
+                              <div>
+                                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Product Images</h4>
+                                <p className="mb-3 text-xs text-gray-500">Upload the product photo for {term.value}.</p>
+                                <label className="flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#dedbd4] bg-white p-4 text-center hover:border-gray-400">
+                                  {colorImages[term.id] ? <img src={colorImages[term.id].preview} alt={term.value} className="mb-2 h-24 max-w-full object-contain" /> : <ImagePlus size={24} className="mb-2 text-gray-400" />}
+                                  <span className="text-xs font-medium text-[#171717]">{colorImages[term.id] ? "Replace image" : "Click to upload product image"}</span>
+                                  <span className="mt-1 text-[11px] text-gray-400">JPG, PNG or WEBP · Maximum 5 MB</span>
+                                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { handleColorImageChange(term.id, event.target.files?.[0]); event.currentTarget.value = ""; }} />
+                                </label>
+                                {colorImages[term.id] && <label className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-[#171717]"><input type="radio" name="mainColor" checked={mainColorTermId === term.id} onChange={() => setMainColorTermId(term.id)} className="accent-[#171717]" /> Select as main image</label>}
+                              </div>
+                              <div>
+                                <h4 className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Product Pricing</h4>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                  <label className="text-xs text-gray-600">Regular Price (₹)<input type="number" min="0" step="0.01" value={details.regularPrice} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, regularPrice: event.target.value } }))} placeholder="0.00" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
+                                  <label className="text-xs text-gray-600">Sale Price (₹)<input type="number" min="0" step="0.01" value={details.salePrice} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, salePrice: event.target.value } }))} placeholder="Optional" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
+                                  <label className="text-xs text-gray-600">Initial Stock<input type="number" min="0" step="1" value={details.stock} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, stock: event.target.value } }))} className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
+                                </div>
+                              </div>
+                              <div>
+                                <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Inventory & SKU</h4>
+                                <label className="text-xs text-gray-600">Product SKU<input value={details.sku} onChange={(event) => setColorDetails((current) => ({ ...current, [term.id]: { ...details, sku: event.target.value } }))} placeholder="Enter SKU for this colour" className="mt-1 h-10 w-full rounded-lg border border-[#e8e6e1] bg-white px-3 text-sm" /></label>
                               </div>
                             </div>
-                            <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#e8e6e1] px-3 text-xs font-medium text-[#171717] hover:bg-[#f8f7f4]">
-                              <ImagePlus size={14} /> {colorImages[term.id] ? "Replace image" : "Upload image"}
-                              <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(event) => { handleColorImageChange(term.id, event.target.files?.[0]); event.currentTarget.value = ""; }} />
-                            </label>
-                            {colorImages[term.id] && (
-                              <button type="button" onClick={() => removeColorImage(term.id)} className="text-xs text-red-600 hover:underline">Remove</button>
-                            )}
-                            <label className="flex items-center gap-2 text-xs font-medium text-[#4b463f]">
-                              <input type="radio" name="mainColor" checked={mainColorTermId === term.id} onChange={() => setMainColorTermId(term.id)} className="accent-[#171717]" />
-                              Main colour
-                            </label>
-                          </div>
-                        ))
-                    )}
+                          )}
+                        </div>
+                      );
+                    }))}
                   </div>
-                </div>
-              )}
-
-              {selectedAttributeList.length > 0 && (
-                <div className="mt-5 rounded-lg bg-[#fcfbf9] p-4">
-                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                    <div>
-                      <p className="text-sm font-medium text-[#171717]">
-                        Generate Product Variations
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {totalCombinations} possible combinations
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={generateVariations}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#171717] px-4 text-sm font-medium text-white transition hover:bg-black"
-                    >
-                      <Plus size={15} />
-                      Generate Variations
-                    </button>
-                  </div>
+                  {selectedAttributeList.every((attribute) => !(selectedAttributes[attribute.id] ?? []).length) && <p className="rounded-lg bg-[#fcfbf9] p-4 text-xs text-gray-500">Select one or more colours above to configure their images, prices and SKUs.</p>}
                 </div>
               )}
             </section>
-
-            {/* Generated Variations */}
-            {variations.length > 0 && (
-              <section className="rounded-xl border border-[#e9e7e2] bg-white p-5 sm:p-6">
-                <div className="mb-5 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-                  <div>
-                    <h2 className="text-base font-semibold text-[#171717]">
-                      Generated Variations
-                    </h2>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {variations.length} combinations generated. You can edit or remove each one.
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-[#f4f3ef] px-3 py-1.5 text-xs font-medium text-gray-600">
-                    {variations.length} Variations
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  {variations.map((variation, index) => (
-                    <div
-                      key={variation.id}
-                      className="rounded-lg border border-[#e9e7e2] p-4"
-                    >
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-[#171717]">
-                            {Object.entries(variation.attributes)
-                              .map(([attributeId, term]) => {
-                                const attribute = attributes.find(
-                                  (item) => item.id === attributeId
-                                );
-                                return `${attribute?.name ?? ""}: ${term.value}`;
-                              })
-                              .join(" / ")}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-400">
-                            Variation {index + 1}
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => removeVariation(variation.id)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
-                          title="Remove variation"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <div>
-                          <label className="mb-1.5 block text-xs text-gray-500">
-                            SKU
-                          </label>
-                          <input
-                            value={variation.sku}
-                            onChange={(event) =>
-                              updateVariation(
-                                variation.id,
-                                "sku",
-                                event.target.value
-                              )
-                            }
-                            placeholder="Variation SKU"
-                            className="h-10 w-full rounded-md border border-[#e8e6e1] px-2 text-xs outline-none focus:border-gray-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs text-gray-500">
-                            Regular Price (₹)
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={variation.regularPrice}
-                            onChange={(event) =>
-                              updateVariation(
-                                variation.id,
-                                "regularPrice",
-                                event.target.value
-                              )
-                            }
-                            placeholder="0.00"
-                            className="h-10 w-full rounded-md border border-[#e8e6e1] px-2 text-xs outline-none focus:border-gray-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs text-gray-500">
-                            Sale Price (₹)
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={variation.salePrice}
-                            onChange={(event) =>
-                              updateVariation(
-                                variation.id,
-                                "salePrice",
-                                event.target.value
-                              )
-                            }
-                            placeholder="Optional"
-                            className="h-10 w-full rounded-md border border-[#e8e6e1] px-2 text-xs outline-none focus:border-gray-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs text-gray-500">
-                            Stock
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={variation.stock}
-                            onChange={(event) =>
-                              updateVariation(
-                                variation.id,
-                                "stock",
-                                event.target.value
-                              )
-                            }
-                            placeholder="0"
-                            className="h-10 w-full rounded-md border border-[#e8e6e1] px-2 text-xs outline-none focus:border-gray-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
 
           {/* Sidebar */}
           <aside className="space-y-6 xl:sticky xl:top-6">
@@ -1467,7 +1089,7 @@ export default function AddProductPage() {
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-500">Variations</span>
                   <span className="font-medium text-[#171717]">
-                    {variations.length}
+                    {selectedAttributeList.reduce((count, attribute) => count + (selectedAttributes[attribute.id]?.length ?? 0), 0)}
                   </span>
                 </div>
 
