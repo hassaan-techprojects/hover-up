@@ -631,6 +631,48 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Premium printed edition features */}
+      <div className="watch-feature-strip">
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon watch-feature-icon-diamond">
+                <Diamond size={30} strokeWidth={2} />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>PREMIUM PRINTED EDITION</h3>
+                <p>
+                  High-grade fabrics with consistent finishing.
+                </p>
+              </div>
+            </div>
+
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon">
+                <Shirt />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>COMFORTABLE FITS</h3>
+                <p>
+                  Designed for everyday comfort and movement.
+                </p>
+              </div>
+            </div>
+
+            <div className="watch-feature-item">
+              <div className="watch-feature-icon">
+                <PackageCheck />
+              </div>
+
+              <div className="watch-feature-content">
+                <h3>BULK & CUSTOM ORDER</h3>
+                <p>
+                  Scalable production with customization support.
+                </p>
+              </div>
+            </div>
+          </div
+
       {/* Watch & Buy */}
       <section className="bg-[#f8f6f2] px-6 py-20 md:px-10">
         <div className="mx-auto max-w-[1500px]">
@@ -730,47 +772,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Watch & Buy Features */}
-          <div className="watch-feature-strip">
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon watch-feature-icon-diamond">
-                <Diamond size={30} strokeWidth={2} />
-              </div>
-
-              <div className="watch-feature-content">
-                <h3>PREMIUM PRINTED EDITION</h3>
-                <p>
-                  High-grade fabrics with consistent finishing.
-                </p>
-              </div>
-            </div>
-
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon">
-                <Shirt />
-              </div>
-
-              <div className="watch-feature-content">
-                <h3>COMFORTABLE FITS</h3>
-                <p>
-                  Designed for everyday comfort and movement.
-                </p>
-              </div>
-            </div>
-
-            <div className="watch-feature-item">
-              <div className="watch-feature-icon">
-                <PackageCheck />
-              </div>
-
-              <div className="watch-feature-content">
-                <h3>BULK & CUSTOM ORDER</h3>
-                <p>
-                  Scalable production with customization support.
-                </p>
-              </div>
-            </div>
-          </div>
+>
         </div>
       </section>
 
