@@ -420,7 +420,7 @@ function AttributeTermsPageContent() {
 
               <label className="mb-2 mt-5 block text-sm font-medium">Color Image</label>
               <label className="flex cursor-pointer flex-col items-center rounded-xl border border-dashed border-[#d8d3ca] bg-[#faf9f7] p-5 transition hover:border-[#999]">
-                {preview ? <img src={preview} alt="Color preview" className="mb-3 h-24 w-24 rounded-full border border-[#e5e1da] object-cover"/> : <div className="mb-3 flex h-24 w-24 items-center justify-center rounded-full border border-[#e5e1da] bg-white"><Upload size={24} className="text-[#999}"/></div>}
+                {preview ? <img src={preview} alt="Color preview" className="mb-3 h-24 w-24 rounded-full border border-[#e5e1da] object-cover"/> : <div className="mb-3 flex h-24 w-24 items-center justify-center rounded-full border border-[#e5e1da] bg-white"><Upload size={24} className="text-[#999]"/></div>}
                 <span className="text-sm font-medium">{preview ? "Change Image" : "Upload Image"}</span>
                 <span className="mt-1 text-xs text-[#89857e]">JPG, PNG or WEBP · Maximum 5 MB</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} className="hidden"/>
