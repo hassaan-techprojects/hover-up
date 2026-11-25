@@ -318,9 +318,21 @@ function ProductDetailContent({
         }
 
         if (!cancelled) {
-          setProduct(data.product);
-          setSelectedVariant(null);
-          setSelectedColor("");
+          const loadedProduct = data.product as Product;
+          const mainColourVariant = loadedProduct.variants.find((variant) => {
+            if (!variant.attributes || typeof variant.attributes !== "object" || Array.isArray(variant.attributes)) return false;
+            return (variant.attributes as Record<string, unknown>).isMainColour === true;
+          }) ?? null;
+          const mainColourValues = mainColourVariant
+            ? getVariantAttributeValues(mainColourVariant.attributes)
+            : [];
+          const mainColour = loadedProduct.attributes
+            .map((item) => item.attributeValue)
+            .find((value) => value.termType === "COLOR" && mainColourValues.some((candidate) => candidate.toLowerCase() === value.value.toLowerCase()));
+
+          setProduct(loadedProduct);
+          setSelectedVariant(mainColourVariant);
+          setSelectedColor(mainColour?.value ?? "");
           setSelectedSize("");
           setSelectedImage(0);
         }
