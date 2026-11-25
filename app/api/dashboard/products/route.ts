@@ -32,6 +32,11 @@ type AttributeSelection = {
   termIds: string[];
 };
 
+type ColorImageMetadata = {
+  termId: string;
+  altText?: string;
+};
+
 type VariationInput = {
   sku?: string;
   attributes: Record<
@@ -294,6 +299,12 @@ export async function POST(request: NextRequest) {
       []
     );
 
+    const colorImageMetadata = parseJSON<ColorImageMetadata[]>(
+      formData.get("colorImageMetadata"),
+      []
+    );
+    const mainColorTermId = String(formData.get("mainColorTermId") || "").trim();
+
     const imageMetadata = parseJSON<
       { altText?: string; isPrimary?: boolean }[]
     >(
@@ -324,6 +335,18 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    const colorImageFiles = new Map<string, File>();
+    for (const metadata of colorImageMetadata) {
+      const file = formData.get(`colorImage:${metadata.termId}`);
+      if (!metadata.termId || !(file instanceof File)) {
+        return NextResponse.json({ error: "Every selected colour must have its own image." }, { status: 400 });
+      }
+      colorImageFiles.set(metadata.termId, file);
+    }
+    if (colorImageMetadata.length > 0 && !colorImageFiles.has(mainColorTermId)) {
+      return NextResponse.json({ error: "Choose a selected colour image as the main product image." }, { status: 400 });
     }
 
     // Validate variation requirements
@@ -546,6 +569,15 @@ export async function POST(request: NextRequest) {
       uploadedImages.push(uploaded);
     }
 
+    const uploadedColorImages = new Map<string, Awaited<ReturnType<typeof uploadProductImage>>>();
+    for (const metadata of colorImageMetadata) {
+      const file = colorImageFiles.get(metadata.termId);
+      if (!file) continue;
+      const uploaded = await uploadProductImage(file, metadata.altText || file.name, 0);
+      uploadedObjects.push({ key: uploaded.key });
+      uploadedColorImages.set(metadata.termId, uploaded);
+    }
+
     // Create product and related records
     const product = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
@@ -563,13 +595,22 @@ export async function POST(request: NextRequest) {
           publishedAt: isActive ? new Date() : null,
 
           images: {
-            create: uploadedImages.map((image) => ({
-              storageKey: image.key,
-              url: image.url,
-              altText: image.altText,
-              isPrimary: image.isPrimary,
-              sortOrder: image.sortOrder,
-            })),
+            create: [
+              ...uploadedImages.map((image) => ({
+                storageKey: image.key,
+                url: image.url,
+                altText: image.altText,
+                isPrimary: uploadedColorImages.size === 0 && image.isPrimary,
+                sortOrder: uploadedColorImages.size === 0 ? image.sortOrder : image.sortOrder + uploadedColorImages.size,
+              })),
+              ...Array.from(uploadedColorImages.entries()).map(([termId, image], index) => ({
+                storageKey: image.key,
+                url: image.url,
+                altText: image.altText,
+                isPrimary: termId === mainColorTermId,
+                sortOrder: index,
+              })),
+            ],
           },
 
           categories: {
@@ -604,6 +645,13 @@ export async function POST(request: NextRequest) {
 
       // Create individual variations and their inventories
       for (const variation of validatedVariations) {
+        const matchingColorTerm = Object.values(variation.attributes).find((term) =>
+          uploadedColorImages.has(term.id)
+        );
+        const colorImage = matchingColorTerm
+          ? uploadedColorImages.get(matchingColorTerm.id)
+          : undefined;
+
         await tx.productVariant.create({
           data: {
             productId: createdProduct.id,
@@ -617,6 +665,18 @@ export async function POST(request: NextRequest) {
             attributes: variation.attributes,
 
             isActive: true,
+
+            ...(colorImage ? {
+              images: {
+                create: [{
+                  storageKey: colorImage.key,
+                  url: colorImage.url,
+                  altText: colorImage.altText,
+                  isPrimary: true,
+                  sortOrder: 0,
+                }],
+              },
+            } : {}),
 
             inventory: {
               create: {
