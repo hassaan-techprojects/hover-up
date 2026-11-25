@@ -150,7 +150,7 @@ export default function StorefrontHeader() {
             >
               HOVER UP<span className="text-[#b99a76]">.</span>
             </span>
-          </Link>     </Link>
+          </Link>
 
           {/* Desktop Header Icons */}
           <div className="hidden items-center gap-6 md:flex">
