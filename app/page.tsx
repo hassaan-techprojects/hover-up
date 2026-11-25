@@ -815,6 +815,78 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Custom Merchandise Showcase */}
+      <section className="overflow-hidden bg-[#111111] px-5 py-16 text-white sm:px-8 md:px-10 md:py-24">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="mb-9 flex flex-col gap-3 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold tracking-[0.3em] text-[#c7a985]">MAKE IT YOURS</p>
+              <h2 className="mt-3 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+                Custom merchandise, made to stand out.
+              </h2>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-white/65 sm:text-base">
+                Bring your ideas to life with custom apparel, caps, mugs and branded merchandise for teams, events and businesses.
+              </p>
+            </div>
+            <span className="hidden text-sm font-semibold tracking-[0.18em] text-[#c7a985] sm:block">DESIGN · PRINT · DELIVER</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+            <article className="group merch-showcase-card">
+              <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
+                <div className="aspect-[4/5] overflow-hidden rounded-[24px] bg-[#e9e3da]">
+                  <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000&q=88" alt="Custom printed T-shirt merchandise" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-bold tracking-wide">CUSTOM T-SHIRTS</h3>
+              <p className="mt-1 text-sm text-white/60">Your design. Your identity.</p>
+            </article>
+
+            <article className="group merch-showcase-card">
+              <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
+                <div className="aspect-[4/5] overflow-hidden rounded-[24px] bg-[#e9e3da]">
+                  <img src="https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=88" alt="Branded polo shirt apparel" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-bold tracking-wide">BRANDED APPAREL</h3>
+              <p className="mt-1 text-sm text-white/60">Made for teams and everyday wear.</p>
+            </article>
+
+            <article className="group merch-showcase-card">
+              <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
+                <div className="aspect-[4/5] overflow-hidden rounded-[24px] bg-[#e9e3da]">
+                  <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1000&q=88" alt="Custom cap merchandise" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-bold tracking-wide">CUSTOM CAPS</h3>
+              <p className="mt-1 text-sm text-white/60">Small details. Big impression.</p>
+            </article>
+
+            <article className="group merch-showcase-card">
+              <div className="rounded-[28px] bg-[linear-gradient(145deg,#d9c2a5_0%,#9c7958_52%,#e2a27f_100%)] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.28)] transition-transform duration-500 group-hover:-translate-y-1">
+                <div className="aspect-[4/5] overflow-hidden rounded-[24px] bg-[#e9e3da]">
+                  <img src="https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=1000&q=88" alt="Personalised printed ceramic mug" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-bold tracking-wide">PERSONALISED MUGS</h3>
+              <p className="mt-1 text-sm text-white/60">Make every day memorable.</p>
+            </article>
+          </div>
+
+          <div className="mt-10 overflow-hidden rounded-[26px] border border-white/20 bg-[linear-gradient(115deg,#b99a76_0%,#a98562_48%,#76583f_100%)] px-6 py-9 shadow-[0_22px_55px_rgba(0,0,0,0.28)] sm:mt-14 sm:px-10 sm:py-12 md:flex md:items-center md:justify-between md:gap-8">
+            <div className="max-w-2xl">
+              <p className="text-xs font-extrabold tracking-[0.28em] text-black/70">YOUR IDEA. OUR PRINT.</p>
+              <h3 className="mt-3 text-2xl font-medium leading-tight text-white sm:text-3xl md:text-4xl">
+                Get high-quality personalised merchandise at affordable prices.
+              </h3>
+            </div>
+            <Link href="/contact" className="mt-7 inline-flex min-h-14 items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-extrabold tracking-[0.16em] text-[#76583f] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:bg-[#111111] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:mt-0">
+              PRINT MERCH <ChevronRight className="ml-2" size={18} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Full-screen Watch & Buy Video Viewer */}
       {videoViewerOpen && watchVideos[currentVideoIndex] && (
         <div
