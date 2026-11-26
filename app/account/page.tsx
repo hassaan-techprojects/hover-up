@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { LogOut, UserRound } from "lucide-react";
@@ -15,6 +16,7 @@ type CustomerProfile = {
 };
 
 export default function AccountPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
@@ -43,7 +45,15 @@ export default function AccountPage() {
     setLoggingOut(true);
     setLogoutError("");
     try {
-      await signOut({ callbackUrl: "/", redirect: true });
+      const result = await signOut({ callbackUrl: "/account", redirect: false });
+      if (!result?.url) {
+        throw new Error("The sign-out request did not complete.");
+      }
+
+      setSignedIn(false);
+      setProfile(null);
+      router.replace("/account");
+      router.refresh();
     } catch {
       setLoggingOut(false);
       setLogoutError("Unable to log out. Please try again.");
