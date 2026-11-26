@@ -404,7 +404,7 @@ export default function HomePage() {
       <section className="flex items-center justify-center bg-white px-6 py-3 md:bg-[#f8f6f2] md:py-12">
         <Link
           href="/shop"
-          className="group inline-flex items-center gap-3 bg-black px-9 py-4 text-xs font-extrabold tracking-widest text-white transition-all duration-300 hover:bg-[#b99a76]"
+          className="group inline-flex items-center gap-3 border border-black bg-white px-9 py-4 text-xs font-extrabold tracking-widest text-black transition-all duration-300 hover:bg-[#f8f6f2]"
         >
           EXPLORE SHOP
           <ChevronRight
