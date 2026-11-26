@@ -401,10 +401,10 @@ export default function HomePage() {
       )}
 
       {/* Homepage Hero */}
-      <section className="flex items-center justify-center bg-white px-6 py-3 md:bg-[#f8f6f2] md:py-12">
+      <section className="flex items-center justify-center bg-white px-6 py-3 md:bg-white md:py-12">
         <Link
           href="/shop"
-          className="group inline-flex items-center gap-3 border border-black bg-white px-9 py-4 text-xs font-extrabold tracking-widest text-black transition-all duration-300 hover:bg-[#f8f6f2]"
+          className="group inline-flex items-center gap-3 border border-black bg-black px-9 py-4 text-xs font-extrabold tracking-widest text-white transition-all duration-300 hover:bg-[#292929]"
         >
           EXPLORE SHOP
           <ChevronRight
