@@ -356,7 +356,7 @@ export default function HomePage() {
 
       {/* Homepage Banner Slider */}
       {!bannersLoading && banners.length > 0 && (
-        <section className="relative flex min-h-[340px] w-full items-center overflow-hidden bg-[#f8f6f2] py-5 sm:min-h-[420px] md:min-h-[500px] md:py-6 lg:min-h-[560px]">
+        <section className="relative flex min-h-[340px] w-full items-center overflow-hidden bg-white py-5 sm:min-h-[420px] md:min-h-[500px] md:py-6 lg:min-h-[560px]">
           <div
             className="flex transition-transform duration-700 ease-in-out will-change-transform"
             style={{
